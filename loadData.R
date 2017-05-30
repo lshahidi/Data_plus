@@ -52,13 +52,13 @@ work_name <- #choose what you like#
 
 # Yanlin's version
 
-base_dir <- "D:/DataPlus2017/Data/1337_Shibata EPIC DNA methylation data package/1337_Shibata EPIC DNA methylation data package/IDAT FILES"
-targets_name <- "targets_1337"
-pat_file <- "D:/DataPlus2017/Data/1337_Shibata EPIC DNA methylation data package/1337_Shibata EPIC DNA methylation data package/SAMPLE-ARRAY MAPPING/1337 (Shibata-8).xls"
-pat_name <- "pat_1337"
-work_name <- "work_1337"
+base_dir_1337 <- "D:/DataPlus2017/Data/1337_Shibata EPIC DNA methylation data package/1337_Shibata EPIC DNA methylation data package/IDAT FILES"
+targets_name_1337 <- "targets_1337"
+pat_file_1337 <- "D:/DataPlus2017/Data/1337_Shibata EPIC DNA methylation data package/1337_Shibata EPIC DNA methylation data package/SAMPLE-ARRAY MAPPING/1337 (Shibata-8).xls"
+pat_name_1337 <- "pat_1337"
+work_name_1337 <- "work_1337"
 
-work_1337 <- read.fun(base_dir,targets_name,work_name,pat_file,pat_name)
+work_1337 <- read.fun(base_dir_1337,targets_name_1337,work_name_1337,pat_file_1337,pat_name_1337)
 
 
 
@@ -67,21 +67,50 @@ work_1337 <- read.fun(base_dir,targets_name,work_name,pat_file,pat_name)
 # Kevin's version
 
 # Yanlin's version
-base_dir <- "D:/DataPlus2017/Data/1345_Shibata EPIC DNA methylation data package/1345_Shibata EPIC DNA methylation data package/IDAT FILES"
+base_dir_1345 <- "D:/DataPlus2017/Data/1345_Shibata EPIC DNA methylation data package/1345_Shibata EPIC DNA methylation data package/IDAT FILES"
+targets_name_1345 <- "targets_1345"
+pat_file_1345 <- "D:/DataPlus2017/Data/1345_Shibata EPIC DNA methylation data package/1345_Shibata EPIC DNA methylation data package/SAMPLE-ARRAY MAPPING/1345 (Shibata-16).xlsx"
+pat_name_1345 <- "pat_1345"
+work_name_1345 <- "work_1345"
+
+work_1345 <- read.fun(base_dir_1345,targets_name_1345,work_name_1345,pat_file_1345,pat_name_1345)
+
+
+
+## 1350 ##
+
+# Yanlin' version
+base_dir_1350 <- "D:/DataPlus2017/Data/1350_SHIBATA EPIC DNA METHYLATION DATA PACKAGE/1350_SHIBATA EPIC DNA METHYLATION DATA PACKAGE/IDAT files"
+targets_name_1350 <- "targets_1350"
+pat_file_1350 <- "D:/DataPlus2017/Data/1350_SHIBATA EPIC DNA METHYLATION DATA PACKAGE/1350_SHIBATA EPIC DNA METHYLATION DATA PACKAGE/SAMPLE-ARRAY MAPPING/1350 (Shibata-8).xlsx"
+pat_name_1350 <- "pat_1350"
+work_name_1350 <- "work_1350"
+
+work_1350 <- read.fun(base_dir_1350,targets_name_1350,work_name_1350,pat_file_1350,pat_name_1350)
+ 
+
+## 1357 ##
+
+# Yanlin's version
+base_dir <- "D:/DataPlus2017/Data/1357_Shibata EPIC DNA methylation data package/1357_Shibata EPIC DNA methylation data package/IDAT FILES"
+targets_name <- "targets_1357"
+pat_file <- "D:/DataPlus2017/Data/1357_Shibata EPIC DNA methylation data package/1357_Shibata EPIC DNA methylation data package/SAMPLE-ARRAY MAPPING/1357 (Shibata-8).xlsx"
+pat_name <- "pat_1357"
+work_name <- "work_1357"
+
+work_1357 <- read.fun(base_dir,targets_name,work_name,pat_file,pat_name)
+
+
+## 1360 ##
+
+# Yanlin's version
+base_dir <- "D:/DataPlus2017/Data/1360_Shibata EPIC DNA methylation data package/1360_Shibata EPIC DNA methylation data package/IDAT FILES"
 targets_name <- "targets_1345"
 pat_file <- "D:/DataPlus2017/Data/1345_Shibata EPIC DNA methylation data package/1345_Shibata EPIC DNA methylation data package/SAMPLE-ARRAY MAPPING/1345 (Shibata-16).xlsx"
 pat_name <- "pat_1345"
 work_name <- "work_1345"
 
 work_1345 <- read.fun(base_dir,targets_name,work_name,pat_file,pat_name)
-
-
-
-## 1350 ##
- 
-## 1357 ##
-
-## 1360 ##
 
 ## 1378 ##
 

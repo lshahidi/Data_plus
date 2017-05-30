@@ -14,23 +14,22 @@ library(gdata)
 ############### Function used for read in data ####################
 
 # base_dir = directory containing basenames file
-# targets_file = WHOLE name (including directory) of basenames file
 # targets_name = name of the dataset after reading in basenames file
 # pat_dir = directory containing patient information file
 # pat_file = WHOLE name (including directory) of the dataset after reading in patient information file
 # work_name = name of the RGChannelSet
 
-read.fun <- function(base_dir,targets_file,targets_name,pat_file,pat_name,work_name) {
-  
-  # Read in BaseNames 
-  targets_name <- read.csv(targets_file, as.is = TRUE)
-  
-  # Read in all .idat files
-  targets_name$Basename <- file.path(base_dir, targets_name$Basename)
-  work_name <- read.metharray(targets_name$Basename, verbose = TRUE)
-  
+read.fun <- function(base_dir,targets_name,work_name,pat_file,pat_name) {
   # read in patient data from the .xls file
   pat_name <- read.xlsx(pat_file, sheetIndex=1,header=TRUE)
+  
+  # Extract targets
+  targets_name <- data.frame(pat_name[,"Complete.Barcode"])
+  colnames(targets_name) <- "Basement"
+  
+  # Read in all .idat files
+  targets_name$Basement <- file.path(base_dir, targets_name$Basement)
+  work_name <- read.metharray(targets_name$Basement, verbose = TRUE)
   
   # Push the RGChannelSet to the global environment
   return(work_name)
@@ -44,28 +43,39 @@ read.fun <- function(base_dir,targets_file,targets_name,pat_file,pat_name,work_n
 
 # Kevin's version
 base_dir <- "/Users/kevinmurgas/Documents/Data+ project/EPIC data/1337_Shibata EPIC DNA methylation data package/IDAT FILES"
-targets_file <- "/Users/kevinmurgas/Documents/Data+ project/EPIC data/1337_Shibata EPIC DNA methylation data package/SAMPLE-ARRAY MAPPING/1337_Shibata-targets.csv"
 targets_name <- #choose what you like#
 pat_file <- "/Users/kevinmurgas/Documents/Data+ project/EPIC data/1337_Shibata EPIC DNA methylation data package/SAMPLE-ARRAY MAPPING/1337 (Shibata-8).xls"
 pat_name <- #choose what you like#
 work_name <- #choose what you like#
 
-#work_name you chose# <- read.fun(base_dir,targets_file,targets_name,pat_file,pat_name,work_name)
-
+#work_name you chose# <- read.fun(base_dir,targets_name,work_name,pat_file,pat_name)
 
 # Yanlin's version
 
 base_dir <- "D:/DataPlus2017/Data/1337_Shibata EPIC DNA methylation data package/1337_Shibata EPIC DNA methylation data package/IDAT FILES"
-targets_file <- "D:/DataPlus2017/Data/1337_Shibata EPIC DNA methylation data package/1337_Shibata EPIC DNA methylation data package/SAMPLE-ARRAY MAPPING/1337_Shibata-targets.csv"
 targets_name <- "targets_1337"
 pat_file <- "D:/DataPlus2017/Data/1337_Shibata EPIC DNA methylation data package/1337_Shibata EPIC DNA methylation data package/SAMPLE-ARRAY MAPPING/1337 (Shibata-8).xls"
 pat_name <- "pat_1337"
 work_name <- "work_1337"
 
-work_1337 <- read.fun(base_dir,targets_file,targets_name,pat_file,pat_name,work_name)
+work_1337 <- read.fun(base_dir,targets_name,work_name,pat_file,pat_name)
+
 
 
 ## 1345 ##
+
+# Kevin's version
+
+# Yanlin's version
+base_dir <- "D:/DataPlus2017/Data/1345_Shibata EPIC DNA methylation data package/1345_Shibata EPIC DNA methylation data package/IDAT FILES"
+targets_name <- "targets_1345"
+pat_file <- "D:/DataPlus2017/Data/1345_Shibata EPIC DNA methylation data package/1345_Shibata EPIC DNA methylation data package/SAMPLE-ARRAY MAPPING/1345 (Shibata-16).xlsx"
+pat_name <- "pat_1345"
+work_name <- "work_1345"
+
+work_1345 <- read.fun(base_dir,targets_name,work_name,pat_file,pat_name)
+
+
 
 ## 1350 ##
  

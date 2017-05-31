@@ -10,7 +10,6 @@ library(IlluminaHumanMethylationEPICmanifest)
 library(IlluminaHumanMethylationEPICanno.ilm10b2.hg19)
 library(gdata)
 
-
 # here set the working directory that points to the data folder
 # e.g. the folder with all datasets in it, should contain all the
 # 1337-1387 folders
@@ -33,7 +32,7 @@ setwd("D:/DataPlus2017/Data")
 
 read.fun <- function(base_dir,targets_name,work_name,pat_file,pat_name) {
   # read in patient data from the .xlsx file
-  pat_name <- read.xlsx(pat_file, sheetIndex=1,header=TRUE)
+  pat_name <- read.xls(pat_file,header=TRUE)
   
   # Extract targets
   targets_name <- data.frame(pat_name[,"Complete.Barcode"])
@@ -46,7 +45,6 @@ read.fun <- function(base_dir,targets_name,work_name,pat_file,pat_name) {
   # Push the RGChannelSet to the global environment
   return(work_name)
 }
-
 
 
 ############################### Read in data  #################################
@@ -117,7 +115,6 @@ work_name_1378 <- "work_1385"
 
 work_1378 <- read.fun(base_dir_1378,targets_name_1378,work_name_1378,pat_file_1378,pat_name_1378)
 
-
 ## 1385 ##
 
 base_dir_1385 <- "1385_Shibata EPIC Data Package/IDAT FILES"
@@ -138,35 +135,6 @@ pat_name_1387 <- "pat_1387"
 work_name_1387 <- "work_1387"
 
 work_1387 <- read.fun(base_dir_1387,targets_name_1387,work_name_1387,pat_file_1387,pat_name_1387)
-
-
-
-
-#################################### Old version of reading in data #############################################
-############################### you can delete if the function above works ########################################
-
-# here set a working directory in the folder with EPIC data
-# specifically the directory containing folders for 1337, 1345, etc
-setwd("/Users/kevinmurgas/Documents/Data+ project/EPIC data")
-
-# start by choosing 1337 as base directory
-baseDir <- "1337_Shibata EPIC DNA methylation data package/IDAT FILES"
-
-# read in BaseNames from the .csv file
-targets <- read.csv("1337_Shibata EPIC DNA methylation data package/SAMPLE-ARRAY MAPPING/1337_Shibata-targets.csv", as.is = TRUE)
-
-# converts target files to RGset
-targets$Basename <- file.path(baseDir, targets$Basename)
-RGset <- read.metharray(targets$Basename, verbose = TRUE)
-# annotation(RGsetEx) # check annotation packages
-
-# read in patient data from the .xls file
-pd <- read.xlsx("1337_Shibata EPIC DNA methylation data package/SAMPLE-ARRAY MAPPING/1337 (Shibata-8).xls", sheetIndex = 1, header = TRUE)
-####################################################################################################################
-
-
-
-
 
 
 #################################### Quality Control #####################################
@@ -200,8 +168,7 @@ targets_1337_new$Basename <- file.path(base_dir_1337_new, targets_1337_new$Basen
 work_1337_new <- read.metharray(targets_1337_new$Basename, verbose = TRUE)
 
 
-pat <- read.xlsx("1337_Shibata EPIC DNA methylation data package/SAMPLE-ARRAY MAPPING/1337 (Shibata-8).xls",
-                 sheetIndex = 1)
+pat <- read.xls("1337_Shibata EPIC DNA methylation data package/SAMPLE-ARRAY MAPPING/1337 (Shibata-8).xls")
 densityPlot(work_1337_new,sampGroups=pat$Sample_No)
 
 mset_1337_new <- preprocessRaw(work_1337_new)
@@ -214,12 +181,8 @@ plotQC(qc_1337)
 qcReport(work_1337_new,sampNames = pat$Sample_No[-7],
          sampGroups = pat$Plate[-7],pdf = "qcReport.pdf")
 
-# vvv this line does not work ¯\_(ツ)_/¯
-# qcReport(RGset, sampNames = pd$Sample_No, sampGroups = pd$Plate, pdf = "qcReport.pdf")
-
 # this line works to show density curves :)
-
-densityPlot(RGset, sampGroups = pd$Sample_No, main = "Beta", xlab = "Beta")
+densityPlot(work_1337_new, sampGroups = pat$Sample_No, main = "Beta", xlab = "Beta")
 
 # insert more QC
 

@@ -10,6 +10,13 @@ library(IlluminaHumanMethylationEPICmanifest)
 library(IlluminaHumanMethylationEPICanno.ilm10b2.hg19)
 library(gdata)
 
+# here set the working directory that points to the data folder
+# e.g. the folder with all datasets in it, should contain all the
+# 1337-1387 folders
+# please just comment out the directories already here, so each
+# user can uncomment the setwd for them as we move code around
+setwd("/Users/kevinmurgas/Documents/Data+ project/EPIC data")
+# setwd("put yours here")
 
 ############### Function used for read in data ####################
 
@@ -21,7 +28,7 @@ library(gdata)
 
 read.fun <- function(base_dir,targets_name,work_name,pat_file,pat_name) {
   # read in patient data from the .xls file
-  pat_name <- read.xlsx(pat_file, sheetIndex=1,header=TRUE)
+  pat_name <- read.xls(pat_file, sheetIndex=1,header=TRUE)
   
   # Extract targets
   targets_name <- data.frame(pat_name[,"Complete.Barcode"])
@@ -43,10 +50,10 @@ read.fun <- function(base_dir,targets_name,work_name,pat_file,pat_name) {
 
 # Kevin's version
 base_dir <- "/Users/kevinmurgas/Documents/Data+ project/EPIC data/1337_Shibata EPIC DNA methylation data package/IDAT FILES"
-targets_name <- #choose what you like#
+targets_name <- "targets_1337"
 pat_file <- "/Users/kevinmurgas/Documents/Data+ project/EPIC data/1337_Shibata EPIC DNA methylation data package/SAMPLE-ARRAY MAPPING/1337 (Shibata-8).xls"
-pat_name <- #choose what you like#
-work_name <- #choose what you like#
+pat_name <- "pat_1337"
+work_name <- "work_1337"
 
 #work_name you chose# <- read.fun(base_dir,targets_name,work_name,pat_file,pat_name)
 

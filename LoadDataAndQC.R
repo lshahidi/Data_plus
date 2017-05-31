@@ -3,13 +3,13 @@
 ######### Refer to the RMarkdown file (coming soon) for final results ###########
 #################################################################################
 
-
+library(xlsx)
 library(minfi)
 library(minfiData)
 library(IlluminaHumanMethylationEPICmanifest)
 library(IlluminaHumanMethylationEPICanno.ilm10b2.hg19)
 library(gdata)
-library(xlsx)
+
 
 # here set the working directory that points to the data folder
 # e.g. the folder with all datasets in it, should contain all the
@@ -161,7 +161,7 @@ RGset <- read.metharray(targets$Basename, verbose = TRUE)
 # annotation(RGsetEx) # check annotation packages
 
 # read in patient data from the .xls file
-pd <- read.xls("1337_Shibata EPIC DNA methylation data package/SAMPLE-ARRAY MAPPING/1337 (Shibata-8).xls", sheet = 1, header = TRUE)
+pd <- read.xlsx("1337_Shibata EPIC DNA methylation data package/SAMPLE-ARRAY MAPPING/1337 (Shibata-8).xls", sheetIndex = 1, header = TRUE)
 ####################################################################################################################
 
 
@@ -171,13 +171,54 @@ pd <- read.xls("1337_Shibata EPIC DNA methylation data package/SAMPLE-ARRAY MAPP
 
 #################################### Quality Control #####################################
 
-qcReport(work_1337)
 
+# Convert to MethylSet
+mset_1337 <- preprocessRaw(work_1337)
+
+# Check the methylation and unmethylation signals
+head(getMeth(mset_1337))
+head(getUnmeth((mset_1337)))
+
+# Convert to RatioSet containing beta values and Mvalues(log(M/U))
+rset_1337 <- ratioConvert(mset_1337,what = "both")
+
+# Get beta
+beta_1337 <- getBeta(rset_1337)
+
+# Check beta values
+head(beta_1337)
+
+#200360140022_R07C01 (JB) has bad quality
+dim(beta_1337)[1] == sum(is.na(beta_1337[,7]))
+
+### read in new data without JB ###
+base_dir_1337_new <- "1337_Shibata EPIC DNA methylation data package/IDAT FILES"
+
+targets_1337_new <- read.csv("1337_Shibata EPIC DNA methylation data package/SAMPLE-ARRAY MAPPING/1337_Shibata-targets.csv", as.is = TRUE)
+
+targets_1337_new$Basename <- file.path(base_dir_1337_new, targets_1337_new$Basename)
+work_1337_new <- read.metharray(targets_1337_new$Basename, verbose = TRUE)
+
+
+pat <- read.xlsx("1337_Shibata EPIC DNA methylation data package/SAMPLE-ARRAY MAPPING/1337 (Shibata-8).xls",
+                 sheetIndex = 1)
+densityPlot(work_1337_new,sampGroups=pat$Sample_No)
+
+mset_1337_new <- preprocessRaw(work_1337_new)
+rset_1337_new <- ratioConvert(mset_1337_new,what="both")
+beta_1337_new <- 
+qc_1337 <- getQC(mset_1337_new)
+head(qc_1337)
+plotQC(qc_1337)
+
+qcReport(work_1337_new,sampNames = pat$Sample_No[-7],
+         sampGroups = pat$Plate[-7],pdf = "qcReport.pdf")
 
 # vvv this line does not work ¯\_(ツ)_/¯
 # qcReport(RGset, sampNames = pd$Sample_No, sampGroups = pd$Plate, pdf = "qcReport.pdf")
 
 # this line works to show density curves :)
+
 densityPlot(RGset, sampGroups = pd$Sample_No, main = "Beta", xlab = "Beta")
 
 # insert more QC

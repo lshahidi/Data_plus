@@ -31,7 +31,7 @@ setwd("D:/DataPlus2017/Data")
 # pat_file = WHOLE name (including directory) of the dataset after reading in patient information file
 # work_name = name of the RGChannelSet
 
-read.fun <- function(base_dir,targets_name,work_name,pat_file,pat_name) {
+read.fun <- function(base_dir,pat_file) {
   # read in patient data from the .xlsx file
   pat_name <- read.xls(pat_file,header=TRUE)
   
@@ -53,89 +53,66 @@ read.fun <- function(base_dir,targets_name,work_name,pat_file,pat_name) {
 ## 1337 ##
 
 base_dir_1337 <- "1337_Shibata EPIC DNA methylation data package/IDAT FILES"
-targets_name_1337 <- "targets_1337"
 pat_file_1337 <- "1337_Shibata EPIC DNA methylation data package/SAMPLE-ARRAY MAPPING/1337 (Shibata-8).xls"
-pat_name_1337 <- "pat_1337"
-work_name_1337 <- "work_1337"
 
-work_1337 <- read.fun(base_dir_1337,targets_name_1337,work_name_1337,pat_file_1337,pat_name_1337)
+work_1337 <- read.fun(base_dir_1337,pat_file_1337)
 
 
 
 ## 1345 ##
 
 base_dir_1345 <- "1345_Shibata EPIC DNA methylation data package/IDAT FILES"
-targets_name_1345 <- "targets_1345"
 pat_file_1345 <- "1345_Shibata EPIC DNA methylation data package/SAMPLE-ARRAY MAPPING/1345 (Shibata-16).xlsx"
-pat_name_1345 <- "pat_1345"
-work_name_1345 <- "work_1345"
 
-work_1345 <- read.fun(base_dir_1345,targets_name_1345,work_name_1345,pat_file_1345,pat_name_1345)
+work_1345 <- read.fun(base_dir_1345,pat_file_1345)
 
 
 
 ## 1350 ##
 
 base_dir_1350 <- "1350_SHIBATA EPIC DNA METHYLATION DATA PACKAGE/IDAT files"
-targets_name_1350 <- "targets_1350"
 pat_file_1350 <- "1350_SHIBATA EPIC DNA METHYLATION DATA PACKAGE/SAMPLE-ARRAY MAPPING/1350 (Shibata-8).xlsx"
-pat_name_1350 <- "pat_1350"
-work_name_1350 <- "work_1350"
 
-work_1350 <- read.fun(base_dir_1350,targets_name_1350,work_name_1350,pat_file_1350,pat_name_1350)
+work_1350 <- read.fun(base_dir_1350,pat_file_1350)
  
 
 ## 1357 ##
 
 base_dir_1357 <- "1357_Shibata EPIC DNA methylation data package/IDAT FILES"
-targets_name_1357 <- "targets_1357"
 pat_file_1357 <- "1357_Shibata EPIC DNA Methylation Data Package/SAMPLE-ARRAY MAPPING/1357 (Shibata-8).xlsx"
-pat_name_1357 <- "pat_1357"
-work_name_1357 <- "work_1357"
 
-work_1357 <- read.fun(base_dir_1357,targets_name_1357,work_name_1357,pat_file_1357,pat_name_1357)
+work_1357 <- read.fun(base_dir_1357,pat_file_1357)
 
 
 ## 1360 ##
 
 base_dir_1360 <- "1360_Shibata EPIC Data Package/IDAT FILES"
-targets_name_1360 <- "targets_1360"
 pat_file_1360 <- "1360_Shibata EPIC Data Package/SAMPLE-ARRAY MAPPING/1360 (Shibata-8).xlsx"
-pat_name_1360 <- "pat_1360"
-work_name_1360 <- "work_1360"
 
-work_1360 <- read.fun(base_dir_1360,targets_name_1360,work_name_1360,pat_file_1360,pat_name_1360)
+work_1360 <- read.fun(base_dir_1360,pat_file_1360)
 
 ## 1378 ##
 
 base_dir_1378 <- "1378_Shibata EPIC Data Package/IDAT FILES"
-targets_name_1385 <- "targets_1378"
 pat_file_1378 <- "1378_Shibata EPIC Data Package/SAMPLE-ARRAY MAPPING/1378 (Shbata-8).xls"
-pat_name_1378 <- "pat_1378"
-work_name_1378 <- "work_1385"
 
-work_1378 <- read.fun(base_dir_1378,targets_name_1378,work_name_1378,pat_file_1378,pat_name_1378)
+work_1378 <- read.fun(base_dir_1378,pat_file_1378)
+
 
 ## 1385 ##
 
 base_dir_1385 <- "1385_Shibata EPIC Data Package/IDAT FILES"
-targets_name_1385 <- "targets_1385"
 pat_file_1385 <- "1385_Shibata EPIC Data Package/SAMPLE-ARRAY MAPPING/1385 (Shibata-8).xlsx"
-pat_name_1385 <- "pat_1385"
-work_name_1385 <- "work_1385"
 
-work_1385 <- read.fun(base_dir_1385,targets_name_1385,work_name_1385,pat_file_1385,pat_name_1385)
+work_1385 <- read.fun(base_dir_1385,pat_file_1385)
 
  
 ## 1387 ##
 
 base_dir_1387 <- "1387_Shibata EPIC DNA methylation data package/IDAT FILES"
-targets_name_1387 <- "targets_1387"
 pat_file_1387 <- "1387_Shibata EPIC DNA methylation data package/SAMPLE-ARRAY MAPPING/1387 (Shibata-8).xls"
-pat_name_1387 <- "pat_1387"
-work_name_1387 <- "work_1387"
 
-work_1387 <- read.fun(base_dir_1387,targets_name_1387,work_name_1387,pat_file_1387,pat_name_1387)
+work_1387 <- read.fun(base_dir_1387,pat_file_1387)
 
 
 

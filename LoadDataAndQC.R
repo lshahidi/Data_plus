@@ -263,6 +263,8 @@ lumi_1387 <- preprocessIllumina(work_1387,bg.correct = TRUE,
 
 #################################### Quality Control #####################################
 
+####### Density Plots #########
+
 ## 1337 ##
 
 pat_1337 <- read.xls(pat_file_1337)
@@ -380,10 +382,37 @@ legend("top",legend = levels(pat_1387$Sample.ID),
 
 
 
+######### Median Plot ############
+
 qc_1337_noob <- getQC(noob_1337)
-plotQC(qc_1337_noob)
+qc_1345_noob <- getQC(noob_1345)
+qc_1350_noob <- getQC(noob_1350)
+qc_1357_noob <- getQC(noob_1357)
+qc_1360_noob <- getQC(noob_1360)
+qc_1378_noob <- getQC(noob_1378)
+qc_1385_noob <- getQC(noob_1385)
+qc_1387_noob <- getQC(noob_1387)
+
+qc_noob <- rbind(qc_1337_noob,qc_1345_noob,qc_1350_noob,qc_1357_noob,qc_1360_noob,
+                 qc_1378_noob,qc_1385_noob,qc_1387_noob)
+
+par(mfrow=c(1,1))
+plotQC(qc_noob, main="dd")
+
 qc_1337_lumi <- getQC(lumi_1337)
-plotQC(qc_1337_lumi)
+qc_1345_lumi <- getQC(lumi_1345)
+qc_1350_lumi <- getQC(lumi_1350)
+qc_1357_lumi <- getQC(lumi_1357)
+qc_1360_lumi <- getQC(lumi_1360)
+qc_1378_lumi <- getQC(lumi_1378)
+qc_1385_lumi <- getQC(lumi_1385)
+qc_1387_lumi <- getQC(lumi_1387)
+
+qc_lumi <- rbind(qc_1337_lumi,qc_1345_lumi,qc_1350_lumi,qc_1357_lumi,qc_1360_lumi,
+                 qc_1378_lumi,qc_1385_lumi,qc_1387_lumi)
+
+par(mfrow=c(1,1))
+plotQC(qc_lumi)
 
 
 # Plot sex
@@ -392,7 +421,24 @@ sex_1337 <- getSex(gmset_1337)
 plotSex(sex_1337)
 
 # MDS plot
+
+
 mdsPlot(noob_1337)
+
+all_noob <- NULL
+
+all_noob <- combineArrays(noob_1337,noob_1345)
+all_noob <- combineArrays(all_noob,noob_1350)
+all_noob <- combineArrays(all_noob,noob_1357)
+all_noob <- combineArrays(all_noob,noob_1360)
+                          noob_1350,noob_1357,noob_1360,
+                          noob_1378,noob_1385,noob_1387)
+
+
+
+
+
+
 
 qcReport(work_1337_new,sampNames = pat$Sample_No[-7],
          sampGroups = pat$Plate[-7],pdf = "qcReport.pdf")

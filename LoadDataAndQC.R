@@ -3,12 +3,13 @@
 ######### Refer to the RMarkdown file (coming soon) for final results ###########
 #################################################################################
 
-library(xlsx)
+
 library(minfi)
 library(minfiData)
 library(IlluminaHumanMethylationEPICmanifest)
 library(IlluminaHumanMethylationEPICanno.ilm10b2.hg19)
-library(gdata)
+library(gdata) #gdata package needs Perl language installed
+library(RColorBrewer)
 
 # here set the working directory that points to the data folder
 # e.g. the folder with all datasets in it, should contain all the
@@ -99,7 +100,7 @@ work_1357 <- read.fun(base_dir_1357,targets_name_1357,work_name_1357,pat_file_13
 
 base_dir_1360 <- "1360_Shibata EPIC Data Package/IDAT FILES"
 targets_name_1360 <- "targets_1360"
-pat_file_1360 <- "1385_Shibata EPIC Data Package/SAMPLE-ARRAY MAPPING/1360 (Shibata-8).xlsx"
+pat_file_1360 <- "1360_Shibata EPIC Data Package/SAMPLE-ARRAY MAPPING/1360 (Shibata-8).xlsx"
 pat_name_1360 <- "pat_1360"
 work_name_1360 <- "work_1360"
 
@@ -137,8 +138,8 @@ work_name_1387 <- "work_1387"
 work_1387 <- read.fun(base_dir_1387,targets_name_1387,work_name_1387,pat_file_1387,pat_name_1387)
 
 
-#################################### Quality Control #####################################
 
+################################## Bad Sample in 1337 ####################################
 
 # Convert to MethylSet
 mset_1337 <- preprocessRaw(work_1337)
@@ -168,15 +169,129 @@ targets_1337_new$Basename <- file.path(base_dir_1337_new, targets_1337_new$Basen
 work_1337_new <- read.metharray(targets_1337_new$Basename, verbose = TRUE)
 
 
-pat <- read.xls("1337_Shibata EPIC DNA methylation data package/SAMPLE-ARRAY MAPPING/1337 (Shibata-8).xls")
-densityPlot(work_1337_new,sampGroups=pat$Sample_No)
 
-mset_1337_new <- preprocessRaw(work_1337_new)
-rset_1337_new <- ratioConvert(mset_1337_new,what="both")
-beta_1337_new <- 
-qc_1337 <- getQC(mset_1337_new)
-head(qc_1337)
-plotQC(qc_1337)
+############################## Preprocessing/Normalization ###############################
+
+### 1337 ###
+
+## noob ##
+noob_1337 <- preprocessNoob(work_1337_new)
+
+rset_1337_noob <- ratioConvert(noob_1337,what="both")
+beta_1337_noob <- getBeta(rset_1337_noob)
+head(beta_1337_noob)
+# Compare with raw beta values
+head(beta_1337)
+
+
+## Genome Studio ##
+lumi_1337 <- preprocessIllumina(work_1337_new,bg.correct = TRUE,
+                                normalize = "controls",reference = 2)
+rset_1337_lumi <- ratioConvert(lumi_1337,what="both")
+beta_1337_lumi <- getBeta(rset_1337_lumi)
+head(beta_1337_lumi)
+# Compare with noob and raw
+head(beta_1337)
+head(beta_1337_noob)
+
+
+### 1345 ###
+
+## noob ##
+noob_1345 <- preprocessNoob(work_1345)
+
+## Genome Studio ##
+lumi_1345 <- preprocessIllumina(work_1345,bg.correct = TRUE,
+                                normalize = "controls",reference = 2)
+
+
+### 1350 ###
+
+## noob ##
+noob_1350 <- preprocessNoob(work_1350)
+
+## Genome Studio ##
+lumi_1350 <- preprocessIllumina(work_1350,bg.correct = TRUE,
+                                normalize = "controls",reference = 2)
+
+
+### 1357 ###
+
+## noob ##
+noob_1357 <- preprocessNoob(work_1357)
+
+## Genome Studio ##
+lumi_1357 <- preprocessIllumina(work_1357,bg.correct = TRUE,
+                                normalize = "controls",reference = 2)
+
+
+### 1360 ###
+
+## noob ##
+noob_1360 <- preprocessNoob(work_1360)
+
+## Genome Studio ##
+lumi_1360 <- preprocessIllumina(work_1360,bg.correct = TRUE,
+                                normalize = "controls",reference = 2)
+
+
+### 1378 ###
+
+## noob ##
+noob_1378 <- preprocessNoob(work_1378)
+
+## Genome Studio ##
+lumi_1378 <- preprocessIllumina(work_1378,bg.correct = TRUE,
+                                normalize = "controls",reference = 2)
+
+
+### 1385 ###
+
+## noob ##
+noob_1385 <- preprocessNoob(work_1385)
+
+## Genome Studio ##
+lumi_1385 <- preprocessIllumina(work_1385,bg.correct = TRUE,
+                                normalize = "controls",reference = 2)
+
+
+### 1387 ###
+
+## noob ##
+noob_1387 <- preprocessNoob(work_1387)
+
+## Genome Studio ##
+lumi_1387 <- preprocessIllumina(work_1387,bg.correct = TRUE,
+                                normalize = "controls",reference = 2)
+
+
+
+#################################### Quality Control #####################################
+
+# Beta density plot
+pat <- read.xls("1337_Shibata EPIC DNA methylation data package/SAMPLE-ARRAY MAPPING/1337 (Shibata-8).xls")
+
+par(mfrow=c(1,2), mar=c(4,2,4,1))
+densityPlot(noob_1337,sampGroups=pat$Sample_No,main = "Corrected Beta Values Using 'noob'",
+            legend = FALSE)
+legend("topright",legend = levels(pat$Sample_No),text.col=brewer.pal(8,"Dark2"),cex=0.7)
+densityPlot(lumi_1337,sampGroups=pat$Sample_No,main = "Corrected Beta Values Using 'Illumina'",
+            legend = FALSE)
+legend("topright",legend = levels(pat$Sample_No),text.col=brewer.pal(8,"Dark2"),cex=0.7)
+
+qc_1337_noob <- getQC(noob_1337)
+plotQC(qc_1337_noob)
+qc_1337_lumi <- getQC(lumi_1337)
+plotQC(qc_1337_lumi)
+
+
+# Plot sex
+gmset_1337 <- mapToGenome(noob_1337)
+sex_1337 <- getSex(gmset_1337)
+plotSex(sex_1337)
+
+# MDS plot
+mdsPlot(noob_1337)
 
 qcReport(work_1337_new,sampNames = pat$Sample_No[-7],
          sampGroups = pat$Plate[-7],pdf = "qcReport.pdf")

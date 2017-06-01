@@ -73,6 +73,19 @@ work_name_1345 <- "work_1345"
 work_1345 <- read.fun(base_dir_1345,targets_name_1345,work_name_1345,pat_file_1345,pat_name_1345)
 
 
+# Two beadchips in plate 1345, read in seperately
+
+pat_1345 <- read.xls(pat_file_1345)
+targets_1345 <- data.frame(pat_1345[,"Complete.Barcode"])
+colnames(targets_1345) <- 'Basement'
+
+targets_1345$Basement <- file.path(base_dir_1345,targets_1345$Basement)
+# Beadchip 1
+work_1345a <- read.metharray(targets_1345$Basement[1:8],verbose=TRUE)
+# Beadchip 2
+work_1345b <- read.metharray(targets_1345$Basement[9:16],verbose = TRUE)
+
+
 
 ## 1350 ##
 
@@ -199,11 +212,16 @@ head(beta_1337_noob)
 
 ## noob ##
 noob_1345 <- preprocessNoob(work_1345)
+noob_1345a <- preprocessNoob(work_1345a)
+noob_1345b <- preprocessNoob(work_1345b)
 
 ## Genome Studio ##
 lumi_1345 <- preprocessIllumina(work_1345,bg.correct = TRUE,
                                 normalize = "controls",reference = 2)
-
+lumi_1345a <- preprocessIllumina(work_1345a,bg.correct = TRUE,
+                                normalize = "controls",reference = 2)
+lumi_1345b <- preprocessIllumina(work_1345b,bg.correct = TRUE,
+                                normalize = "controls",reference = 2)
 
 ### 1350 ###
 
@@ -268,16 +286,175 @@ lumi_1387 <- preprocessIllumina(work_1387,bg.correct = TRUE,
 
 #################################### Quality Control #####################################
 
-# Beta density plot
-pat <- read.xls("1337_Shibata EPIC DNA methylation data package/SAMPLE-ARRAY MAPPING/1337 (Shibata-8).xls")
+den_plot <- function(pat_file,pat_name,noob,lumi,noob_sep=NULL) {
+  if (pat_name == "pat_1337") {
+    pat_name <- read.xls(pat_file)
+    
+    par(mfrow=c(1,2), mar=c(4,2,4,1))
+    densityPlot(noob,sampGroups=pat_name$Sample_No,main = "Corrected Beta Values Using 'noob'",
+                legend = FALSE)
+    legend("top",legend = levels(factor(pat_name$Sample_No)),text.col=brewer.pal(8,"Dark2"),
+           cex=0.5,horiz = TRUE)
+    densityPlot(lumi,sampGroups=pat_name$Sample_No,main = "Corrected Beta Values Using 'Illumina'",
+                legend = FALSE)
+    legend("top",legend = levels(factor(pat_name$Sample_No)),text.col=brewer.pal(8,"Dark2"),
+           cex=0.5,horiz = TRUE)
+  } else if (pat_name == "pat_1378" | pat_name == "pat_1385") {
+    pat_name <- read.xls(pat_file)
+    
+    par(mfrow=c(1,2), mar=c(4,2,4,1))
+    densityPlot(noob,sampGroups=pat_name$Tube.Label,main = "Corrected Beta Values Using 'noob'",
+                legend = FALSE)
+    legend("top",legend = levels(factor(pat_name$Tube.Label)),text.col=brewer.pal(8,"Dark2"),
+           cex=0.5,horiz = TRUE)
+    densityPlot(lumi,sampGroups=pat_name$Tube.Label,main = "Corrected Beta Values Using 'Illumina'",
+                legend = FALSE)
+    legend("top",legend = levels(factor(pat_name$Tube.label)),text.col=brewer.pal(8,"Dark2"),
+           cex=0.5,horiz = TRUE)
+  } else if (pat_name == "pat_1350") {
+    pat_name <- read.xls(pat_file)
+    
+    par(mfrow=c(1,2), mar=c(4,2,4,1))
+    densityPlot(noob,sampGroups=pat_name$SAMPLE.ID,main = "Corrected Beta Values Using 'noob'",
+                legend = FALSE)
+    legend("top",legend = levels(factor(pat_name$SAMPLE.ID)),text.col=brewer.pal(8,"Dark2"),
+           cex=0.5,horiz = TRUE)
+    densityPlot(lumi,sampGroups=pat_name$SAMPLE.ID,main = "Corrected Beta Values Using 'Illumina'",
+                legend = FALSE)
+    legend("top",legend = levels(factor(pat_name$SAMPLE.ID)),text.col=brewer.pal(8,"Dark2"),
+           cex=0.5,horiz = TRUE)
+  }
+  else  {
+    pat_name <- read.xls(pat_file)
+    
+    par(mfrow=c(1,2), mar=c(4,2,4,1))
+    densityPlot(noob,sampGroups=pat_name$Sample.ID,main = "Corrected Beta Values Using 'noob'",
+                legend = FALSE)
+    legend("top",legend = levels(factor(pat_name$Sample.ID)),text.col=brewer.pal(8,"Dark2"),
+           cex=0.5,horiz = TRUE)
+    densityPlot(lumi,sampGroups=pat_name$Sample.ID,main = "Corrected Beta Values Using 'Illumina'",
+                legend = FALSE)
+    legend("top",legend = levels(factor(pat_name$Sample.ID)),text.col=brewer.pal(8,"Dark2"),
+          cex=0.5,horiz = TRUE)
+  }
+}
 
-par(mfrow=c(1,2), mar=c(4,2,4,1))
-densityPlot(noob_1337,sampGroups=pat$Sample_No,main = "Corrected Beta Values Using 'noob'",
-            legend = FALSE)
-legend("topright",legend = levels(pat$Sample_No),text.col=brewer.pal(8,"Dark2"),cex=0.7)
-densityPlot(lumi_1337,sampGroups=pat$Sample_No,main = "Corrected Beta Values Using 'Illumina'",
-            legend = FALSE)
-legend("topright",legend = levels(pat$Sample_No),text.col=brewer.pal(8,"Dark2"),cex=0.7)
+## 1337 ##
+
+pat_1337 <- read.xls(pat_file_1337)
+
+par(mfrow=c(1,2),mar=c(4,2,4,1))
+densityPlot(noob_1337,sampGroups = pat_1337$Sample_No,
+            main = "Corrected Beta Values Using 'noob'",legend = FALSE)
+legend("topright",legend = levels(pat_1337$Sample_No),
+       text.col = brewer.pal(8,"Dark2"),cex=0.5)
+densityPlot(lumi_1337,sampGroups = pat_1337$Sample_No,
+            main = "Corrected Beta Values Using 'Illumina'",legend = FALSE)
+legend("topright",legend = levels(pat_1337$Sample_No),
+       text.col = brewer.pal(8,"Dark2"),cex=0.5)
+
+
+## 1345 ##
+pat_1345 <- read.xls(pat_file_1345)
+
+par(mfrow=c(1,2),mar=c(4,2,4,1))
+densityPlot(noob_1345,sampGroups = pat_1345$SAMPLE.ID,
+            main = "Corrected Beta Values Using 'noob'",legend = FALSE)
+legend("top",legend = levels(pat_1345$SAMPLE.ID),
+       text.col = brewer.pal(8,"Dark2"),cex=0.5)
+densityPlot(lumi_1345,sampGroups = pat_1345$SAMPLE.ID,
+            main = "Corrected Beta Values Using 'Illumina'",legend = FALSE)
+legend("top",legend = levels(pat_1345$SAMPLE.ID),
+       text.col = brewer.pal(8,"Dark2"),cex=0.5)
+
+## 1350 ##
+pat_1350 <- read.xls(pat_file_1350)
+
+par(mfrow=c(1,2),mar=c(4,2,4,1))
+densityPlot(noob_1350,sampGroups = pat_1350$SAMPLE.ID,
+            main = "Corrected Beta Values Using 'noob'",legend = FALSE)
+legend("topright",legend = levels(pat_1350$SAMPLE.ID),
+       text.col = brewer.pal(8,"Dark2"),cex=0.7)
+densityPlot(lumi_1350,sampGroups = pat_1350$SAMPLE.ID,
+            main = "Corrected Beta Values Using 'Illumina'",legend = FALSE)
+legend("topright",legend = levels(pat_1350$SAMPLE.ID),
+       text.col = brewer.pal(8,"Dark2"),cex=0.7)
+
+
+## 1357 ## 
+pat_1357 <- read.xls(pat_file_1357)
+
+par(mfrow=c(1,2),mar=c(4,2,4,1))
+densityPlot(noob_1357,sampGroups = pat_1357$Sample.ID,
+            main = "Corrected Beta Values Using 'noob'",legend = FALSE)
+legend("top",legend = levels(pat_1357$Sample.ID),
+       text.col = brewer.pal(8,"Dark2"),cex=0.7)
+densityPlot(lumi_1357,sampGroups = pat_1357$Sample.ID,
+            main = "Corrected Beta Values Using 'Illumina'",legend = FALSE)
+legend("top",legend = levels(pat_1357$Sample.ID),
+       text.col = brewer.pal(8,"Dark2"),cex=0.7)
+
+
+
+## 1360 ##
+pat_1360 <- read.xls(pat_file_1360)
+
+par(mfrow=c(1,2),mar=c(4,2,4,1))
+densityPlot(noob_1360,sampGroups = pat_1360$Sample.ID,
+            main = "Corrected Beta Values Using 'noob'",legend = FALSE)
+legend("top",legend = levels(pat_1360$Sample.ID),
+       text.col = brewer.pal(8,"Dark2"),cex=0.7)
+densityPlot(lumi_1360,sampGroups = pat_1360$Sample.ID,
+            main = "Corrected Beta Values Using 'Illumina'",legend = FALSE)
+legend("top",legend = levels(pat_1360$Sample.ID),
+       text.col = brewer.pal(8,"Dark2"),cex=0.7)
+
+
+## 1378 ##
+
+pat_1378 <- read.xls(pat_file_1378)
+
+par(mfrow=c(1,2),mar=c(4,2,4,1))
+densityPlot(noob_1378,sampGroups = pat_1378$Tube.Label,
+            main = "Corrected Beta Values Using 'noob'",legend = FALSE)
+legend("top",legend = levels(pat_1378$Tube.Label),
+       text.col = brewer.pal(8,"Dark2"),cex=0.7)
+densityPlot(lumi_1378,sampGroups = pat_1378$Tube.Label,
+            main = "Corrected Beta Values Using 'Illumina'",legend = FALSE)
+legend("top",legend = levels(pat_1378$Tube.Label),
+       text.col = brewer.pal(8,"Dark2"),cex=0.7)
+
+
+## 1385 ##
+
+pat_1385 <- read.xls(pat_file_1385)
+
+par(mfrow=c(1,2),mar=c(4,2,4,1))
+densityPlot(noob_1385,sampGroups = pat_1385$Tube.Label,
+            main = "Corrected Beta Values Using 'noob'",legend = FALSE)
+legend("top",legend = levels(pat_1385$Tube.Label),
+       text.col = brewer.pal(8,"Dark2"),cex=0.7)
+densityPlot(lumi_1385,sampGroups = pat_1385$Tube.Label,
+            main = "Corrected Beta Values Using 'Illumina'",legend = FALSE)
+legend("top",legend = levels(pat_1385$Tube.Label),
+       text.col = brewer.pal(8,"Dark2"),cex=0.7)
+
+
+## 1387 ##
+
+pat_1387 <- read.xls(pat_file_1387)
+
+par(mfrow=c(1,2),mar=c(4,2,4,1))
+densityPlot(noob_1387,sampGroups = pat_1387$Sample.ID,
+            main = "Corrected Beta Values Using 'noob'",legend = FALSE)
+legend("top",legend = levels(pat_1387$Sample.ID),
+       text.col = brewer.pal(8,"Dark2"),cex=0.7)
+densityPlot(lumi_1387,sampGroups = pat_1387$Sample.ID,
+            main = "Corrected Beta Values Using 'Illumina'",legend = FALSE)
+legend("top",legend = levels(pat_1387$Sample.ID),
+       text.col = brewer.pal(8,"Dark2"),cex=0.7)
+
+
 
 qc_1337_noob <- getQC(noob_1337)
 plotQC(qc_1337_noob)

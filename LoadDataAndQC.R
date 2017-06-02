@@ -428,6 +428,17 @@ all_noob <- combineArrays(all_noob,noob_1387)
 par(mfrow=c(1,1),mar=c(5,5,5,5))
 mdsPlot(all_noob)
 
+all_lumi <- combineArrays(lumi_1337,lumi_1345)
+all_lumi <- combineArrays(all_lumi,lumi_1350)
+all_lumi <- combineArrays(all_lumi,lumi_1357)
+all_lumi <- combineArrays(all_lumi,lumi_1360)
+all_lumi <- combineArrays(all_lumi,lumi_1378)
+all_lumi <- combineArrays(all_lumi,lumi_1385)
+all_lumi <- combineArrays(all_lumi,lumi_1387)
+
+par(mfrow=c(1,1),mar=c(5,5,5,5))
+mdsPlot(all_lumi)
+
 
 
 ## Predicting Sex ##
@@ -437,3 +448,9 @@ all_sex <- getSex(all_gmset)
 plotSex(all_sex)
 
 
+########################### Percent of probes ################################
+# if percent of probes = percent of nonzero mythelation signal
+1-apply(getMeth(mset_1337)==0,2,sum)/dim(beta_1337)[1]
+
+# if percent of probes = percent of nonmissing beta
+1-apply(is.na(beta_1337),2,sum)/dim(beta_1337)[1]

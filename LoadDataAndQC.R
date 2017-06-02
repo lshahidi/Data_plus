@@ -442,12 +442,18 @@ EPICchar <- read.csv("EPIC MANIFEST AND SUPPORTING INFORMATION/MethylationEPIC_v
 # only choose rows with cpg sites in preprocessed data
 DataChar <- EPICchar[EPICchar$IlmnID %in% row.names(noob_1337),]
 
-#then add each sample
-# sample names from patient file
-sampleNames <- unlist(list(pat_1337$Sample_No, pat_1345$SAMPLE.ID, pat_1350$SAMPLE.ID, pat_1357$Sample.ID, pat_1360$Sample.ID, pat_1378$Tube.Label, pat_1385$Tube.Label))
+## then add each sample
 # data from noob preprocessed data
 SampleData <- data.frame(getBeta(noob_1337), getBeta(noob_1345), getBeta(noob_1350), getBeta(noob_1357), getBeta(noob_1360), getBeta(noob_1378), getBeta(noob_1385))
+# rewrite sample names from patient file
+sampleNames <- unlist(list(pat_1337$Sample_No, pat_1345$SAMPLE.ID, pat_1350$SAMPLE.ID, pat_1357$Sample.ID, pat_1360$Sample.ID, pat_1378$Tube.Label, pat_1385$Tube.Label))
 colnames(SampleData) <- sampleNames
 
+# save/load to save time
+save(DataChar,file="myDC.Rdata")
+save(SampleData,file="mySD.Rdata")
+load("myDC.Rdata")
+load("mySD.Rdata")
+
 # merge two
-merge(EPICchar, SampleData)
+cbind(DataChar, SampleData)

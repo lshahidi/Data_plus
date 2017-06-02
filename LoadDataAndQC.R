@@ -33,7 +33,7 @@ setwd("D:/DataPlus2017/Data")
 
 read.fun <- function(base_dir,pat_file) {
   # read in patient data from the .xlsx file
-  pat_name <- read.xls(pat_file,header=TRUE)
+  pat_name <- read.xls(pat_file)
   
   # Extract targets
   targets_name <- data.frame(pat_name[,"Complete.Barcode"])
@@ -267,6 +267,7 @@ lumi_1387 <- preprocessIllumina(work_1387,bg.correct = TRUE,
 ## 1337 ##
 
 pat_1337 <- read.xls(pat_file_1337)
+pat_1337 <- pat_1337[-7,]
 
 par(mfrow=c(1,2),mar=c(4,2,4,1))
 densityPlot(noob_1337,sampGroups = pat_1337$Sample_No,
@@ -427,54 +428,23 @@ mdsPlot(noob_1337)
 all_noob <- NULL
 
 all_noob <- combineArrays(noob_1337,noob_1345)
-all_noob <- combineArrays(all_noob,noob_1350)
-all_noob <- combineArrays(all_noob,noob_1357)
-all_noob <- combineArrays(all_noob,noob_1360)
-                          noob_1350,noob_1357,noob_1360,
-                          noob_1378,noob_1385,noob_1387)
+all_noob <- combineArrays(all_noob,noob_1350,noob_1357,noob_1360,noob_1378,noob_1385,noob_1387)
 
-
-
-
-
-
-
-qcReport(work_1337_new,sampNames = pat$Sample_No[-7],
-         sampGroups = pat$Plate[-7],pdf = "qcReport.pdf")
-
-# this line works to show density curves :)
-densityPlot(work_1337_new, sampGroups = pat$Sample_No, main = "Beta", xlab = "Beta")
-
-# insert more QC
-
-
-## Pre-processing
-
-# built-in preprocessing, we should do this ourselves
-mset <- preprocessIllumina(RGset)
-mset <- mapToGenome(mset)
-
-dim(getBeta(mset, type = "Illumina"))  ##the argument type='Illumina' gives us default procedure
-head(granges(mset))
-
-sex <- getSex(mset)
-plotSex(sex)
-
-plot(as.matrix(getQC(mset)))
 
 
 #################################### Annotation #####################################
 
 # here we select, from the EPIC characterizing data, the columns for:
-# CpG name, Chromosome, ChrLoc, UCSC_RefGene_Name, USCS_RefGene_Group, CpG Island name, Phantom 4, Phantom5
+# ILmnID, CHR, MAPINFO(geneposition), UCSC_RefGene_Name, USCS_RefGene_Group, CpG Island name, Phantom 4, Phantom5
 selectedCols <- c("character", rep("NULL", 10), "character", "integer", rep("NULL", 2), "character", "NULL", rep("character", 2), "NULL", rep("character", 2), rep("NULL", 25))
 EPICchar <- read.csv("EPIC MANIFEST AND SUPPORTING INFORMATION/MethylationEPIC_v-1-0_B1.csv", as.is=TRUE, colClasses = selectedCols)
-rename(EPICchar, c("IlmnID"="CpGName", "MAPINFO"="BasePosition"))
 
-# then add column for each sample for normalized beta values
+# only choose rows with cpg sites in preprocessed data
+DataChar <- EPICchar[EPICchar$IlmnID %in% row.names(noob_1337),]
 
-
-SampleData = data.frame() # add in each sample
+#then add each sample
+sampleNames <- unlist(list(pat_1337$Sample_No, pat_1345$SAMPLE.ID, pat_1350$SAMPLE.ID, pat_1357$Sample.ID, pat_1360$Sample.ID, pat_1378$Tube.Label, pat_1385$Tube.Label))
+SampleData <- data.frame(noob_1337, noob_1345, noob_1350, noob_1357, noob_1360, noob_1378, noob_1385) # add in each sample
 
 # merge two
 merge(EPICchar, SampleData)

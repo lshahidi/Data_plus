@@ -443,8 +443,11 @@ EPICchar <- read.csv("EPIC MANIFEST AND SUPPORTING INFORMATION/MethylationEPIC_v
 DataChar <- EPICchar[EPICchar$IlmnID %in% row.names(noob_1337),]
 
 #then add each sample
+# sample names from patient file
 sampleNames <- unlist(list(pat_1337$Sample_No, pat_1345$SAMPLE.ID, pat_1350$SAMPLE.ID, pat_1357$Sample.ID, pat_1360$Sample.ID, pat_1378$Tube.Label, pat_1385$Tube.Label))
-SampleData <- data.frame(noob_1337, noob_1345, noob_1350, noob_1357, noob_1360, noob_1378, noob_1385) # add in each sample
+# data from noob preprocessed data
+SampleData <- data.frame(getBeta(noob_1337), getBeta(noob_1345), getBeta(noob_1350), getBeta(noob_1357), getBeta(noob_1360), getBeta(noob_1378), getBeta(noob_1385))
+colnames(SampleData) <- sampleNames
 
 # merge two
 merge(EPICchar, SampleData)

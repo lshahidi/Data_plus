@@ -17,10 +17,10 @@ library(RColorBrewer)
 # user can uncomment the setwd for them as we move code around
 
 # Kevin's working directory
-# setwd("/Users/kevinmurgas/Documents/Data+ project/EPIC data")
+ setwd("/Users/kevinmurgas/Documents/Data+ project/EPIC data")
 
 # Yanlin's working directory
-setwd("D:/DataPlus2017/Data")
+# setwd("D:/DataPlus2017/Data")
 
 ####################### Function used for read in data #########################
 

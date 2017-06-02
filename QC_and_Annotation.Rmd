@@ -1,0 +1,505 @@
+---
+title: "QC and Annotation"
+output: word_document
+---
+
+
+
+# Quality Control
+
+#### Density Plots of Beta Values 
+
+```{r, echo=FALSE, warning=FALSE,message=FALSE,fig.width=13,fig.height=5}
+library(minfi)
+library(IlluminaHumanMethylationEPICmanifest)
+library(IlluminaHumanMethylationEPICanno.ilm10b2.hg19)
+library(gdata) #gdata package needs Perl language installed
+library(RColorBrewer)
+
+# here set the working directory that points to the data folder
+# e.g. the folder with all datasets in it, should contain all the
+# 1337-1387 folders
+# please just comment out the directories already here, so each
+# user can uncomment the setwd for them as we move code around
+
+# Kevin's working directory
+# setwd("/Users/kevinmurgas/Documents/Data+ project/EPIC data")
+
+# Yanlin's working directory
+setwd("D:/DataPlus2017/Data")
+
+####################### Function used for read in data #########################
+
+# base_dir = directory containing basenames file
+# targets = name of the dataset after reading in basenames file
+# pat_dir = directory containing patient information file
+# pat_file = WHOLE name (including directory) of the dataset after reading in patient information file
+# work_name = name of the RGChannelSet
+
+read.fun <- function(base_dir,pat_file) {
+  # read in patient data from the .xlsx file
+  pat_name <- read.xls(pat_file,header=TRUE)
+  
+  # Extract targets
+  targets_name <- data.frame(pat_name[,"Complete.Barcode"])
+  colnames(targets_name) <- "Basement"
+  
+  # Read in all .idat files
+  targets_name$Basement <- file.path(base_dir, targets_name$Basement)
+  work_name <- read.metharray(targets_name$Basement, verbose = TRUE)
+  
+  # Push the RGChannelSet to the global environment
+  return(work_name)
+}
+
+
+############################### Read in data  #################################
+
+## 1337 ##
+
+base_dir_1337 <- "1337_Shibata EPIC DNA methylation data package/IDAT FILES"
+pat_file_1337 <- "1337_Shibata EPIC DNA methylation data package/SAMPLE-ARRAY MAPPING/1337 (Shibata-8).xls"
+
+work_1337 <- read.fun(base_dir_1337,pat_file_1337)
+
+
+
+## 1345 ##
+
+base_dir_1345 <- "1345_Shibata EPIC DNA methylation data package/IDAT FILES"
+pat_file_1345 <- "1345_Shibata EPIC DNA methylation data package/SAMPLE-ARRAY MAPPING/1345 (Shibata-16).xlsx"
+
+work_1345 <- read.fun(base_dir_1345,pat_file_1345)
+
+
+# Two beadchips in plate 1345, read in seperately
+
+pat_1345 <- read.xls(pat_file_1345)
+targets_1345 <- data.frame(pat_1345[,"Complete.Barcode"])
+colnames(targets_1345) <- 'Basement'
+
+targets_1345$Basement <- file.path(base_dir_1345,targets_1345$Basement)
+# Beadchip 1
+work_1345a <- read.metharray(targets_1345$Basement[1:8],verbose=TRUE)
+# Beadchip 2
+work_1345b <- read.metharray(targets_1345$Basement[9:16],verbose = TRUE)
+
+
+
+## 1350 ##
+
+base_dir_1350 <- "1350_SHIBATA EPIC DNA METHYLATION DATA PACKAGE/IDAT files"
+pat_file_1350 <- "1350_SHIBATA EPIC DNA METHYLATION DATA PACKAGE/SAMPLE-ARRAY MAPPING/1350 (Shibata-8).xlsx"
+
+work_1350 <- read.fun(base_dir_1350,pat_file_1350)
+ 
+
+## 1357 ##
+
+base_dir_1357 <- "1357_Shibata EPIC DNA methylation data package/IDAT FILES"
+pat_file_1357 <- "1357_Shibata EPIC DNA Methylation Data Package/SAMPLE-ARRAY MAPPING/1357 (Shibata-8).xlsx"
+
+work_1357 <- read.fun(base_dir_1357,pat_file_1357)
+
+
+## 1360 ##
+
+base_dir_1360 <- "1360_Shibata EPIC Data Package/IDAT FILES"
+pat_file_1360 <- "1360_Shibata EPIC Data Package/SAMPLE-ARRAY MAPPING/1360 (Shibata-8).xlsx"
+
+work_1360 <- read.fun(base_dir_1360,pat_file_1360)
+
+## 1378 ##
+
+base_dir_1378 <- "1378_Shibata EPIC Data Package/IDAT FILES"
+pat_file_1378 <- "1378_Shibata EPIC Data Package/SAMPLE-ARRAY MAPPING/1378 (Shbata-8).xls"
+
+work_1378 <- read.fun(base_dir_1378,pat_file_1378)
+
+
+## 1385 ##
+
+base_dir_1385 <- "1385_Shibata EPIC Data Package/IDAT FILES"
+pat_file_1385 <- "1385_Shibata EPIC Data Package/SAMPLE-ARRAY MAPPING/1385 (Shibata-8).xlsx"
+
+work_1385 <- read.fun(base_dir_1385,pat_file_1385)
+
+ 
+## 1387 ##
+
+base_dir_1387 <- "1387_Shibata EPIC DNA methylation data package/IDAT FILES"
+pat_file_1387 <- "1387_Shibata EPIC DNA methylation data package/SAMPLE-ARRAY MAPPING/1387 (Shibata-8).xls"
+
+work_1387 <- read.fun(base_dir_1387,pat_file_1387)
+
+
+
+############################# Bad Sample in 1337 ###############################
+
+# Convert to MethylSet
+mset_1337 <- preprocessRaw(work_1337)
+
+# Check the methylation and unmethylation signals
+# head(getMeth(mset_1337))
+# head(getUnmeth((mset_1337)))
+
+# Convert to RatioSet containing beta values and Mvalues(log(M/U))
+rset_1337 <- ratioConvert(mset_1337,what = "both")
+
+# Get beta
+beta_1337 <- getBeta(rset_1337)
+
+# Check beta values
+# head(beta_1337)
+
+#200360140022_R07C01 (JB) has bad quality
+# dim(beta_1337)[1] == sum(is.na(beta_1337[,7]))
+
+### read in new data without JB ###
+base_dir_1337_new <- "1337_Shibata EPIC DNA methylation data package/IDAT FILES"
+
+targets_1337_new <- read.csv("1337_Shibata EPIC DNA methylation data package/SAMPLE-ARRAY MAPPING/1337_Shibata-targets.csv", as.is = TRUE)
+
+targets_1337_new$Basename <- file.path(base_dir_1337_new, targets_1337_new$Basename)
+work_1337_new <- read.metharray(targets_1337_new$Basename, verbose = TRUE)
+
+
+
+######################## Preprocessing/Normalization ##########################
+
+### 1337 ###
+
+## noob ##
+noob_1337 <- preprocessNoob(work_1337_new)
+
+rset_1337_noob <- ratioConvert(noob_1337,what="both")
+beta_1337_noob <- getBeta(rset_1337_noob)
+
+# check
+# head(beta_1337_noob)
+# Compare with raw beta values
+# head(beta_1337)
+
+
+## Genome Studio ##
+lumi_1337 <- preprocessIllumina(work_1337_new,bg.correct = TRUE,
+                                normalize = "controls",reference = 2)
+rset_1337_lumi <- ratioConvert(lumi_1337,what="both")
+beta_1337_lumi <- getBeta(rset_1337_lumi)
+
+# check
+# head(beta_1337_lumi)
+
+# Compare with noob and raw
+# head(beta_1337)
+# head(beta_1337_noob)
+
+
+### 1345 ###
+
+## noob ##
+noob_1345 <- preprocessNoob(work_1345)
+noob_1345a <- preprocessNoob(work_1345a)
+noob_1345b <- preprocessNoob(work_1345b)
+
+## Genome Studio ##
+lumi_1345 <- preprocessIllumina(work_1345,bg.correct = TRUE,
+                                normalize = "controls",reference = 2)
+lumi_1345a <- preprocessIllumina(work_1345a,bg.correct = TRUE,
+                                normalize = "controls",reference = 2)
+lumi_1345b <- preprocessIllumina(work_1345b,bg.correct = TRUE,
+                                normalize = "controls",reference = 2)
+
+### 1350 ###
+
+## noob ##
+noob_1350 <- preprocessNoob(work_1350)
+
+## Genome Studio ##
+lumi_1350 <- preprocessIllumina(work_1350,bg.correct = TRUE,
+                                normalize = "controls",reference = 2)
+
+
+### 1357 ###
+
+## noob ##
+noob_1357 <- preprocessNoob(work_1357)
+
+## Genome Studio ##
+lumi_1357 <- preprocessIllumina(work_1357,bg.correct = TRUE,
+                                normalize = "controls",reference = 2)
+
+
+### 1360 ###
+
+## noob ##
+noob_1360 <- preprocessNoob(work_1360)
+
+## Genome Studio ##
+lumi_1360 <- preprocessIllumina(work_1360,bg.correct = TRUE,
+                                normalize = "controls",reference = 2)
+
+
+### 1378 ###
+
+## noob ##
+noob_1378 <- preprocessNoob(work_1378)
+
+## Genome Studio ##
+lumi_1378 <- preprocessIllumina(work_1378,bg.correct = TRUE,
+                                normalize = "controls",reference = 2)
+
+
+### 1385 ###
+
+## noob ##
+noob_1385 <- preprocessNoob(work_1385)
+
+## Genome Studio ##
+lumi_1385 <- preprocessIllumina(work_1385,bg.correct = TRUE,
+                                normalize = "controls",reference = 2)
+
+
+### 1387 ###
+
+## noob ##
+noob_1387 <- preprocessNoob(work_1387)
+
+## Genome Studio ##
+lumi_1387 <- preprocessIllumina(work_1387,bg.correct = TRUE,
+                                normalize = "controls",reference = 2)
+
+
+
+############################### Quality Control ################################
+
+####### Density Plots #########
+
+## 1337 ##
+
+pat_1337 <- read.xls("1337_Shibata EPIC DNA methylation data package/SAMPLE-ARRAY MAPPING/1337 (Shibata-8).xls")
+
+par(mfrow=c(1,2),mar=c(4,2,4,1))
+densityPlot(noob_1337,sampGroups = pat_1337$Sample_No,
+            main = "Corrected Beta Values Using 'noob'",legend = FALSE)
+legend("topright",legend = levels(pat_1337$Sample_No),
+       text.col = brewer.pal(8,"Dark2"),cex=0.5)
+densityPlot(lumi_1337,sampGroups = pat_1337$Sample_No,
+            main = "Corrected Beta Values Using 'Illumina'",legend = FALSE)
+legend("topright",legend = levels(pat_1337$Sample_No),
+       text.col = brewer.pal(8,"Dark2"),cex=0.5)
+
+
+## 1345 ##
+pat_1345 <- read.xls("1345_Shibata EPIC DNA methylation data package/SAMPLE-ARRAY MAPPING/1345 (Shibata-16).xlsx")
+
+par(mfrow=c(1,2),mar=c(4,2,4,1))
+densityPlot(noob_1345,sampGroups = pat_1345$SAMPLE.ID,
+            main = "Corrected Beta Values Using 'noob'",legend = FALSE)
+legend("top",legend = levels(pat_1345$SAMPLE.ID),
+       text.col = brewer.pal(8,"Dark2"),cex=0.5)
+densityPlot(lumi_1345,sampGroups = pat_1345$SAMPLE.ID,
+            main = "Corrected Beta Values Using 'Illumina'",legend = FALSE)
+legend("top",legend = levels(pat_1345$SAMPLE.ID),
+       text.col = brewer.pal(8,"Dark2"),cex=0.5)
+
+## 1350 ##
+pat_1350 <- read.xls("1350_SHIBATA EPIC DNA METHYLATION DATA PACKAGE/SAMPLE-ARRAY MAPPING/1350 (Shibata-8).xlsx")
+
+par(mfrow=c(1,2),mar=c(4,2,4,1))
+densityPlot(noob_1350,sampGroups = pat_1350$SAMPLE.ID,
+            main = "Corrected Beta Values Using 'noob'",legend = FALSE)
+legend("topright",legend = levels(pat_1350$SAMPLE.ID),
+       text.col = brewer.pal(8,"Dark2"),cex=0.7)
+densityPlot(lumi_1350,sampGroups = pat_1350$SAMPLE.ID,
+            main = "Corrected Beta Values Using 'Illumina'",legend = FALSE)
+legend("topright",legend = levels(pat_1350$SAMPLE.ID),
+       text.col = brewer.pal(8,"Dark2"),cex=0.7)
+
+
+## 1357 ## 
+pat_1357 <- read.xls("1357_Shibata EPIC DNA Methylation Data Package/SAMPLE-ARRAY MAPPING/1357 (Shibata-8).xlsx")
+
+par(mfrow=c(1,2),mar=c(4,2,4,1))
+densityPlot(noob_1357,sampGroups = pat_1357$Sample.ID,
+            main = "Corrected Beta Values Using 'noob'",legend = FALSE)
+legend("top",legend = levels(pat_1357$Sample.ID),
+       text.col = brewer.pal(8,"Dark2"),cex=0.7)
+densityPlot(lumi_1357,sampGroups = pat_1357$Sample.ID,
+            main = "Corrected Beta Values Using 'Illumina'",legend = FALSE)
+legend("top",legend = levels(pat_1357$Sample.ID),
+       text.col = brewer.pal(8,"Dark2"),cex=0.7)
+
+
+
+## 1360 ##
+pat_1360 <- read.xls("1360_Shibata EPIC Data Package/SAMPLE-ARRAY MAPPING/1360 (Shibata-8).xlsx")
+
+par(mfrow=c(1,2),mar=c(4,2,4,1))
+densityPlot(noob_1360,sampGroups = pat_1360$Sample.ID,
+            main = "Corrected Beta Values Using 'noob'",legend = FALSE)
+legend("top",legend = levels(pat_1360$Sample.ID),
+       text.col = brewer.pal(8,"Dark2"),cex=0.7)
+densityPlot(lumi_1360,sampGroups = pat_1360$Sample.ID,
+            main = "Corrected Beta Values Using 'Illumina'",legend = FALSE)
+legend("top",legend = levels(pat_1360$Sample.ID),
+       text.col = brewer.pal(8,"Dark2"),cex=0.7)
+
+
+## 1378 ##
+
+pat_1378 <- read.xls("1378_Shibata EPIC Data Package/SAMPLE-ARRAY MAPPING/1378 (Shbata-8).xls")
+
+par(mfrow=c(1,2),mar=c(4,2,4,1))
+densityPlot(noob_1378,sampGroups = pat_1378$Tube.Label,
+            main = "Corrected Beta Values Using 'noob'",legend = FALSE)
+legend("top",legend = levels(pat_1378$Tube.Label),
+       text.col = brewer.pal(8,"Dark2"),cex=0.7)
+densityPlot(lumi_1378,sampGroups = pat_1378$Tube.Label,
+            main = "Corrected Beta Values Using 'Illumina'",legend = FALSE)
+legend("top",legend = levels(pat_1378$Tube.Label),
+       text.col = brewer.pal(8,"Dark2"),cex=0.7)
+
+
+## 1385 ##
+
+pat_1385 <- read.xls("1385_Shibata EPIC Data Package/SAMPLE-ARRAY MAPPING/1385 (Shibata-8).xlsx")
+
+par(mfrow=c(1,2),mar=c(4,2,4,1))
+densityPlot(noob_1385,sampGroups = pat_1385$Tube.Label,
+            main = "Corrected Beta Values Using 'noob'",legend = FALSE)
+legend("top",legend = levels(pat_1385$Tube.Label),
+       text.col = brewer.pal(8,"Dark2"),cex=0.7)
+densityPlot(lumi_1385,sampGroups = pat_1385$Tube.Label,
+            main = "Corrected Beta Values Using 'Illumina'",legend = FALSE)
+legend("top",legend = levels(pat_1385$Tube.Label),
+       text.col = brewer.pal(8,"Dark2"),cex=0.7)
+
+
+## 1387 ##
+
+pat_1387 <- read.xls("1387_Shibata EPIC DNA methylation data package/SAMPLE-ARRAY MAPPING/1387 (Shibata-8).xls")
+
+par(mfrow=c(1,2),mar=c(4,2,4,1))
+densityPlot(noob_1387,sampGroups = pat_1387$Sample.ID,
+            main = "Corrected Beta Values Using 'noob'",legend = FALSE)
+legend("top",legend = levels(pat_1387$Sample.ID),
+       text.col = brewer.pal(8,"Dark2"),cex=0.7)
+densityPlot(lumi_1387,sampGroups = pat_1387$Sample.ID,
+            main = "Corrected Beta Values Using 'Illumina'",legend = FALSE)
+legend("top",legend = levels(pat_1387$Sample.ID),
+       text.col = brewer.pal(8,"Dark2"),cex=0.7)
+
+```
+
+
+#### Scatterplots of Median Unmeth Signal versus Medain Meth Signal 
+
+* preprocessNoob *
+
+``` {r,echo=FALSE, warning=FALSE,message=FALSE}
+
+######### Median Plot ############
+
+qc_1337_noob <- getQC(noob_1337)
+qc_1345_noob <- getQC(noob_1345)
+qc_1350_noob <- getQC(noob_1350)
+qc_1357_noob <- getQC(noob_1357)
+qc_1360_noob <- getQC(noob_1360)
+qc_1378_noob <- getQC(noob_1378)
+qc_1385_noob <- getQC(noob_1385)
+qc_1387_noob <- getQC(noob_1387)
+
+qc_noob <- rbind(qc_1337_noob,qc_1345_noob,qc_1350_noob,qc_1357_noob,qc_1360_noob, qc_1378_noob,qc_1385_noob,qc_1387_noob)
+
+par(mfrow=c(1,1),mar=c(5,5,5,5))
+plotQC(qc_noob)
+
+```
+
+* preprocessIllumina *
+
+``` {r,echo=FALSE, warning=FALSE,message=FALSE}
+
+qc_1337_lumi <- getQC(lumi_1337)
+qc_1345_lumi <- getQC(lumi_1345)
+qc_1350_lumi <- getQC(lumi_1350)
+qc_1357_lumi <- getQC(lumi_1357)
+qc_1360_lumi <- getQC(lumi_1360)
+qc_1378_lumi <- getQC(lumi_1378)
+qc_1385_lumi <- getQC(lumi_1385)
+qc_1387_lumi <- getQC(lumi_1387)
+
+qc_lumi <- rbind(qc_1337_lumi,qc_1345_lumi,qc_1350_lumi,qc_1357_lumi,qc_1360_lumi,
+                 qc_1378_lumi,qc_1385_lumi,qc_1387_lumi)
+
+par(mfrow=c(1,1),mar=c(5,5,5,5))
+plotQC(qc_lumi)
+
+```
+
+#### Multidimensional Scaling Plot 
+
+* preprocessNoob 
+
+``` {r,echo=FALSE, warning=FALSE,message=FALSE}
+
+## MDS plot ##
+memory.limit(size=30000)
+all_noob <- combineArrays(noob_1337,noob_1345)
+all_noob <- combineArrays(all_noob,noob_1350)
+all_noob <- combineArrays(all_noob,noob_1357)
+all_noob <- combineArrays(all_noob,noob_1360)
+all_noob <- combineArrays(all_noob,noob_1378)
+all_noob <- combineArrays(all_noob,noob_1385)
+all_noob <- combineArrays(all_noob,noob_1387)
+
+
+par(mfrow=c(1,1),mar=c(5,5,5,5))
+mdsPlot(all_noob)
+
+```
+
+* preprocessIllumina 
+
+``` {r,echo=FALSE, warning=FALSE,message=FALSE}
+
+all_lumi <- combineArrays(lumi_1337,lumi_1345)
+all_lumi <- combineArrays(all_lumi,lumi_1350)
+all_lumi <- combineArrays(all_lumi,lumi_1357)
+all_lumi <- combineArrays(all_lumi,lumi_1360)
+all_lumi <- combineArrays(all_lumi,lumi_1378)
+all_lumi <- combineArrays(all_lumi,lumi_1385)
+all_lumi <- combineArrays(all_lumi,lumi_1387)
+
+par(mfrow=c(1,1),mar=c(5,5,5,5))
+mdsPlot(all_lumi)
+
+```
+
+
+
+
+#### Predicting Sex 
+
+``` {r,echo=FALSE, warning=FALSE,message=FALSE}
+
+all_gmset <- mapToGenome(all_noob)
+all_sex <- getSex(all_gmset)
+plotSex(all_sex)
+
+```
+
+
+
+```{r,echo=FALSE, warning=FALSE,eval=FALSE}
+
+########################### Percent of probes ################################
+# if percent of probes = percent of nonzero mythelation signal
+1-apply(getMeth(mset_1337)==0,2,sum)/dim(beta_1337)[1]
+
+# if percent of probes = percent of nonmissing beta
+1-apply(is.na(beta_1337),2,sum)/dim(beta_1337)[1]
+
+
+```

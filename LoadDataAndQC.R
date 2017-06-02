@@ -396,8 +396,8 @@ qc_1387_noob <- getQC(noob_1387)
 qc_noob <- rbind(qc_1337_noob,qc_1345_noob,qc_1350_noob,qc_1357_noob,qc_1360_noob,
                  qc_1378_noob,qc_1385_noob,qc_1387_noob)
 
-par(mfrow=c(1,1))
-plotQC(qc_noob, main="dd")
+par(mfrow=c(1,1),mar=c(5,5,5,5))
+plotQC(qc_noob)
 
 qc_1337_lumi <- getQC(lumi_1337)
 qc_1345_lumi <- getQC(lumi_1345)
@@ -411,54 +411,29 @@ qc_1387_lumi <- getQC(lumi_1387)
 qc_lumi <- rbind(qc_1337_lumi,qc_1345_lumi,qc_1350_lumi,qc_1357_lumi,qc_1360_lumi,
                  qc_1378_lumi,qc_1385_lumi,qc_1387_lumi)
 
-par(mfrow=c(1,1))
+par(mfrow=c(1,1),mar=c(5,5,5,5))
 plotQC(qc_lumi)
 
-
-# Plot sex
-gmset_1337 <- mapToGenome(noob_1337)
-sex_1337 <- getSex(gmset_1337)
-plotSex(sex_1337)
-
-# MDS plot
-
-
-mdsPlot(noob_1337)
-
-all_noob <- NULL
-
+## MDS plot ##
+memory.limit(size=20000)
 all_noob <- combineArrays(noob_1337,noob_1345)
 all_noob <- combineArrays(all_noob,noob_1350)
 all_noob <- combineArrays(all_noob,noob_1357)
 all_noob <- combineArrays(all_noob,noob_1360)
-                          noob_1350,noob_1357,noob_1360,
-                          noob_1378,noob_1385,noob_1387)
+all_noob <- combineArrays(all_noob,noob_1378)
+all_noob <- combineArrays(all_noob,noob_1385)
+all_noob <- combineArrays(all_noob,noob_1387)
+
+
+par(mfrow=c(1,1),mar=c(5,5,5,5))
+mdsPlot(all_noob)
 
 
 
+## Predicting Sex ##
+
+all_gmset <- mapToGenome(all_noob)
+all_sex <- getSex(all_gmset)
+plotSex(all_sex)
 
 
-
-
-qcReport(work_1337_new,sampNames = pat$Sample_No[-7],
-         sampGroups = pat$Plate[-7],pdf = "qcReport.pdf")
-
-# this line works to show density curves :)
-densityPlot(work_1337_new, sampGroups = pat$Sample_No, main = "Beta", xlab = "Beta")
-
-# insert more QC
-
-
-## Pre-processing
-
-# built-in preprocessing, we should do this ourselves
-mset <- preprocessIllumina(RGset)
-mset <- mapToGenome(mset)
-
-dim(getBeta(mset, type = "Illumina"))  ##the argument type='Illumina' gives us default procedure
-head(granges(mset))
-
-sex <- getSex(mset)
-plotSex(sex)
-
-plot(as.matrix(getQC(mset)))

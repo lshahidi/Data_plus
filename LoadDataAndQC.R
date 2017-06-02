@@ -115,7 +115,6 @@ pat_file_1387 <- "1387_Shibata EPIC DNA methylation data package/SAMPLE-ARRAY MA
 work_1387 <- read.fun(base_dir_1387,pat_file_1387)
 
 
-
 ################################## Bad Sample in 1337 ####################################
 
 # Convert to MethylSet
@@ -292,3 +291,20 @@ sex <- getSex(mset)
 plotSex(sex)
 
 plot(as.matrix(getQC(mset)))
+
+
+#################################### Annotation #####################################
+
+# here we select, from the EPIC characterizing data, the columns for:
+# CpG name, Chromosome, ChrLoc, UCSC_RefGene_Name, USCS_RefGene_Group, CpG Island name, Phantom 4, Phantom5
+selectedCols <- c("character", rep("NULL", 10), "character", "integer", rep("NULL", 2), "character", "NULL", rep("character", 2), "NULL", rep("character", 2), rep("NULL", 25))
+EPICchar <- read.csv("EPIC MANIFEST AND SUPPORTING INFORMATION/MethylationEPIC_v-1-0_B1.csv", as.is=TRUE, colClasses = selectedCols)
+rename(EPICchar, c("IlmnID"="CpGName", "MAPINFO"="BasePosition"))
+
+# then add column for each sample for normalized beta values
+
+
+SampleData = data.frame() # add in each sample
+
+# merge two
+merge(EPICchar, SampleData)

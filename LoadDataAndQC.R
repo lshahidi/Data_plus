@@ -33,7 +33,7 @@ setwd("D:/DataPlus2017/Data")
 
 read.fun <- function(base_dir,pat_file) {
   # read in patient data from the .xlsx file
-  pat_name <- read.xls(pat_file,header=TRUE)
+  pat_name <- read.xls(pat_file)
   
   # Extract targets
   targets_name <- data.frame(pat_name[,"Complete.Barcode"])
@@ -126,7 +126,6 @@ base_dir_1387 <- "1387_Shibata EPIC DNA methylation data package/IDAT FILES"
 pat_file_1387 <- "1387_Shibata EPIC DNA methylation data package/SAMPLE-ARRAY MAPPING/1387 (Shibata-8).xls"
 
 work_1387 <- read.fun(base_dir_1387,pat_file_1387)
-
 
 
 ################################## Bad Sample in 1337 ####################################
@@ -268,6 +267,7 @@ lumi_1387 <- preprocessIllumina(work_1387,bg.correct = TRUE,
 ## 1337 ##
 
 pat_1337 <- read.xls(pat_file_1337)
+pat_1337 <- pat_1337[-7,]
 
 par(mfrow=c(1,2),mar=c(4,2,4,1))
 densityPlot(noob_1337,sampGroups = pat_1337$Sample_No,
@@ -396,8 +396,8 @@ qc_1387_noob <- getQC(noob_1387)
 qc_noob <- rbind(qc_1337_noob,qc_1345_noob,qc_1350_noob,qc_1357_noob,qc_1360_noob,
                  qc_1378_noob,qc_1385_noob,qc_1387_noob)
 
-par(mfrow=c(1,1),mar=c(5,5,5,5))
-plotQC(qc_noob)
+par(mfrow=c(1,1))
+plotQC(qc_noob, main="dd")
 
 qc_1337_lumi <- getQC(lumi_1337)
 qc_1345_lumi <- getQC(lumi_1345)
@@ -411,46 +411,49 @@ qc_1387_lumi <- getQC(lumi_1387)
 qc_lumi <- rbind(qc_1337_lumi,qc_1345_lumi,qc_1350_lumi,qc_1357_lumi,qc_1360_lumi,
                  qc_1378_lumi,qc_1385_lumi,qc_1387_lumi)
 
-par(mfrow=c(1,1),mar=c(5,5,5,5))
+par(mfrow=c(1,1))
 plotQC(qc_lumi)
 
-## MDS plot ##
-memory.limit(size=20000)
+
+# Plot sex
+gmset_1337 <- mapToGenome(noob_1337)
+sex_1337 <- getSex(gmset_1337)
+plotSex(sex_1337)
+
+# MDS plot
+
+
+mdsPlot(noob_1337)
+
+all_noob <- NULL
+
 all_noob <- combineArrays(noob_1337,noob_1345)
-all_noob <- combineArrays(all_noob,noob_1350)
-all_noob <- combineArrays(all_noob,noob_1357)
-all_noob <- combineArrays(all_noob,noob_1360)
-all_noob <- combineArrays(all_noob,noob_1378)
-all_noob <- combineArrays(all_noob,noob_1385)
-all_noob <- combineArrays(all_noob,noob_1387)
-
-
-par(mfrow=c(1,1),mar=c(5,5,5,5))
-mdsPlot(all_noob)
-
-all_lumi <- combineArrays(lumi_1337,lumi_1345)
-all_lumi <- combineArrays(all_lumi,lumi_1350)
-all_lumi <- combineArrays(all_lumi,lumi_1357)
-all_lumi <- combineArrays(all_lumi,lumi_1360)
-all_lumi <- combineArrays(all_lumi,lumi_1378)
-all_lumi <- combineArrays(all_lumi,lumi_1385)
-all_lumi <- combineArrays(all_lumi,lumi_1387)
-
-par(mfrow=c(1,1),mar=c(5,5,5,5))
-mdsPlot(all_lumi)
+all_noob <- combineArrays(all_noob,noob_1350,noob_1357,noob_1360,noob_1378,noob_1385,noob_1387)
 
 
 
-## Predicting Sex ##
+#################################### Annotation #####################################
 
-all_gmset <- mapToGenome(all_noob)
-all_sex <- getSex(all_gmset)
-plotSex(all_sex)
+# here we select, from the EPIC characterizing data, the columns for:
+# ILmnID, CHR, MAPINFO(geneposition), UCSC_RefGene_Name, USCS_RefGene_Group, CpG Island name, Phantom 4, Phantom5
+selectedCols <- c("character", rep("NULL", 10), "character", "integer", rep("NULL", 2), "character", "NULL", rep("character", 2), "NULL", rep("character", 2), rep("NULL", 25))
+EPICchar <- read.csv("EPIC MANIFEST AND SUPPORTING INFORMATION/MethylationEPIC_v-1-0_B1.csv", as.is=TRUE, colClasses = selectedCols)
 
+# only choose rows with cpg sites in preprocessed data
+DataChar <- EPICchar[EPICchar$IlmnID %in% row.names(noob_1337),]
 
-########################### Percent of probes ################################
-# if percent of probes = percent of nonzero mythelation signal
-1-apply(getMeth(mset_1337)==0,2,sum)/dim(beta_1337)[1]
+## then add each sample
+# data from noob preprocessed data
+SampleData <- data.frame(getBeta(noob_1337), getBeta(noob_1345), getBeta(noob_1350), getBeta(noob_1357), getBeta(noob_1360), getBeta(noob_1378), getBeta(noob_1385))
+# rewrite sample names from patient file
+sampleNames <- unlist(list(pat_1337$Sample_No, pat_1345$SAMPLE.ID, pat_1350$SAMPLE.ID, pat_1357$Sample.ID, pat_1360$Sample.ID, pat_1378$Tube.Label, pat_1385$Tube.Label))
+colnames(SampleData) <- sampleNames
 
-# if percent of probes = percent of nonmissing beta
-1-apply(is.na(beta_1337),2,sum)/dim(beta_1337)[1]
+# save/load to save time
+save(DataChar,file="myDC.Rdata")
+save(SampleData,file="mySD.Rdata")
+load("myDC.Rdata")
+load("mySD.Rdata")
+
+# merge two
+cbind(DataChar, SampleData)

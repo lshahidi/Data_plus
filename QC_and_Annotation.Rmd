@@ -395,7 +395,7 @@ legend("top",legend = levels(pat_1387$Sample.ID),
 
 #### Scatterplots of Median Unmeth Signal versus Medain Meth Signal 
 
-* preprocessNoob *
+* preprocessNoob 
 
 ``` {r,echo=FALSE, warning=FALSE,message=FALSE}
 
@@ -413,11 +413,11 @@ qc_1387_noob <- getQC(noob_1387)
 qc_noob <- rbind(qc_1337_noob,qc_1345_noob,qc_1350_noob,qc_1357_noob,qc_1360_noob, qc_1378_noob,qc_1385_noob,qc_1387_noob)
 
 par(mfrow=c(1,1),mar=c(5,5,5,5))
-plotQC(qc_noob)
+plotQC(qc_noob,badSampleCutoff = 9)
 
 ```
 
-* preprocessIllumina *
+* preprocessIllumina 
 
 ``` {r,echo=FALSE, warning=FALSE,message=FALSE}
 
@@ -434,7 +434,7 @@ qc_lumi <- rbind(qc_1337_lumi,qc_1345_lumi,qc_1350_lumi,qc_1357_lumi,qc_1360_lum
                  qc_1378_lumi,qc_1385_lumi,qc_1387_lumi)
 
 par(mfrow=c(1,1),mar=c(5,5,5,5))
-plotQC(qc_lumi)
+plotQC(qc_lumi,badSampleCutoff = 9)
 
 ```
 
@@ -492,14 +492,91 @@ plotSex(all_sex)
 
 
 
-```{r,echo=FALSE, warning=FALSE,eval=FALSE}
+#### Percent of Probes
+
+
+
+```{r,echo=FALSE, warning=FALSE}
 
 ########################### Percent of probes ################################
-# if percent of probes = percent of nonzero mythelation signal
-1-apply(getMeth(mset_1337)==0,2,sum)/dim(beta_1337)[1]
 
-# if percent of probes = percent of nonmissing beta
-1-apply(is.na(beta_1337),2,sum)/dim(beta_1337)[1]
+per_fun <- function (work) {
+  
+  mset <- preprocessRaw(work)
+
+  rset <- ratioConvert(mset,what = "both")
+
+  beta <- getBeta(rset)
+
+  per <- 1-apply(is.na(beta),2,sum)/dim(beta)[1]
+  
+  return(per)
+}
+
+per_1337 <- per_fun(work_1337)
+per_1345 <- per_fun(work_1345)
+per_1350 <- per_fun(work_1350)
+per_1357 <- per_fun(work_1357)
+per_1360 <- per_fun(work_1360)
+per_1378 <- per_fun(work_1378)
+per_1385 <- per_fun(work_1385)
+per_1387 <- per_fun(work_1387)
 
 
+```
+
+
+* Plate 1337
+
+``` {r,echo=FALSE}
+per_1337
+```
+
+
+* Plate 1345
+
+``` {r,echo=FALSE}
+per_1345
+```
+
+
+* Plate 1350
+
+``` {r,echo=FALSE}
+per_1350
+```
+
+
+* Plate 1357
+
+``` {r,echo=FALSE}
+per_1357
+```
+
+
+* Plate 1360
+
+``` {r,echo=FALSE}
+per_1360
+```
+
+
+* Plate 1378
+
+``` {r,echo=FALSE}
+per_1378
+```
+
+
+* Plate 1385
+
+``` {r,echo=FALSE}
+per_1385
+```
+
+
+* Plate 1387
+
+``` {r,echo=FALSE}
+per_1387
 ```

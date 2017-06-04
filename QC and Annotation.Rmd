@@ -3,7 +3,13 @@ title: "QC and Annotation"
 output: word_document
 ---
 
-```{r, echo=FALSE, warning=FALSE,message=FALSE}
+
+
+# Quality Control
+
+#### Density Plots of Beta Values 
+
+```{r, echo=FALSE, warning=FALSE,message=FALSE,fig.width=200,fig.height=100}
 library(minfi)
 library(IlluminaHumanMethylationEPICmanifest)
 library(IlluminaHumanMethylationEPICanno.ilm10b2.hg19)
@@ -263,14 +269,7 @@ noob_1387 <- preprocessNoob(work_1387)
 lumi_1387 <- preprocessIllumina(work_1387,bg.correct = TRUE,
                                 normalize = "controls",reference = 2)
 
-```
 
-
-# Quality Control
-
-#### Density Plots of Beta Values 
-
-``` {r,echo=FALSE, warning=FALSE,message=FALSE}
 
 ############################### Quality Control ################################
 
@@ -278,7 +277,7 @@ lumi_1387 <- preprocessIllumina(work_1387,bg.correct = TRUE,
 
 ## 1337 ##
 
-pat_1337 <- read.xls(pat_file_1337)
+pat_1337 <- read.xls("1337_Shibata EPIC DNA methylation data package/SAMPLE-ARRAY MAPPING/1337 (Shibata-8).xls")
 
 par(mfrow=c(1,2),mar=c(4,2,4,1))
 densityPlot(noob_1337,sampGroups = pat_1337$Sample_No,
@@ -292,7 +291,7 @@ legend("topright",legend = levels(pat_1337$Sample_No),
 
 
 ## 1345 ##
-pat_1345 <- read.xls(pat_file_1345)
+pat_1345 <- read.xls("1345_Shibata EPIC DNA methylation data package/SAMPLE-ARRAY MAPPING/1345 (Shibata-16).xlsx")
 
 par(mfrow=c(1,2),mar=c(4,2,4,1))
 densityPlot(noob_1345,sampGroups = pat_1345$SAMPLE.ID,
@@ -305,7 +304,7 @@ legend("top",legend = levels(pat_1345$SAMPLE.ID),
        text.col = brewer.pal(8,"Dark2"),cex=0.5)
 
 ## 1350 ##
-pat_1350 <- read.xls(pat_file_1350)
+pat_1350 <- read.xls("1350_SHIBATA EPIC DNA METHYLATION DATA PACKAGE/SAMPLE-ARRAY MAPPING/1350 (Shibata-8).xlsx")
 
 par(mfrow=c(1,2),mar=c(4,2,4,1))
 densityPlot(noob_1350,sampGroups = pat_1350$SAMPLE.ID,
@@ -319,7 +318,7 @@ legend("topright",legend = levels(pat_1350$SAMPLE.ID),
 
 
 ## 1357 ## 
-pat_1357 <- read.xls(pat_file_1357)
+pat_1357 <- read.xls("1357_Shibata EPIC DNA Methylation Data Package/SAMPLE-ARRAY MAPPING/1357 (Shibata-8).xlsx")
 
 par(mfrow=c(1,2),mar=c(4,2,4,1))
 densityPlot(noob_1357,sampGroups = pat_1357$Sample.ID,
@@ -334,7 +333,7 @@ legend("top",legend = levels(pat_1357$Sample.ID),
 
 
 ## 1360 ##
-pat_1360 <- read.xls(pat_file_1360)
+pat_1360 <- read.xls("1360_Shibata EPIC Data Package/SAMPLE-ARRAY MAPPING/1360 (Shibata-8).xlsx")
 
 par(mfrow=c(1,2),mar=c(4,2,4,1))
 densityPlot(noob_1360,sampGroups = pat_1360$Sample.ID,
@@ -349,7 +348,7 @@ legend("top",legend = levels(pat_1360$Sample.ID),
 
 ## 1378 ##
 
-pat_1378 <- read.xls(pat_file_1378)
+pat_1378 <- read.xls("1378_Shibata EPIC Data Package/SAMPLE-ARRAY MAPPING/1378 (Shbata-8).xls")
 
 par(mfrow=c(1,2),mar=c(4,2,4,1))
 densityPlot(noob_1378,sampGroups = pat_1378$Tube.Label,
@@ -364,7 +363,7 @@ legend("top",legend = levels(pat_1378$Tube.Label),
 
 ## 1385 ##
 
-pat_1385 <- read.xls(pat_file_1385)
+pat_1385 <- read.xls("1385_Shibata EPIC Data Package/SAMPLE-ARRAY MAPPING/1385 (Shibata-8).xlsx")
 
 par(mfrow=c(1,2),mar=c(4,2,4,1))
 densityPlot(noob_1385,sampGroups = pat_1385$Tube.Label,
@@ -379,7 +378,7 @@ legend("top",legend = levels(pat_1385$Tube.Label),
 
 ## 1387 ##
 
-pat_1387 <- read.xls(pat_file_1387)
+pat_1387 <- read.xls("1387_Shibata EPIC DNA methylation data package/SAMPLE-ARRAY MAPPING/1387 (Shibata-8).xls")
 
 par(mfrow=c(1,2),mar=c(4,2,4,1))
 densityPlot(noob_1387,sampGroups = pat_1387$Sample.ID,
@@ -441,7 +440,7 @@ plotQC(qc_lumi)
 
 #### Multidimensional Scaling Plot 
 
-* preprocessNoob *
+* preprocessNoob 
 
 ``` {r,echo=FALSE, warning=FALSE,message=FALSE}
 
@@ -461,7 +460,7 @@ mdsPlot(all_noob)
 
 ```
 
-* preprocessIllumina *
+* preprocessIllumina 
 
 ``` {r,echo=FALSE, warning=FALSE,message=FALSE}
 

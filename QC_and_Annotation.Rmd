@@ -517,10 +517,10 @@ all_lumi <- combineArrays(all_lumi,lumi_1387)
 
 par(mfrow=c(1,2),mar=c(5,3,5,3))
 mdsPlot(all_noob,numPositions = 1000000,sampGroups = pat$type,
-        main = "MDS Plot Using Noob")
+        main = "MDS Plot Using Noob (including JA)")
 
 mdsPlot(all_lumi,numPositions = 1000000,sampGroups = pat$type,
-        main = "MDS Plot Using Illumina")
+        main = "MDS Plot Using Illumina (including JA)")
 
 ```
 

@@ -168,9 +168,6 @@ noob_1337 <- preprocessNoob(work_1337_new)
 
 rset_1337_noob <- ratioConvert(noob_1337,what="both")
 beta_1337_noob <- getBeta(rset_1337_noob)
-head(beta_1337_noob)
-# Compare with raw beta values
-head(beta_1337)
 
 
 ## Genome Studio ##
@@ -178,10 +175,6 @@ lumi_1337 <- preprocessIllumina(work_1337_new,bg.correct = TRUE,
                                 normalize = "controls",reference = 2)
 rset_1337_lumi <- ratioConvert(lumi_1337,what="both")
 beta_1337_lumi <- getBeta(rset_1337_lumi)
-head(beta_1337_lumi)
-# Compare with noob and raw
-head(beta_1337)
-head(beta_1337_noob)
 
 
 ### 1345 ###
@@ -448,6 +441,8 @@ SampleData <- data.frame(getBeta(noob_1337), getBeta(noob_1345), getBeta(noob_13
 # rewrite sample names from patient file
 sampleNames <- unlist(list(pat_1337$Sample_No, pat_1345$SAMPLE.ID, pat_1350$SAMPLE.ID, pat_1357$Sample.ID, pat_1360$Sample.ID, pat_1378$Tube.Label, pat_1385$Tube.Label))
 colnames(SampleData) <- sampleNames
+# reorder sample data by cpg site (row name)
+SampleData <- SampleData[order(row.names(SampleData)), ]
 
 # save/load to save time
 save(DataChar,file="myDC.Rdata")
@@ -455,5 +450,8 @@ save(SampleData,file="mySD.Rdata")
 load("myDC.Rdata")
 load("mySD.Rdata")
 
-# merge two
-cbind(DataChar, SampleData)
+# merge two, then sort by IlmnID
+FullAnnotation <- cbind(DataChar, SampleData)
+
+save(FullAnnotation,file="myFA.Rdata")
+load("myFA.Rdata")

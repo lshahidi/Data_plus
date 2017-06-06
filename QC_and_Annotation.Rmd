@@ -393,13 +393,10 @@ legend("top",legend = levels(pat_1387$Sample.ID),
 ```
 
 
-#### Scatterplots of Median Unmeth Signal versus Medain Meth Signal 
 
-* preprocessNoob 
+``` {r,echo=FALSE, warning=FALSE,message=FALSE,eval=FALSE}
 
-``` {r,echo=FALSE, warning=FALSE,message=FALSE}
-
-######### Median Plot ############
+######### Median Plot (noob) ############
 
 qc_1337_noob <- getQC(noob_1337)
 qc_1345_noob <- getQC(noob_1345)
@@ -415,11 +412,8 @@ qc_noob <- rbind(qc_1337_noob,qc_1345_noob,qc_1350_noob,qc_1357_noob,qc_1360_noo
 par(mfrow=c(1,1),mar=c(5,5,5,5))
 plotQC(qc_noob,badSampleCutoff = 9)
 
-```
 
-* preprocessIllumina 
-
-``` {r,echo=FALSE, warning=FALSE,message=FALSE}
+######### Median Plot (Illumina) ############
 
 qc_1337_lumi <- getQC(lumi_1337)
 qc_1345_lumi <- getQC(lumi_1345)
@@ -438,11 +432,67 @@ plotQC(qc_lumi,badSampleCutoff = 9)
 
 ```
 
+
 #### Multidimensional Scaling Plot 
 
-* preprocessNoob 
 
-``` {r,echo=FALSE, warning=FALSE,message=FALSE}
+``` {r,echo=FALSE, warning=FALSE,message=FALSE,fig.width=17,fig.height=10}
+
+# Make sure var names are consistent
+colnames(pat_1337)[8] <- "Sample.ID"
+colnames(pat_1345)[8] <- "Sample.ID"
+colnames(pat_1350)[8] <- "Sample.ID"
+colnames(pat_1357)[8] <- "Sample.ID"
+colnames(pat_1360)[8] <- "Sample.ID"
+colnames(pat_1378)[8] <- "Sample.ID"
+colnames(pat_1385)[8] <- "Sample.ID"
+colnames(pat_1387)[8] <- "Sample.ID"
+
+# Create a data frame that contains all patient information
+pat <- rbind(pat_1337[,1:8],pat_1345[,1:8],pat_1350[,1:8],pat_1357[,1:8],
+             pat_1360[,1:8],pat_1378[,1:8],pat_1385[,1:8],pat_1387[,1:8])
+
+# Create a var indicating adenomas/carcinomas in pat
+for(i in (1:dim(pat)[1])) {
+
+     if ((pat$Sample.ID[i] == "KA") | (pat$Sample.ID[i] == "KB") |
+      pat$Sample.ID[i] == "XA" | pat$Sample.ID[i] == "XB" |
+      pat$Sample.ID[i] == "SA" | pat$Sample.ID[i] == "SB" |
+      pat$Sample.ID[i] == "PA" | pat$Sample.ID[i] == "PB" |
+      pat$Sample.ID[i] == "KA LL" | pat$Sample.ID[i] == "KB LL") {
+    
+       pat$type[i] <- "Adenomas"
+    
+      } else if (pat$Sample.ID[i] == "HA" | pat$Sample.ID[i] == "HB" |
+                 pat$Sample.ID[i] == "HN" | pat$Sample.ID[i] == "JA" |
+                 pat$Sample.ID[i] == "JN" | pat$Sample.ID[i] == "KA" |
+                 pat$Sample.ID[i] == "EA" | pat$Sample.ID[i] == "EB" |
+                 pat$Sample.ID[i] == "EN" | pat$Sample.ID[i] == "KA" |
+                 pat$Sample.ID[i] == "KA (new)" | 
+                 pat$Sample.ID[i] == "KB (new)" | 
+                 pat$Sample.ID[i] == "KN (new)" | 
+                 pat$Sample.ID[i] == "WA" | pat$Sample.ID[i] == "WB" |
+                 pat$Sample.ID[i] == "WN" | pat$Sample.ID[i] == "TA" |
+                 pat$Sample.ID[i] == "TB" | pat$Sample.ID[i] == "JB" |
+                 pat$Sample.ID[i] == "KA" | pat$Sample.ID[i] == "CA" |
+                 pat$Sample.ID[i] == "CB" | pat$Sample.ID[i] == "CN" |
+                 pat$Sample.ID[i] == "MA" | pat$Sample.ID[i] == "MB" |
+                 pat$Sample.ID[i] == "JA" | pat$Sample.ID[i] == "OA" |
+                 pat$Sample.ID[i] == "OB" | pat$Sample.ID[i] == "FA" |
+                 pat$Sample.ID[i] == "FB" | pat$Sample.ID[i] == "KA" |
+                 pat$Sample.ID[i] == "CA LL" | pat$Sample.ID[i] == "CB LL" |
+                 pat$Sample.ID[i] == "FA LL" | pat$Sample.ID[i] == "FB LL" |
+                 pat$Sample.ID[i] == "DA" | pat$Sample.ID[i] == "DB" |
+                 pat$Sample.ID[i] == "UA" | pat$Sample.ID[i] == "UB" |
+                 pat$Sample.ID[i] == "HA LL" | pat$Sample.ID[i] == "HB LL") {
+       
+         pat$type[i] <- "Carcinomas"
+         
+      } else {
+         pat$type[i] <- "Other"
+        }
+}
+
 
 ## MDS plot ##
 memory.limit(size=30000)
@@ -455,14 +505,6 @@ all_noob <- combineArrays(all_noob,noob_1385)
 all_noob <- combineArrays(all_noob,noob_1387)
 
 
-par(mfrow=c(1,1),mar=c(5,5,5,5))
-mdsPlot(all_noob)
-
-```
-
-* preprocessIllumina 
-
-``` {r,echo=FALSE, warning=FALSE,message=FALSE}
 
 all_lumi <- combineArrays(lumi_1337,lumi_1345)
 all_lumi <- combineArrays(all_lumi,lumi_1350)
@@ -472,8 +514,13 @@ all_lumi <- combineArrays(all_lumi,lumi_1378)
 all_lumi <- combineArrays(all_lumi,lumi_1385)
 all_lumi <- combineArrays(all_lumi,lumi_1387)
 
-par(mfrow=c(1,1),mar=c(5,5,5,5))
-mdsPlot(all_lumi)
+
+par(mfrow=c(1,2),mar=c(5,3,5,3))
+mdsPlot(all_noob,numPositions = 1000000,sampGroups = pat$type,
+        main = "MDS Plot Using Noob")
+
+mdsPlot(all_lumi,numPositions = 1000000,sampGroups = pat$type,
+        main = "MDS Plot Using Illumina")
 
 ```
 
@@ -579,4 +626,36 @@ per_1385
 
 ``` {r,echo=FALSE}
 per_1387
+```
+
+
+
+
+```{r,echo=FALSE,eval=FALSE}
+################################ Annotation ##################################
+
+# here we select, from the EPIC characterizing data, the columns for:
+# ILmnID, CHR, MAPINFO(geneposition), UCSC_RefGene_Name, USCS_RefGene_Group, CpG Island name, Phantom 4, Phantom5
+selectedCols <- c("character", rep("NULL", 10), "character", "integer", rep("NULL", 2), "character", "NULL", rep("character", 2), "NULL", rep("character", 2), rep("NULL", 25))
+EPICchar <- read.csv("EPIC MANIFEST AND SUPPORTING INFORMATION/MethylationEPIC_v-1-0_B1.csv", as.is=TRUE, colClasses = selectedCols)
+
+# only choose rows with cpg sites in preprocessed data
+DataChar <- EPICchar[EPICchar$IlmnID %in% row.names(noob_1337),]
+
+## then add each sample
+# data from noob preprocessed data
+SampleData <- data.frame(getBeta(noob_1337), getBeta(noob_1345), getBeta(noob_1350), getBeta(noob_1357), getBeta(noob_1360), getBeta(noob_1378), getBeta(noob_1385))
+# rewrite sample names from patient file
+sampleNames <- unlist(list(pat_1337$Sample_No, pat_1345$SAMPLE.ID, pat_1350$SAMPLE.ID, pat_1357$Sample.ID, pat_1360$Sample.ID, pat_1378$Tube.Label, pat_1385$Tube.Label))
+colnames(SampleData) <- sampleNames
+
+# save/load to save time
+save(DataChar,file="myDC.Rdata")
+save(SampleData,file="mySD.Rdata")
+load("myDC.Rdata")
+load("mySD.Rdata")
+
+# merge two
+cbind(DataChar, SampleData)
+
 ```

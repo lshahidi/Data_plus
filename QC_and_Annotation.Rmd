@@ -1,13 +1,11 @@
 ---
-title: "QC and Annotation"
+title: "Quality Control"
 output: word_document
 ---
 
 
 
-# Quality Control
-
-#### Density Plots of Beta Values 
+## Density Plots of Beta Values 
 
 ```{r, echo=FALSE, warning=FALSE,message=FALSE,fig.width=13,fig.height=5}
 library(minfi)
@@ -433,7 +431,7 @@ plotQC(qc_lumi,badSampleCutoff = 9)
 ```
 
 
-#### Multidimensional Scaling/Principle Component Analysis Plot 
+## Multidimensional Scaling/Principle Component Analysis Plot 
 
 
 ``` {r,echo=FALSE, warning=FALSE,message=FALSE,fig.width=17,fig.height=10}
@@ -527,7 +525,7 @@ mdsPlot(all_lumi,numPositions = 1000000,sampGroups = pat$type,
 
 
 
-#### Predicting Sex 
+## Predicting Sex 
 
 ``` {r,echo=FALSE, warning=FALSE,message=FALSE}
 
@@ -539,7 +537,7 @@ plotSex(all_sex)
 
 
 
-#### Percent of Probes
+## Percent of Probes
 
 
 

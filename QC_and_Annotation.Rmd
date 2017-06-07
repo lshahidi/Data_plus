@@ -433,7 +433,7 @@ plotQC(qc_lumi,badSampleCutoff = 9)
 ```
 
 
-#### Multidimensional Scaling Plot 
+#### Multidimensional Scaling/Principle Component Analysis Plot 
 
 
 ``` {r,echo=FALSE, warning=FALSE,message=FALSE,fig.width=17,fig.height=10}
@@ -494,7 +494,7 @@ for(i in (1:dim(pat)[1])) {
 }
 
 
-## MDS plot ##
+## PCA plot ##
 memory.limit(size=30000)
 all_noob <- combineArrays(noob_1337,noob_1345)
 all_noob <- combineArrays(all_noob,noob_1350)
@@ -517,10 +517,10 @@ all_lumi <- combineArrays(all_lumi,lumi_1387)
 
 par(mfrow=c(1,2),mar=c(5,3,5,3))
 mdsPlot(all_noob,numPositions = 1000000,sampGroups = pat$type,
-        main = "MDS Plot Using Noob (including JA)")
+        main = "PCA Plot Using Noob (including JA)")
 
 mdsPlot(all_lumi,numPositions = 1000000,sampGroups = pat$type,
-        main = "MDS Plot Using Illumina (including JA)")
+        main = "PCA Plot Using Illumina (including JA)")
 
 ```
 

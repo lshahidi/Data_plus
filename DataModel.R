@@ -1,6 +1,9 @@
 # this is the first code for modelling our data with lme4
 # will incorporate RStan model as well
 
+
+### INITIALIZE
+
 library(lme4)
 library(arm)
 
@@ -14,6 +17,9 @@ setwd("/Users/kevinmurgas/Documents/Data+ project/EPIC data")
 
 # Yanlin's working directory
 setwd("D:/DataPlus2017/Data")
+
+
+### LOAD DATA
 
 # load fully annotated data (saved from LoadDataAndQC.R)
 load("myFA.Rdata")
@@ -31,5 +37,13 @@ sideLabel <- rep(c("A", "B", "NA"), 5)
 
 firstData <- data.frame(beta=t(firstSite[indices]), patient = patientLabel, tumor=tumorLabel, side=sideLabel)
 
+
+### FIT WITH LMER
+
 fit1 <- lmer(formula = X1 ~ 1|patient/tumor, data=firstData)
-fit1
+summary(fit1)
+
+
+### FIT WITH STAN
+
+# insert fit with stan

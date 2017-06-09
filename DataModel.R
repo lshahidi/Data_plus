@@ -6,6 +6,7 @@
 
 library(lme4)
 library(arm)
+library(rstan)
 
 # here set the working directory that points to the data folder
 # e.g. the folder with annotated data saved as "myFA.Rdata"
@@ -30,10 +31,12 @@ firstSite <- head(FullAnnotation, 1)
 # convert first site to table, using only H E K* W C (tumor+normal)
 # 15 rows, with columns for patient, tumor/normal
 # index in order A,B,N
-indices <- c(11, 12, 13, 17, 18, 16, 20, 21, 19, 25, 26, 24, 33, 34, 32)
-patientLabel <- c(rep("H", 3),rep("E", 3),rep("K*", 3),rep("W", 3),rep("C", 3))
-tumorLabel <- rep(c("T", "T", "N"), 5)
-sideLabel <- rep(c("A", "B", "NA"), 5)
+indices <- c(11, 12, 13, 17, 18, 16, 20, 21, 19, 25, 26, 24, 33, 34, 32, 
+             39, 31, 15)
+patientLabel <- c(rep("H", 3),rep("E", 3),rep("K*", 3),rep("W", 3),rep("C", 3),
+                  rep("J", 3))
+tumorLabel <- rep(c("T", "T", "N"), 6)
+sideLabel <- rep(c("A", "B", "NA"), 6)
 
 firstData <- data.frame(beta=t(firstSite[indices]), patient = patientLabel, tumor=tumorLabel, side=sideLabel)
 

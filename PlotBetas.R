@@ -32,7 +32,7 @@ betaHNor <- FullAnnotation$HN
 betaHTum <- (FullAnnotation$HA + FullAnnotation$HB)/2
 Hdata <- data.frame(x=betaHNor, y=betaHTum)
 ggplot(Hdata,aes(x=x,y=y)) + geom_point(alpha = 0.01) + labs(x="Beta H Normal", y="Beta H Tumor")
-cov(betaHNor, betaHTum)
+cor(betaHNor, betaHTum)
 c(mean(betaHNor), mean(betaHTum), mean(betaHNor-betaHTum))
 
 # E
@@ -40,7 +40,7 @@ betaENor <- FullAnnotation$EN
 betaETum <- (FullAnnotation$EA + FullAnnotation$EB)/2
 Edata <- data.frame(x=betaENor, y=betaETum)
 ggplot(Edata,aes(x=x,y=y)) + geom_point(alpha = 0.01) + labs(x="Beta E Normal", y="Beta E Tumor")
-cov(betaENor, betaETum)
+cor(betaENor, betaETum)
 c(mean(betaENor), mean(betaETum), mean(betaENor-betaETum))
 
 # K*
@@ -48,7 +48,7 @@ betaKnNor <- FullAnnotation$`KN (new)`
 betaKnTum <- (FullAnnotation$`KA (new)` + FullAnnotation$`KB (new)`)/2
 Kndata <- data.frame(x=betaKnNor, y=betaKnTum)
 ggplot(Kndata,aes(x=x,y=y)) + geom_point(alpha = 0.01) + labs(x="Beta K* Normal", y="Beta K* Tumor")
-cov(betaKnNor, betaKnTum)
+cor(betaKnNor, betaKnTum)
 c(mean(betaKnNor), mean(betaKnTum), mean(betaKnNor-betaKnTum))
 
 # W
@@ -56,7 +56,7 @@ betaWNor <- FullAnnotation$WN
 betaWTum <- (FullAnnotation$WA + FullAnnotation$WB)/2
 Wdata <- data.frame(x=betaWNor, y=betaWTum)
 ggplot(Wdata,aes(x=x,y=y)) + geom_point(alpha = 0.01) + labs(x="Beta W Normal", y="Beta W Tumor")
-cov(betaWNor, betaWTum)
+cor(betaWNor, betaWTum)
 c(mean(betaWNor), mean(betaWTum), mean(betaWNor-betaWTum))
 
 # C
@@ -64,7 +64,7 @@ betaCNor <- FullAnnotation$CN
 betaCTum <- (FullAnnotation$CA + FullAnnotation$CB)/2
 Cdata <- data.frame(x=betaCNor, y=betaCTum)
 ggplot(Cdata,aes(x=x,y=y)) + geom_point(alpha = 0.01) + labs(x="Beta C Normal", y="Beta C Tumor")
-cov(betaCNor, betaCTum)
+cor(betaCNor, betaCTum)
 c(mean(betaCNor), mean(betaCTum), mean(betaCNor-betaCTum))
 
 # J
@@ -72,8 +72,9 @@ betaJNor <- FullAnnotation$JN
 betaJTum <- (FullAnnotation[,39] + FullAnnotation$JB)/2
 Jdata <- data.frame(x=betaJNor, y=betaJTum)
 ggplot(Jdata,aes(x=x,y=y)) + geom_point(alpha = 0.01) + labs(x="Beta J Normal", y="Beta J Tumor")
-cov(betaJNor, betaJTum)
+cor(betaJNor, betaJTum)
 c(mean(betaJNor), mean(betaJTum), mean(betaJNor-betaJTum))
+
 
 ### tumor side A vs side B
 
@@ -82,54 +83,186 @@ betaKA <- FullAnnotation$KA
 betaKB <- FullAnnotation$KB
 Ktumor <- data.frame(x=betaKA, y=betaKB)
 ggplot(Ktumor,aes(x=x,y=y)) + geom_point(alpha = 0.01) + labs(x="Beta K Side A", y="Beta K Side B")
-cov(betaKA, betaKB)
+cor(betaKA, betaKB)
+c(mean(betaKA), mean(betaKB), mean(betaKA-betaKB))
 
 # H
 betaHA <- FullAnnotation$HA
 betaHB <- FullAnnotation$HB
 Htumor <- data.frame(x=betaHA, y=betaHB)
 ggplot(Htumor,aes(x=x,y=y)) + geom_point(alpha = 0.01) + labs(x="Beta H Side A", y="Beta H Side B")
-cov(betaHA, betaHB)
+cor(betaHA, betaHB)
 
 # E
 betaEA <- FullAnnotation$EA
 betaEB <- FullAnnotation$EB
 Etumor <- data.frame(x=betaEA, y=betaEB)
 ggplot(Etumor,aes(x=x,y=y)) + geom_point(alpha = 0.01) + labs(x="Beta E Side A", y="Beta E Side B")
-cov(betaEA, betaEB)
+cor(betaEA, betaEB)
 
 # K*
 betaKnA <- FullAnnotation$`KA (new)`
 betaKnB <- FullAnnotation$`KB (new)`
 Kntumor <- data.frame(x=betaKnA, y=betaKnB)
 ggplot(Kntumor,aes(x=x,y=y)) + geom_point(alpha = 0.01) + labs(x="Beta K* Side A", y="Beta K* Side B")
-cov(betaKnA, betaKnB)
+cor(betaKnA, betaKnB)
 
 # X
 betaXA <- FullAnnotation$XA
 betaXB <- FullAnnotation$XB
 Xtumor <- data.frame(x=betaXA, y=betaXB)
 ggplot(Xtumor,aes(x=x,y=y)) + geom_point(alpha = 0.01) + labs(x="Beta X Side A", y="Beta X Side B")
-cov(betaXA, betaXB)
+cor(betaXA, betaXB)
 
 # W
 betaWA <- FullAnnotation$WA
 betaWB <- FullAnnotation$WB
 Wtumor <- data.frame(x=betaWA, y=betaWB)
 ggplot(Wtumor,aes(x=x,y=y)) + geom_point(alpha = 0.01) + labs(x="Beta W Side A", y="Beta W Side B")
-cov(betaWA, betaWB)
+cor(betaWA, betaWB)
 
 # T
 betaTA <- FullAnnotation$TA
 betaTB <- FullAnnotation$TB
 Ttumor <- data.frame(x=betaTA, y=betaTB)
 ggplot(Ttumor,aes(x=x,y=y)) + geom_point(alpha = 0.01) + labs(x="Beta T Side A", y="Beta T Side B")
-cov(betaTA, betaTB)
+cor(betaTA, betaTB)
 
 # S
 betaSA <- FullAnnotation$SA
 betaSB <- FullAnnotation$SB
 Stumor <- data.frame(x=betaSA, y=betaSB)
 ggplot(Stumor,aes(x=x,y=y)) + geom_point(alpha = 0.01) + labs(x="Beta S Side A", y="Beta S Side B")
-cov(betaSA, betaSB)
-mean(betaSA)-mean(betaSB)
+cor(betaSA, betaSB)
+c(mean(betaSA), mean(betaSB), mean(betaSA-betaSB))
+
+# C
+betaCA <- FullAnnotation$CA
+betaCB <- FullAnnotation$CB
+Ctumor <- data.frame(x=betaCA, y=betaCB)
+ggplot(Ctumor,aes(x=x,y=y)) + geom_point(alpha = 0.01) + labs(x="Beta C Side A", y="Beta C Side B")
+cor(betaCA, betaCB)
+c(mean(betaCA), mean(betaCB), mean(betaCA-betaCB))
+
+# M
+betaMA <- FullAnnotation$MA
+betaMB <- FullAnnotation$MB
+Mtumor <- data.frame(x=betaMA, y=betaMB)
+ggplot(Mtumor,aes(x=x,y=y)) + geom_point(alpha = 0.01) + labs(x="Beta M Side A", y="Beta M Side B")
+cor(betaMA, betaMB)
+c(mean(betaMA), mean(betaMB), mean(betaMA-betaMB))
+
+# P
+betaPA <- FullAnnotation$PA
+betaPB <- FullAnnotation$PB
+Ptumor <- data.frame(x=betaPA, y=betaPB)
+ggplot(Ptumor,aes(x=x,y=y)) + geom_point(alpha = 0.01) + labs(x="Beta P Side A", y="Beta P Side B")
+cor(betaPA, betaPB)
+c(mean(betaPA), mean(betaPB), mean(betaPA-betaPB))
+
+# J
+betaJA <- FullAnnotation[,39]
+betaJB <- FullAnnotation$JB
+Jtumor <- data.frame(x=betaJA, y=betaJB)
+ggplot(Jtumor,aes(x=x,y=y)) + geom_point(alpha = 0.01) + labs(x="Beta J Side A", y="Beta J Side B")
+cor(betaJA, betaJB)
+c(mean(betaJA), mean(betaJB), mean(betaJA-betaJB))
+
+# O
+betaOA <- FullAnnotation$OA
+betaOB <- FullAnnotation$OB
+Otumor <- data.frame(x=betaOA, y=betaOB)
+ggplot(Otumor,aes(x=x,y=y)) + geom_point(alpha = 0.01) + labs(x="Beta O Side A", y="Beta O Side B")
+cor(betaOA, betaOB)
+c(mean(betaOA), mean(betaOB), mean(betaOA-betaOB))
+
+# F
+betaFA <- FullAnnotation$FA
+betaFB <- FullAnnotation$FB
+Ftumor <- data.frame(x=betaFA, y=betaFB)
+ggplot(Ftumor,aes(x=x,y=y)) + geom_point(alpha = 0.01) + labs(x="Beta F Side A", y="Beta F Side B")
+cor(betaFA, betaFB)
+c(mean(betaFA), mean(betaFB), mean(betaFA-betaFB))
+
+# D
+betaDA <- FullAnnotation$DA
+betaDB <- FullAnnotation$DB
+Dtumor <- data.frame(x=betaDA, y=betaDB)
+ggplot(Dtumor,aes(x=x,y=y)) + geom_point(alpha = 0.01) + labs(x="Beta D Side A", y="Beta D Side B")
+cor(betaDA, betaDB)
+c(mean(betaDA), mean(betaDB), mean(betaDA-betaDB))
+
+# U
+betaUA <- FullAnnotation$UA
+betaUB <- FullAnnotation$UB
+Utumor <- data.frame(x=betaUA, y=betaUB)
+ggplot(Utumor,aes(x=x,y=y)) + geom_point(alpha = 0.01) + labs(x="Beta U Side A", y="Beta U Side B")
+cor(betaUA, betaUB)
+c(mean(betaUA), mean(betaUB), mean(betaUA-betaUB))
+
+
+### Gland vs Gland
+
+# KA
+betaKAg1 <- FullAnnotation[,60]
+betaKAg2 <- FullAnnotation[,61]
+KAgland <- data.frame(x=betaKAg1, y=betaKAg2)
+ggplot(KAgland,aes(x=x,y=y)) + geom_point(alpha = 0.01) + labs(x="Beta KA Gland 1", y="Beta KA Gland 2")
+cor(betaKAg1, betaKAg2)
+c(mean(betaKAg1), mean(betaKAg2), mean(betaKAg1-betaKAg2))
+
+# KB
+betaKBg1 <- FullAnnotation[,62]
+betaKBg2 <- FullAnnotation[,63]
+KBgland <- data.frame(x=betaKBg1, y=betaKBg2)
+ggplot(KBgland,aes(x=x,y=y)) + geom_point(alpha = 0.01) + labs(x="Beta KB Gland 1", y="Beta KB Gland 2")
+cor(betaKBg1, betaKBg2)
+c(mean(betaKBg1), mean(betaKBg2), mean(betaKBg1-betaKBg2))
+
+# CA
+betaCAg1 <- FullAnnotation[,64]
+betaCAg2 <- FullAnnotation[,65]
+CAgland <- data.frame(x=betaCAg1, y=betaCAg2)
+ggplot(CAgland,aes(x=x,y=y)) + geom_point(alpha = 0.01) + labs(x="Beta CA Gland 1", y="Beta CA Gland 2")
+cor(betaCAg1, betaCAg2)
+c(mean(betaCAg1), mean(betaCAg2), mean(betaCAg1-betaCAg2))
+
+# CB
+betaCBg1 <- FullAnnotation[,66]
+betaCBg2 <- FullAnnotation[,67]
+CBgland <- data.frame(x=betaCBg1, y=betaCBg2)
+ggplot(CBgland,aes(x=x,y=y)) + geom_point(alpha = 0.01) + labs(x="Beta CB Gland 1", y="Beta CB Gland 2")
+cor(betaCBg1, betaCBg2)
+c(mean(betaCBg1), mean(betaCBg2), mean(betaCBg1-betaCBg2))
+
+# FA
+betaFAg1 <- FullAnnotation[,68]
+betaFAg2 <- FullAnnotation[,69]
+FAgland <- data.frame(x=betaFAg1, y=betaFAg2)
+ggplot(FAgland,aes(x=x,y=y)) + geom_point(alpha = 0.01) + labs(x="Beta FA Gland 1", y="Beta FA Gland 2")
+cor(betaFAg1, betaFAg2)
+c(mean(betaFAg1), mean(betaFAg2), mean(betaFAg1-betaFAg2))
+
+# FB
+betaFBg1 <- FullAnnotation[,70]
+betaFBg2 <- FullAnnotation[,71]
+FBgland <- data.frame(x=betaFBg1, y=betaFBg2)
+ggplot(FBgland,aes(x=x,y=y)) + geom_point(alpha = 0.01) + labs(x="Beta FB Gland 1", y="Beta FB Gland 2")
+cor(betaFBg1, betaFBg2)
+c(mean(betaFBg1), mean(betaFBg2), mean(betaFBg1-betaFBg2))
+
+# HA
+betaHAg1 <- FullAnnotation[,76]
+betaHAg2 <- FullAnnotation[,77]
+HAgland <- data.frame(x=betaHAg1, y=betaHAg2)
+ggplot(HAgland,aes(x=x,y=y)) + geom_point(alpha = 0.01) + labs(x="Beta HA Gland 1", y="Beta HA Gland 2")
+cor(betaHAg1, betaHAg2)
+c(mean(betaHAg1), mean(betaHAg2), mean(betaHAg1-betaHAg2))
+
+# HB
+betaHBg1 <- FullAnnotation[,78]
+betaHBg2 <- FullAnnotation[,79]
+HBgland <- data.frame(x=betaHBg1, y=betaHBg2)
+ggplot(HBgland,aes(x=x,y=y)) + geom_point(alpha = 0.01) + labs(x="Beta HB Gland 1", y="Beta HB Gland 2")
+cor(betaHBg1, betaHBg2)
+c(mean(betaHBg1), mean(betaHBg2), mean(betaHBg1-betaHBg2))

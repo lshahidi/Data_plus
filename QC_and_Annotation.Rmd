@@ -632,6 +632,7 @@ per_1387
 ```{r,echo=FALSE,eval=FALSE}
 ################################ Annotation ##################################
 
+
 # here we select, from the EPIC characterizing data, the columns for:
 # ILmnID, CHR, MAPINFO(geneposition), UCSC_RefGene_Name, USCS_RefGene_Group, CpG Island name, Phantom 4, Phantom5
 selectedCols <- c("character", rep("NULL", 10), "character", "integer", rep("NULL", 2), "character", "NULL", rep("character", 2), "NULL", rep("character", 2), rep("NULL", 25))
@@ -642,10 +643,12 @@ DataChar <- EPICchar[EPICchar$IlmnID %in% row.names(noob_1337),]
 
 ## then add each sample
 # data from noob preprocessed data
-SampleData <- data.frame(getBeta(noob_1337), getBeta(noob_1345), getBeta(noob_1350), getBeta(noob_1357), getBeta(noob_1360), getBeta(noob_1378), getBeta(noob_1385))
+SampleData <- data.frame(getBeta(noob_1337), getBeta(noob_1345), getBeta(noob_1350), getBeta(noob_1357), getBeta(noob_1360), getBeta(noob_1378), getBeta(noob_1385), getBeta(noob_1387))
 # rewrite sample names from patient file
-sampleNames <- unlist(list(pat_1337$Sample_No, pat_1345$SAMPLE.ID, pat_1350$SAMPLE.ID, pat_1357$Sample.ID, pat_1360$Sample.ID, pat_1378$Tube.Label, pat_1385$Tube.Label))
-colnames(SampleData) <- sampleNames
+sampleNames <- unlist(list(pat_1337$Sample_No, pat_1345$SAMPLE.ID, pat_1350$SAMPLE.ID, pat_1357$Sample.ID, pat_1360$Sample.ID, pat_1378$Tube.Label, pat_1385$Tube.Label, pat_1387$Sample.ID))
+colnames(SampleData) <- sampleNames[-7]
+# reorder sample data by cpg site (row name)
+SampleData <- SampleData[order(row.names(SampleData)), ]
 
 # save/load to save time
 save(DataChar,file="myDC.Rdata")
@@ -653,7 +656,10 @@ save(SampleData,file="mySD.Rdata")
 load("myDC.Rdata")
 load("mySD.Rdata")
 
-# merge two
-cbind(DataChar, SampleData)
+# merge two, then sort by IlmnID
+FullAnnotation <- cbind(DataChar, SampleData)
+
+save(FullAnnotation,file="myFA.Rdata")
+load("myFA.Rdata")
 
 ```

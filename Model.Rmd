@@ -1,0 +1,20 @@
+---
+title: "Model"
+output: word_document
+---
+
+
+
+# Model Setup
+
+Let i = Observation, j = patient, k = tissue(normal/tumor).
+
+$$y_{i,j,k} = \alpha_{j,k} + \epsilon^y_i,\epsilon^y_i \sim N(0,\sigma^2_y)$$
+
+$$\alpha_{j,k} = \beta_j + \epsilon^\alpha_k,\epsilon^\alpha_k \sim N(0,\sigma^2_\alpha)$$
+
+$$\beta_j = \gamma + \epsilon^\beta_j, \epsilon^\beta_j \sim N(0,\sigma^2_\beta)$$
+
+
+
+# Using lmer

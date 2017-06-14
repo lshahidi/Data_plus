@@ -28,23 +28,32 @@ load("myFA.Rdata")
 # extract CpG site 1 to start
 firstSite <- head(FullAnnotation, 1)
 
-# convert first site to table, using only H E K* W C (tumor+normal)
-# 15 rows, with columns for patient, tumor/normal
+# convert first site to table, using only H E K* W C J (tumor+normal)
+# 18 rows, with columns for patient, tumor/normal
 # index in order A,B,N
 indices <- c(11, 12, 13, 17, 18, 16, 20, 21, 19, 25, 26, 24, 33, 34, 32, 
              39, 31, 15)
 patientLabel <- c(rep("H", 3),rep("E", 3),rep("K*", 3),rep("W", 3),rep("C", 3),
                   rep("J", 3))
 tissueLabel <- rep(c("T", "T", "N"), 6)
-sideLabel <- rep(c("A", "B", "NA"), 6)
+sideLabel <- rep(c("A", "B", ""), 6)
+
+# here we use all samples
+indices <- c(9:13, 15:39,46,47,57,58,72:75)
+patientLabel <- substr(colnames(firstSite[indices]),1,1)
+patientLabel[10:12] <- "K*"
+sideLabel <- substr(colnames(firstSite[indices]),2,2)
+tissueLabel <- sideLabel
+tissueLabel[tissueLabel %in% c("A","B")] <- "T"   #replace A and B with T
 
 firstData <- data.frame(beta=t(firstSite[indices]), patient = patientLabel, tissue=tissueLabel, side=sideLabel)
 
 
 ### FIT WITH LMER
 
-fit1 <- lmer(formula = X1 ~ 1 + (1|patient/tissue), data=firstData)
+fit1 <- lmer(X1 ~ patient + (1|patient:tissue), firstData)
 summary(fit1)
+plot(fixef(fit1)+0.100757497)
 
 
 ### FIT WITH STAN

@@ -52,9 +52,8 @@ firstData <- data.frame(beta=t(firstSite[indices]), patient = patientLabel, tiss
 ### FIT WITH LMER
 
 fit1 <- lmer(X1 ~ patient + (1|patient:tissue), firstData)
-summary(fit1)
-plot(fixef(fit1)+0.100757497)
-
+barplot(fixef(fit1)[-1]+fixef(fit1)[1], main="Patient Fixed Effects", xlab="Patient", ylab=expression(paste("Intercept Estimate (",beta[k],")")), names.arg=c("D","E","F","H","J","K","K*","M","O","P","S","T","U","W","X"), cex.names=0.7)
+barplot(t(as.vector(ranef(fit1)$'patient:tissue')), main="Patient:Tissue Random Effects", xlab="Patient:Tissue", ylab=expression(paste("Intercept Estimate (",alpha[jk],")")), cex.names = 0.7, las=2)
 
 ### FIT WITH STAN
 

@@ -35,15 +35,15 @@ indices <- c(11, 12, 13, 17, 18, 16, 20, 21, 19, 25, 26, 24, 33, 34, 32,
              39, 31, 15)
 patientLabel <- c(rep("H", 3),rep("E", 3),rep("K*", 3),rep("W", 3),rep("C", 3),
                   rep("J", 3))
-tumorLabel <- rep(c("T", "T", "N"), 6)
+tissueLabel <- rep(c("T", "T", "N"), 6)
 sideLabel <- rep(c("A", "B", "NA"), 6)
 
-firstData <- data.frame(beta=t(firstSite[indices]), patient = patientLabel, tumor=tumorLabel, side=sideLabel)
+firstData <- data.frame(beta=t(firstSite[indices]), patient = patientLabel, tissue=tissueLabel, side=sideLabel)
 
 
 ### FIT WITH LMER
 
-fit1 <- lmer(formula = X1 ~ 1|patient/tumor, data=firstData)
+fit1 <- lmer(formula = X1 ~ 1 + (1|patient/tissue), data=firstData)
 summary(fit1)
 
 

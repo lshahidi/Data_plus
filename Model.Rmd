@@ -7,18 +7,19 @@ output: word_document
 
 # Model Setup
 
-Let i = Observation, j = patient, k = tissue(normal/tumor).
+Let i = Observation, j = tissue(normal/tumor), k = patient.
 
 $$y_{i,j,k} = \alpha_{j,k} + \epsilon^y_i,\epsilon^y_i \sim N(0,\sigma^2_y)$$
 
-$$\alpha_{j,k} = \beta_j + \epsilon^\alpha_k,\epsilon^\alpha_k \sim N(0,\sigma^2_\alpha)$$
+$$\alpha_{j,k} = \beta_k + \epsilon^\alpha_j,\epsilon^\alpha_j \sim N(0,\sigma^2_\alpha)$$
 
-$$\beta_j = \gamma + \epsilon^\beta_j, \epsilon^\beta_j \sim N(0,\sigma^2_\beta)$$
+$$\beta_k = \gamma + \epsilon^\beta_k, \epsilon^\beta_k \sim N(0,\sigma^2_\beta)$$
 
 
 
 # Using lmer
 
+<<<<<<< HEAD
 ```{r,echo=FALSE, fig.height=3.8}
 library(lme4)
 library(arm)
@@ -55,3 +56,10 @@ barplot(t(as.vector(ranef(fit1)$'patient:tissue')), main="Patient:Tissue Random 
 
 ```
 
+=======
+```{r,echo=FALSE}
+
+
+
+```
+>>>>>>> c1143919ab744346f2e9ac81171d719f6659d53c

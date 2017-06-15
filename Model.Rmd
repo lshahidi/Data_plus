@@ -19,7 +19,6 @@ $$\beta_k = \gamma + \epsilon^\beta_k, \epsilon^\beta_k \sim N(0,\sigma^2_\beta)
 
 # Using lmer
 
-<<<<<<< HEAD
 ```{r,echo=FALSE, fig.height=3.8}
 library(lme4)
 library(arm)
@@ -55,11 +54,3 @@ barplot(t(as.vector(ranef(fit1)$'patient:tissue')), main="Patient:Tissue Random 
 
 
 ```
-
-=======
-```{r,echo=FALSE}
-
-
-
-```
->>>>>>> c1143919ab744346f2e9ac81171d719f6659d53c

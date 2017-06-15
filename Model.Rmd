@@ -22,13 +22,13 @@ $$\beta_k = \gamma + \epsilon^\beta_k, \epsilon^\beta_k \sim N(0,\sigma^2_\beta)
 <<<<<<< HEAD
 ```{r,echo=FALSE, fig.height=3.8}
 library(lme4)
-library(arm)
+# library(arm)
 
 # Kevin's working directory
-setwd("/Users/kevinmurgas/Documents/Data+ project/EPIC data")
+# setwd("/Users/kevinmurgas/Documents/Data+ project/EPIC data")
 
 # Yanlin's working directory
-# setwd("D:/DataPlus2017/Data")
+setwd("D:/DataPlus2017/Data")
 
 # load fully annotated data (saved from LoadDataAndQC.R)
 load("myFA.Rdata")
@@ -56,10 +56,3 @@ barplot(t(as.vector(ranef(fit1)$'patient:tissue')), main="Patient:Tissue Random 
 
 ```
 
-=======
-```{r,echo=FALSE}
-
-
-
-```
->>>>>>> c1143919ab744346f2e9ac81171d719f6659d53c

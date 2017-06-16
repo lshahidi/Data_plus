@@ -484,7 +484,8 @@ for(i in (1:dim(pat)[1])) {
                  pat$Sample.ID[i] == "FA LL" | pat$Sample.ID[i] == "FB LL" |
                  pat$Sample.ID[i] == "DA" | pat$Sample.ID[i] == "DB" |
                  pat$Sample.ID[i] == "UA" | pat$Sample.ID[i] == "UB" |
-                 pat$Sample.ID[i] == "HA LL" | pat$Sample.ID[i] == "HB LL") {
+                 pat$Sample.ID[i] == "HALL-1" | pat$Sample.ID[i] == "HALL-2"|
+                 pat$Sample.ID[i] == "HBLL-3" | pat$Sample.ID[i] == "HBLL-4") {
        
          pat$type[i] <- "Carcinomas"
          
@@ -593,7 +594,8 @@ for(i in (1:dim(pat)[1])) {
                  pat$Sample.ID[i] == "FA LL" | pat$Sample.ID[i] == "FB LL" |
                  pat$Sample.ID[i] == "DA" | pat$Sample.ID[i] == "DB" |
                  pat$Sample.ID[i] == "UA" | pat$Sample.ID[i] == "UB" |
-                 pat$Sample.ID[i] == "HA LL" | pat$Sample.ID[i] == "HB LL") {
+                 pat$Sample.ID[i] == "HALL-1" | pat$Sample.ID[i] == "HALL-2"|
+                 pat$Sample.ID[i] == "HBLL-3" | pat$Sample.ID[i] == "HBLL-4") {
        
          pat$type[i] <- "Carcinomas"
          
@@ -676,6 +678,8 @@ colnames(pat_1387)[8] <- "Sample.ID"
 pat <- rbind(pat_1337[,1:8],pat_1345[,1:8],pat_1350[,1:8],pat_1357[,1:8],
              pat_1360[,1:8],pat_1378[,1:8],pat_1385[,1:8],pat_1387[,1:8])
 
+pat <- pat[-c(33:38,41:49,52),]
+
 # Create a var indicating adenomas/carcinomas in pat
 for(i in (1:dim(pat)[1])) {
 
@@ -708,13 +712,13 @@ for(i in (1:dim(pat)[1])) {
                  pat$Sample.ID[i] == "FA LL" | pat$Sample.ID[i] == "FB LL" |
                  pat$Sample.ID[i] == "DA" | pat$Sample.ID[i] == "DB" |
                  pat$Sample.ID[i] == "UA" | pat$Sample.ID[i] == "UB" |
-                 pat$Sample.ID[i] == "HA LL" | pat$Sample.ID[i] == "HB LL") {
+                 pat$Sample.ID[i] == "HALL-1" | pat$Sample.ID[i] == "HALL-2"|
+                 pat$Sample.ID[i] == "HBLL-3" | pat$Sample.ID[i] == "HBLL-4") {
        
          pat$type[i] <- "Carcinomas"
          
       } 
 }
-
 
 ## PCA plot ##
 memory.limit(size=30000)

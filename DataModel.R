@@ -97,6 +97,30 @@ barplot(ranef(fit2)$patient$'(Intercept)'+ranef(fit2)$patient$tInd, main="Both R
 #         main = "PCA Plot Using Noob (with JA)", pch=16,cex=0.5)
 
 
+
+
+
 ### FIT WITH STAN
 
-# insert fit with stan
+# Create tumor indicator
+
+for (i in 1:dim(firstData)[1]) {
+  if (firstData$tissue[i] == "T") {
+    firstData$tInd[i] = 1
+  } else {
+    firstData$tInd[i] = 0
+  }
+}
+
+# Logit transform on beta values
+
+firstData$y <- log(firstData$X1/(1-firstData$X1))
+
+
+# Global mean
+
+ybar <- mean(firstData$y)
+
+# Variance
+
+sigmasq_y <- var(firstData$y)

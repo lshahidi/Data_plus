@@ -57,6 +57,30 @@ barplot(t(as.vector(ranef(fit1)$'patient:tissue')), main="Patient:Tissue Random 
 
 barplot(fixef(fit1), main="Patient Fixed Effects", xlab="Patient", ylab=expression(paste("Intercept Estimate (",beta[k],")")), names.arg=c("C", "D","E","F","H","J","K","K*","M","O","P","S","T","U","W","X"), cex.names=0.7)
 
+
+
+
 ### FIT WITH STAN
 
-# insert fit with stan
+# Create tumor indicator
+
+for (i in 1:dim(firstData)[1]) {
+  if (firstData$tissue[i] == "T") {
+    firstData$tInd[i] = 1
+  } else {
+    firstData$tInd[i] = 0
+  }
+}
+
+# Logit transform on beta values
+
+firstData$y <- log(firstData$X1/(1-firstData$X1))
+
+
+# Global mean
+
+ybar <- mean(firstData$y)
+
+# Variance
+
+sigmasq_y <- var(firstData$y)

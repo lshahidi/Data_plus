@@ -4,6 +4,7 @@
 
 library(ggplot2)
 library(minfi)
+library(MASS)
 
 # here set the working directory that points to the data folder
 # e.g. the folder with annotated data saved as "myFA.Rdata"
@@ -294,3 +295,96 @@ HBgland <- data.frame(x=betaHBg1, y=betaHBg2)
 ggplot(HBgland,aes(x=x,y=y)) + geom_point(alpha = 0.01) + labs(x="Beta HB Gland 1", y="Beta HB Gland 2")
 cor(betaHBg1, betaHBg2)
 c(mean(betaHBg1), mean(betaHBg2), mean(betaHBg1-betaHBg2))
+
+
+### Comparisons using only pat C and H
+# C
+betaCNor <- FullAnnotation$CN
+betaCA <- FullAnnotation$CA
+betaCB <- FullAnnotation$CB
+betaCAg1 <- FullAnnotation[,64]
+betaCAg2 <- FullAnnotation[,65]
+betaCBg1 <- FullAnnotation[,66]
+betaCBg2 <- FullAnnotation[,67]
+
+# H
+betaHNor <- FullAnnotation$HN
+betaHA <- FullAnnotation$HA
+betaHB <- FullAnnotation$HB
+betaHAg1 <- FullAnnotation[,76]
+betaHAg2 <- FullAnnotation[,77]
+betaHBg1 <- FullAnnotation[,78]
+betaHBg2 <- FullAnnotation[,79]
+
+
+CvHnorm <- data.frame(x=betaCNor, y=betaHNor)
+ggplot(CvHnorm,aes(x=x,y=y)) + geom_point(alpha = 0.01) + labs(x="Beta C Normal", y="Beta H Normal")
+cor(betaCNor, betaHNor)
+
+CvHA <- data.frame(x=betaCA, y=betaHA)
+ggplot(CvHA,aes(x=x,y=y)) + geom_point(alpha = 0.01) + labs(x="Beta CA", y="Beta HA")
+cor(betaCA, betaHA)
+
+CvHB <- data.frame(x=betaCB, y=betaHB)
+ggplot(CvHB,aes(x=x,y=y)) + geom_point(alpha = 0.01) + labs(x="Beta CB", y="Beta HB")
+cor(betaCB, betaHB)
+
+CvHAg1 <- data.frame(x=betaCAg1, y=betaHAg1)
+ggplot(CvHAg1,aes(x=x,y=y)) + geom_point(alpha = 0.01) + labs(x="Beta CA gland 1", y="Beta HA gland 1")
+cor(betaCAg1, betaHAg1)
+
+CvHAg2 <- data.frame(x=betaCAg2, y=betaHAg2)
+ggplot(CvHAg2,aes(x=x,y=y)) + geom_point(alpha = 0.01) + labs(x="Beta CA gland 2", y="Beta HA gland 2")
+cor(betaCAg2, betaHAg2)
+
+CvHBg1 <- data.frame(x=betaCBg1, y=betaHBg1)
+ggplot(CvHBg1,aes(x=x,y=y)) + geom_point(alpha = 0.01) + labs(x="Beta CB gland 1", y="Beta HB gland 1")
+cor(betaCBg1, betaHBg1)
+
+CvHBg2 <- data.frame(x=betaCBg2, y=betaHBg2)
+ggplot(CvHBg2,aes(x=x,y=y)) + geom_point(alpha = 0.01) + labs(x="Beta CB gland 2", y="Beta HB gland 2")
+cor(betaCBg2, betaHBg2)
+
+
+### CONTOUR PLOT
+# right now this is not working for contour plot
+
+z <- kde2d(HBgland[,1], HBgland[,2], h=0.5, n=30)
+filled.contour(z, nlevels=15)
+
+# C
+betaCNor <- FullAnnotation$CN
+betaCA <- FullAnnotation$CA
+betaCB <- FullAnnotation$CB
+betaCTum <- (betaCA+betaCB)/2
+Ctissue <- data.frame(x=betaCNor, y=betaCTum)
+zCtis <- kde2d(Ctissue[,1], Ctissue[,2], h=0.5, n=40)
+filled.contour(zCtis, nlevels=20, xlab="Normal", ylab="Tumor")
+
+Ctumor <- data.frame(x=betaCA, y=betaCB)
+zCtum <- kde2d(Ctumor[,1], Ctumor[,2], h=0.5, n=40)
+filled.contour(zCtum, zlim= ,nlevels=20, xlab="Bulk A", ylab="Bulk B")
+
+cor(betaCNor, betaCTum)
+c(mean(betaCNor), mean(betaCTum), mean(betaCNor-betaCTum))
+
+
+
+ggplot(Ctumor,aes(x=x,y=y)) + geom_point(alpha = 0.01) + labs(x="Beta C Side A", y="Beta C Side B")
+cor(betaCA, betaCB)
+c(mean(betaCA), mean(betaCB), mean(betaCA-betaCB))
+
+
+# H
+betaHNor <- FullAnnotation$HN
+betaHTum <- (FullAnnotation$HA + FullAnnotation$HB)/2
+Hdata <- data.frame(x=betaHNor, y=betaHTum)
+ggplot(Hdata,aes(x=x,y=y)) + geom_point(alpha = 0.01) + labs(x="Beta H Normal", y="Beta H Tumor")
+cor(betaHNor, betaHTum)
+c(mean(betaHNor), mean(betaHTum), mean(betaHNor-betaHTum))
+
+betaHA <- FullAnnotation$HA
+betaHB <- FullAnnotation$HB
+Htumor <- data.frame(x=betaHA, y=betaHB)
+ggplot(Htumor,aes(x=x,y=y)) + geom_point(alpha = 0.01) + labs(x="Beta H Side A", y="Beta H Side B")
+cor(betaHA, betaHB)

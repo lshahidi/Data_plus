@@ -57,48 +57,25 @@ firstData <- data.frame(beta=t(firstSite[indices]), patient = patientLabel, tiss
 
 fit1 <- lmer(X1 ~ (1|patient) + tInd + (tInd-1|patient), firstData)
 fit2 <- lmer(X1 ~ tInd + (tInd|patient), firstData)
+fit3 <- lmer(X1 ~ (tInd|patient), firstData)
 
 patLabs <- c("C", "D","E","F","H","J","K","K*","M","O","P","S","T","U","W","X")
-barplot(fixef(fit1), main="Fixed Effects", xlab="Effect", ylab="Intercept Estimate", names.arg=c("mu","betaT"))
-barplot(ranef(fit1)$patient$'(Intercept)', main="Patient Random Effect", xlab="Patient", ylab=expression(paste("Intercept Estimate (",b[i],")")), cex.names = 0.7, las=2)
-barplot(ranef(fit1)$patient$tInd, main="Patient,Tumor Slope Random Effect", xlab="Patient", ylab=expression(paste("Slope Estimate (",b[iT],")")), cex.names = 0.7, las=2)
+# barplot(fixef(fit1), main="Fixed Effects", xlab="Effect", ylab="Intercept Estimate", names.arg=c("mu","betaT"))
+# barplot(ranef(fit1)$patient$'(Intercept)', main="Patient Random Effect", xlab="Patient", ylab=expression(paste("Intercept Estimate (",b[i],")")), cex.names = 0.7, las=2)
+# barplot(ranef(fit1)$patient$tInd, main="Patient,Tumor Slope Random Effect", xlab="Patient", ylab=expression(paste("Slope Estimate (",b[iT],")")), cex.names = 0.7, las=2)
 
-barplot(fixef(fit1), main="Fixed Effects", xlab="Effect", ylab="Intercept Estimate", names.arg=c("mu","betaT"))
-barplot(fixef(fit2), main="Fixed Effects", xlab="Effect", ylab="Intercept Estimate", names.arg=c("mu","betaT"))
-barplot(ranef(fit1)$patient$'(Intercept)', main="Patient Random Effect", xlab="Patient", ylab=expression(paste("Intercept Estimate (",b[i],")")), names.arg = patLabs, cex.names = 0.7)
-barplot(ranef(fit2)$patient$'(Intercept)', main="Patient Random Effect", xlab="Patient", ylab=expression(paste("Intercept Estimate (",b[i],")")), names.arg = patLabs, cex.names = 0.7)
-barplot(ranef(fit1)$patient$tInd, main="Patient,Tumor Slope Random Effect", xlab="Patient", ylab=expression(paste("Slope Estimate (",b[iT],")")), names.arg = patLabs, cex.names = 0.7)
-barplot(ranef(fit2)$patient$tInd, main="Patient,Tumor Slope Random Effect", xlab="Patient", ylab=expression(paste("Slope Estimate (",b[iT],")")), names.arg = patLabs, cex.names = 0.7)
+barplot(fixef(fit1), main="Fixed Effects", xlab="Effect", ylab="Intercept Estimate", names.arg=c("mu","betaT"), ylim=c(-0.2,0.2))
+barplot(fixef(fit2), main="Fixed Effects", xlab="Effect", ylab="Intercept Estimate", names.arg=c("mu","betaT"), ylim=c(-0.2,0.2))
+barplot(ranef(fit3)$patient$'(Intercept)', main="Patient Random Effect", xlab="Patient", ylab=expression(paste("Intercept Estimate (",b[i],")")), names.arg = patLabs, cex.names = 0.7, ylim=c(-0.2,0.2))
+barplot(ranef(fit2)$patient$'(Intercept)', main="Patient Random Effect", xlab="Patient", ylab=expression(paste("Intercept Estimate (",b[i],")")), names.arg = patLabs, cex.names = 0.7, ylim=c(-0.2,0.2))
+barplot(ranef(fit3)$patient$tInd, main="Patient,Tumor Slope Random Effect", xlab="Patient", ylab=expression(paste("Slope Estimate (",b[iT],")")), names.arg = patLabs, cex.names = 0.7, ylim=c(-0.2,0.2))
+barplot(ranef(fit2)$patient$tInd, main="Patient,Tumor Slope Random Effect", xlab="Patient", ylab=expression(paste("Slope Estimate (",b[iT],")")), names.arg = patLabs, cex.names = 0.7, ylim=c(-0.2,0.2))
 
-barplot(ranef(fit1)$patient$'(Intercept)'+ranef(fit1)$patient$tInd, main="Both Random Effects", xlab="Patient", ylab=expression(paste("Both Estimates (",b[i]+b[iT],")")), names.arg = patLabs, cex.names = 0.7)
-barplot(ranef(fit2)$patient$'(Intercept)'+ranef(fit2)$patient$tInd, main="Both Random Effects", xlab="Patient", ylab=expression(paste("Both Estimates (",b[i]+b[iT],")")), names.arg = patLabs, cex.names = 0.7)
+barplot(ranef(fit1)$patient$'(Intercept)'+ranef(fit1)$patient$tInd, main="Both Random Effects", xlab="Patient", ylab=expression(paste("Both Estimates (",b[i]+b[iT],")")), names.arg = patLabs, cex.names = 0.7, ylim=c(-0.2,0.2))
+barplot(ranef(fit2)$patient$'(Intercept)'+ranef(fit2)$patient$tInd, main="Both Random Effects", xlab="Patient", ylab=expression(paste("Both Estimates (",b[i]+b[iT],")")), names.arg = patLabs, cex.names = 0.7, ylim=c(-0.2,0.2))
 
 #barplot(fixef(fit1), main="Patient Fixed Effects", xlab="Patient", ylab=expression(paste("Intercept Estimate (",beta[k],")")), names.arg=c("C", "D","E","F","H","J","K","K*","M","O","P","S","T","U","W","X"), cex.names=0.7)
 #barplot(fixef(fit1)[-17]+fixef(fit1)[1], main="Patient Fixed Effects", xlab="Patient", ylab=expression(paste("Intercept Estimate (",beta[k],")")), names.arg=c("C","D","E","F","H","J","K","K*","M","O","P","S","T","U","W","X"), cex.names=0.65)
-
-
-# # mds plot
-# cutData <- FullAnnotation[-(1:8)]
-# 
-# pat <- data.frame(Sample.ID = colnames(cutData))
-# 
-# pat$Sample.ID = colnames(cutData)
-# 
-# aInd = c(1,2,14,15,21,22,29,30,52:55)
-# cInd = c(3:13,16:20,23:28,31,38,39,49,50,56:71)
-# oInd = c(32:37,40:48)
-# 
-# pat$type[aInd] <- "Adenomas"
-# pat$type[cInd] <- "Carcinomas"
-# pat$type[oInd] <- "Other"
-# 
-# patLabel <- pat$Sample.ID
-# 
-# cutData2 <- cutData[pat$type=="Adenomas"|pat$type=="Carcinomas"]
-# 
-# mdsPlot(as.matrix(cutData),numPositions = 1000000,sampNames=patLabel,sampGroups = pat$type,
-#         main = "PCA Plot Using Noob (with JA)", pch=16,cex=0.5)
-
 
 
 

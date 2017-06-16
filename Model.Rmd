@@ -54,7 +54,3 @@ barplot(t(as.vector(ranef(fit1)$'patient:tissue')), main="Patient:Tissue Random 
 
 
 ```
-<<<<<<< HEAD
-=======
-
->>>>>>> d9fe18bf981aa3c8078910876ee26c256653fedf

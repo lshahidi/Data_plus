@@ -117,10 +117,15 @@ for (i in 1:dim(firstData)[1]) {
 firstData$y <- log(firstData$X1/(1-firstData$X1))
 
 
-# Global mean
+# Stan data
 
-ybar <- mean(firstData$y)
+stanDat <- list(pID = as.integer(factor(firstData$patient)),
+                tInd = firstData$tInd,
+                N = nrow(firstData),
+                P = nlevels(firstData$patient),
+                y = firstData$y)
 
-# Variance
 
-sigmasq_y <- var(firstData$y)
+stanFit <- stan(file="model.stan",data=stanDat)
+
+print(stanFit, probs = c(0.025, 0.5, 0.975))

@@ -4,9 +4,12 @@
 
 ### INITIALIZE
 
+# install.packages("coda")
+
 library(lme4)
 library(arm)
 library(rstan)
+library(coda)
 
 # here set the working directory that points to the data folder
 # e.g. the folder with annotated data saved as "myFA.Rdata"
@@ -129,3 +132,20 @@ stanDat <- list(pID = as.integer(factor(firstData$patient)),
 stanFit <- stan(file="model.stan",data=stanDat)
 
 print(stanFit, probs = c(0.025, 0.5, 0.975))
+
+summary(stanFit)
+
+est <- as.matrix(stanFit,pars=c("mu","betaT","b_pat","bT_pat"))
+# Estimates for first three samples
+head(est[,c(1:5,19:21)])
+
+
+# Diagnostic Graphs
+mcmcCoda <- mcmc.list(lapply( 1:ncol(stanFit) ,
+                              function(x) { mcmc(as.array(stanFit)[,x,])} ))
+
+plot(stanFit, pars=c("b_pat"), main="Random Effect of Patients")
+plot(stanFit, pars=c("bT_pat"), main="Random Effect of Tumor Tissue Varying Between Patients")
+
+
+

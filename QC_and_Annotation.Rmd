@@ -635,6 +635,117 @@ mdsPlot(all_lumi,numPositions = 1000000,sampGroups = pat$type,
 
 
 
+``` {r, echo=FALSE,warning=FALSE,message=FALSE,fig.width=17,fig.height=10}
+####################################### Without Cell Lines and Xenografts #############################
+
+
+
+####### 1360: all 
+####### 1378: two
+
+### read in 1378 without cell lines and xenografts###
+base_dir_1378_new <- "1378_Shibata EPIC Data Package/IDAT FILES"
+
+targets_1378_new <- read.xls("1378_Shibata EPIC Data Package/SAMPLE-ARRAY MAPPING/1378 (Shbata-8).xls")
+
+targets_1378_new <- targets_1378_new[c(-1,-4),7]
+targets_1378_new <- file.path(base_dir_1378_new, targets_1378_new)
+work_1378_new <- read.metharray(targets_1378_new, verbose = TRUE)
+
+# normalization
+
+## noob ##
+noob_1378_new <- preprocessNoob(work_1378_new)
+
+## Genome Studio ##
+lumi_1378_new <- preprocessIllumina(work_1378_new,bg.correct = TRUE,
+                                normalize = "controls",reference = 2)
+
+
+# Make sure var names are consistent
+colnames(pat_1337)[8] <- "Sample.ID"
+colnames(pat_1345)[8] <- "Sample.ID"
+colnames(pat_1350)[8] <- "Sample.ID"
+colnames(pat_1357)[8] <- "Sample.ID"
+colnames(pat_1360)[8] <- "Sample.ID"
+colnames(pat_1378)[8] <- "Sample.ID"
+colnames(pat_1385)[8] <- "Sample.ID"
+colnames(pat_1387)[8] <- "Sample.ID"
+
+# Create a data frame that contains all patient information
+pat <- rbind(pat_1337[,1:8],pat_1345[,1:8],pat_1350[,1:8],pat_1357[,1:8],
+             pat_1360[,1:8],pat_1378[,1:8],pat_1385[,1:8],pat_1387[,1:8])
+
+# Create a var indicating adenomas/carcinomas in pat
+for(i in (1:dim(pat)[1])) {
+
+     if ((pat$Sample.ID[i] == "KA") | (pat$Sample.ID[i] == "KB") |
+      pat$Sample.ID[i] == "XA" | pat$Sample.ID[i] == "XB" |
+      pat$Sample.ID[i] == "SA" | pat$Sample.ID[i] == "SB" |
+      pat$Sample.ID[i] == "PA" | pat$Sample.ID[i] == "PB" |
+      pat$Sample.ID[i] == "KA LL" | pat$Sample.ID[i] == "KB LL") {
+    
+       pat$type[i] <- "Adenomas"
+    
+      } else if (pat$Sample.ID[i] == "HA" | pat$Sample.ID[i] == "HB" |
+                 pat$Sample.ID[i] == "HN" | pat$Sample.ID[i] == "JA" |
+                 pat$Sample.ID[i] == "JN" | pat$Sample.ID[i] == "KA" |
+                 pat$Sample.ID[i] == "EA" | pat$Sample.ID[i] == "EB" |
+                 pat$Sample.ID[i] == "EN" | pat$Sample.ID[i] == "KA" |
+                 pat$Sample.ID[i] == "KA (new)" | 
+                 pat$Sample.ID[i] == "KB (new)" | 
+                 pat$Sample.ID[i] == "KN (new)" | 
+                 pat$Sample.ID[i] == "WA" | pat$Sample.ID[i] == "WB" |
+                 pat$Sample.ID[i] == "WN" | pat$Sample.ID[i] == "TA" |
+                 pat$Sample.ID[i] == "TB" | pat$Sample.ID[i] == "JB" |
+                 pat$Sample.ID[i] == "KA" | pat$Sample.ID[i] == "CA" |
+                 pat$Sample.ID[i] == "CB" | pat$Sample.ID[i] == "CN" |
+                 pat$Sample.ID[i] == "MA" | pat$Sample.ID[i] == "MB" |
+                 pat$Sample.ID[i] == "JA" | pat$Sample.ID[i] == "OA" |
+                 pat$Sample.ID[i] == "OB" | pat$Sample.ID[i] == "FA" |
+                 pat$Sample.ID[i] == "FB" | pat$Sample.ID[i] == "KA" |
+                 pat$Sample.ID[i] == "CA LL" | pat$Sample.ID[i] == "CB LL" |
+                 pat$Sample.ID[i] == "FA LL" | pat$Sample.ID[i] == "FB LL" |
+                 pat$Sample.ID[i] == "DA" | pat$Sample.ID[i] == "DB" |
+                 pat$Sample.ID[i] == "UA" | pat$Sample.ID[i] == "UB" |
+                 pat$Sample.ID[i] == "HA LL" | pat$Sample.ID[i] == "HB LL") {
+       
+         pat$type[i] <- "Carcinomas"
+         
+      } 
+}
+
+
+## PCA plot ##
+memory.limit(size=30000)
+all_noob <- combineArrays(noob_1337_new,noob_1345)
+all_noob <- combineArrays(all_noob,noob_1350)
+all_noob <- combineArrays(all_noob,noob_1357)
+all_noob <- combineArrays(all_noob,noob_1378_new)
+all_noob <- combineArrays(all_noob,noob_1385)
+all_noob <- combineArrays(all_noob,noob_1387)
+
+
+
+all_lumi <- combineArrays(lumi_1337_new,lumi_1345)
+all_lumi <- combineArrays(all_lumi,lumi_1350)
+all_lumi <- combineArrays(all_lumi,lumi_1357)
+all_lumi <- combineArrays(all_lumi,lumi_1378_new)
+all_lumi <- combineArrays(all_lumi,lumi_1385)
+all_lumi <- combineArrays(all_lumi,lumi_1387)
+
+
+par(mfrow=c(1,2),mar=c(5,3,5,3))
+mdsPlot(all_noob,numPositions = 1000000,sampGroups = pat$type,
+        main = "PCA Plot Using Noob (without JA)", pch=16)
+
+mdsPlot(all_lumi,numPositions = 1000000,sampGroups = pat$type,
+        main = "PCA Plot Using Illumina (without JA)", pch=16)
+
+
+
+```
+
 
 ## Predicting Sex 
 

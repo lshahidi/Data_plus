@@ -3,6 +3,7 @@
 ### INITIALIZE
 
 library(ggplot2)
+library(minfi)
 
 # here set the working directory that points to the data folder
 # e.g. the folder with annotated data saved as "myFA.Rdata"
@@ -20,6 +21,33 @@ setwd("D:/DataPlus2017/Data")
 
 # load fully annotated data (saved from LoadDataAndQC.R)
 load("myFA.Rdata")
+
+
+### mds plot
+
+# mds plot
+cutData <- FullAnnotation[-(1:8)]
+
+pat <- data.frame(Sample.ID = colnames(cutData))
+
+pat$Sample.ID = colnames(cutData)
+
+aInd = c(1,2,14,15,21,22,29,30,52:55)
+cInd = c(3:13,16:20,23:28,31,38,39,49,50,56:71)
+oInd = c(32:37,40:48)
+
+pat$type[aInd] <- "Adenomas"
+pat$type[cInd] <- "Carcinomas"
+pat$type[oInd] <- "Other"
+
+patLabel <- pat$Sample.ID
+
+cutData2 <- cutData[pat$type=="Adenomas"|pat$type=="Carcinomas"]
+
+mdsPlot(as.matrix(cutData),numPositions = 1000000,sampNames=patLabel,sampGroups = pat$type,
+        main = "PCA Plot Using Noob (with JA)", pch=16,cex=0.5)
+
+
 
 
 ##### COMPARE BETA

@@ -13,7 +13,7 @@ $$N_i = b_i ~~~~~~~~~~~~~~~~~~+ \mu + \epsilon_i$$
 * $A_i$, $B_i$, $N_i$ are the mythelation for side A, B, and N respectively
 * $\beta_T$ = effect of tumor tissue (fixed)
 * $\mu$ = grand mean
-* $b_i \sim N(0,\sigma^2)$
+* $b_i \sim N(0,\sigma^2_P)$
 * $b_T_i \sim N(0,\sigma^2_T)$
 * $\epsilon_i \sim N(0,\sigma^2_y)$
 

@@ -1,4 +1,7 @@
 data {
+  
+  // This part defines variables used in model section
+  
   int<lower=1> N;   // number of observations
   int<lower=1> P;   // number of patients
   
@@ -7,16 +10,19 @@ data {
   int<lower=0, upper=1> tInd[N];   // tumor indicator
   
  
-  int<lower=1, upper=P> pID[N];
+  int<lower=1, upper=P> pID[N];   // Patient ID
  }
 
 
 
 parameters {
-  vector[P] b_pat;   /// rando  effect of patients
+  
+  // This part defines parameters we plan to use
+  
+  vector[P] b_pat;   /// random  effect of patients
   vector[P] bT_pat;  // random effect of tumor tissue (varying between patients)
   real betaT;   // fixed effect of tumor tissue
-  real mu;
+  real mu;    // grand mean
   
   real<lower=0> sigma_e;  // error sd
   real<lower=0> sigma_p;  // patient sd
@@ -29,7 +35,7 @@ parameters {
 
 model {
   //prior
-  // uniform prior on mu, betaT, sigma_t, sigma_e and sigma_p when omitting 
+  // uniform prior on mu, betaT, sigma_t, sigma_e and sigma_p when omitting assigning prior distribution on them (will change these later)
   
   b_pat ~ normal(0,sigma_p); 
   bT_pat ~ normal(0,sigma_t);

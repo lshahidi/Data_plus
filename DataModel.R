@@ -41,23 +41,40 @@ patientLabel <- c(rep("H", 3),rep("E", 3),rep("K*", 3),rep("W", 3),rep("C", 3),
 tissueLabel <- rep(c("T", "T", "N"), 6)
 sideLabel <- rep(c("A", "B", ""), 6)
 
-# here we use all samples
+firstData <- data.frame(beta=logit(t(firstSite[indices])), patient = patientLabel, tissue=tissueLabel, side=sideLabel)
+
+
+# here we use all patient samples, excluding glands
 indices <- c(9:13, 15:39,46,47,57,58,72:75)
 patientLabel <- substr(colnames(firstSite[indices]),1,1)
 patientLabel[10:12] <- "K*"
 sideLabel <- substr(colnames(firstSite[indices]),2,2)
 tissueLabel <- sideLabel
 tissueLabel[tissueLabel %in% c("A","B")] <- "T"   #replace A and B with T
-tissueIndicator <- 1*(tissueLabel=="T")
+tumorIndicator <- 1*(tissueLabel=="T")
 
-firstData <- data.frame(beta=t(firstSite[indices]), patient = patientLabel, tissue=tissueLabel, side=sideLabel, tInd=tissueIndicator)
+firstData <- data.frame(beta=logit(t(firstSite[indices])), patient = patientLabel, tissue=tissueLabel, side=sideLabel, tInd=tumorIndicator)
+
+
+# here we use only patients with glands
+indices <- c(9:13,32:34,57,58,60:71,76:79)
+patientLabel <- substr(colnames(firstSite[indices]),1,1)
+sideLabel <- substr(colnames(firstSite[indices]),2,2)
+tissueLabel <- sideLabel
+tissueLabel[tissueLabel %in% c("A","B")] <- "T"   #replace A and B with T
+tumorIndicator <- 1*(tissueLabel=="T")
+glandIndicator <- 1*(indices %in% c(60:71,76:79))
+
+firstData <- data.frame(beta = logit(t(firstSite[indices])), patient = patientLabel, tissue=tissueLabel, side=sideLabel, tInd=tumorIndicator, gInd=glandIndicator)
+
+
 
 
 ### FIT WITH LMER
 
-fit1 <- lmer(X1 ~ (1|patient) + tInd + (tInd-1|patient), firstData)
-fit2 <- lmer(X1 ~ tInd + (tInd|patient), firstData)
-fit3 <- lmer(X1 ~ (tInd|patient), firstData)
+fit1 <- lmer(X1 ~ tInd + (tInd|patient), firstData)
+
+fitGland <- lmer(X1 ~ tInd + (tInd|patient) + (0+gInd|patient:side), firstData)
 
 patLabs <- c("C", "D","E","F","H","J","K","K*","M","O","P","S","T","U","W","X")
 # barplot(fixef(fit1), main="Fixed Effects", xlab="Effect", ylab="Intercept Estimate", names.arg=c("mu","betaT"))
@@ -94,8 +111,8 @@ for (i in 1:dim(firstData)[1]) {
 
 # Logit transform on beta values
 
-firstData$y <- log(firstData$X1/(1-firstData$X1))
-
+#firstData$y <- log(firstData$X1/(1-firstData$X1))
+firstData$y <- firstData$X1
 
 # Stan data
 

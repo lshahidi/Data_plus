@@ -82,15 +82,6 @@ barplot(ranef(fit2)$patient$'(Intercept)'+ranef(fit2)$patient$tInd, main="Both R
 
 ### FIT WITH STAN
 
-# Create tumor indicator
-
-for (i in 1:dim(firstData)[1]) {
-  if (firstData$tissue[i] == "T") {
-    firstData$tInd[i] = 1
-  } else {
-    firstData$tInd[i] = 0
-  }
-}
 
 # Logit transform on beta values
 
@@ -108,21 +99,50 @@ stanDat <- list(pID = as.integer(factor(firstData$patient)),
 
 stanFit <- stan(file="model.stan",data=stanDat)
 
+
+# Using Model 2: wide range uniform prior on sd and flat normal on fixed effects
+stanFit2 <- stan(file="model2.stan", data=stanDat)
+
+
 print(stanFit, probs = c(0.025, 0.5, 0.975))
 
 summary(stanFit)
+summary(stanFit2)
 
 est <- as.matrix(stanFit,pars=c("mu","betaT","b_pat","bT_pat"))
 # Estimates for first three samples
 head(est[,c(1:5,19:21)])
 
 
+est2 <- as.matrix(stanFit2,pars=c("mu","betaT","b_pat","bT_pat"))
+# Estimates for first three samples
+head(est2[,c(1:5,19:21)])
+
+
+# Variance
+var <- as.matrix(stanFit,pars=c("sigma_e","sigma_p","sigma_t"))
+head(var)
+
+var2 <- as.matrix(stanFit2,pars=c("sigma_e","sigma_p","sigma_t"))
+head(var2)
+
+
+
+
 # Diagnostic Graphs
 mcmcCoda <- mcmc.list(lapply( 1:ncol(stanFit) ,
                               function(x) { mcmc(as.array(stanFit)[,x,])} ))
 
-plot(stanFit, pars=c("b_pat"), main="Random Effect of Patients")
-plot(stanFit, pars=c("bT_pat"), main="Random Effect of Tumor Tissue Varying Between Patients")
+par(mfrow=c(1,2))
+plot(stanFit, pars=c("sigma_t","sigma_p","sigma_e"), main="Variances (Model 1)")
+plot(stanFit2, pars=c("sigma_t","sigma_p","sigma_e"), main="Variances (Model 2)")
+
+
+
+
+
+
+
 
 
 

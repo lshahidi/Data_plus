@@ -93,48 +93,83 @@ barplot(ranef(fit2)$patient$'(Intercept)'+ranef(fit2)$patient$tInd, main="Both R
 ### FIT WITH STAN
 
 
-# Logit transform on beta values
+# Function to build stan model for each site
+stanfit <- function (dataset) {
+  
+  stanDat <- list(pID = as.integer(factor(dataset$patient)),
+                  tInd = dataset$tInd,
+                  N = nrow(dataset),
+                  P = nlevels(dataset$patient),
+                  y = dataset[,1])
+  
+  
+  # Model 1: uniform priors
+  stanFit <- stan(file="model.stan",data=stanDat)
+  
+  
+  # Using Model 2: wide range uniform prior on sd and flat normal on fixed effects
+  stanFit2 <- stan(file="model2.stan", data=stanDat)
+  
+  # Estimates for first three samples
+  est <- head(as.matrix(stanFit,pars=c("mu","betaT","b_pat","bT_pat"))[,c(1:5,19:21)])
 
-#Data1$y <- log(Data1$X1/(1-Data1$X1))
-Data1$y <- Data1$X1
+  est2 <- head(as.matrix(stanFit2,pars=c("mu","betaT","b_pat","bT_pat"))[,c(1:5,19:21)])
 
-# Stan data
+  # Variance
+  var <- head(as.matrix(stanFit,pars=c("sigma_e","sigma_p","sigma_t")))
+ 
+  var2 <- head(as.matrix(stanFit2,pars=c("sigma_e","sigma_p","sigma_t")))
+ 
+  return(list(stanFit=stanFit, stanFit2=stanFit2, est=est, est2=est2, var=var, var2=var2))
+}
 
-stanDat <- list(pID = as.integer(factor(Data1$patient)),
-                tInd = Data1$tInd,
-                N = nrow(Data1),
-                P = nlevels(Data1$patient),
-                y = Data1$y)
+stan1 <- stanfit(Data1)
+summary(stan1$stanFit2)
 
-
-stanFit <- stan(file="model.stan",data=stanDat)
-
-
-# Using Model 2: wide range uniform prior on sd and flat normal on fixed effects
-stanFit2 <- stan(file="model2.stan", data=stanDat)
+stan2 <- stanfit(Data2)
+summary(stan2$stanFit2)
 
 
-print(stanFit, probs = c(0.025, 0.5, 0.975))
+stan3 <- stanfit(Data3)
+summary(stan3$stanFit2)
 
-summary(stanFit)
-summary(stanFit2)
+stan4 <- stanfit(Data4)
+summary(stan4$stanFit2)
 
-est <- as.matrix(stanFit,pars=c("mu","betaT","b_pat","bT_pat"))
-# Estimates for first three samples
-head(est[,c(1:5,19:21)])
+stan5 <- stanfit(Data5)
+summary(stan5$stanFit2)
+
+stan6 <- stanfit(Data6)
+summary(stan6$stanFit2)
+
+stan7 <- stanfit(Data7)
+summary(stan7$stanFit2)
+
+stan8 <- stanfit(Data8)
+summary(stan8$stanFit2)
 
 
-est2 <- as.matrix(stanFit2,pars=c("mu","betaT","b_pat","bT_pat"))
-# Estimates for first three samples
-head(est2[,c(1:5,19:21)])
+plot(stan1$stanFit2, pars=c("sigma_t","sigma_p","sigma_e"))
+plot(stan2$stanFit2, pars=c("sigma_t","sigma_p","sigma_e"))
+plot(stan3$stanFit2, pars=c("sigma_t","sigma_p","sigma_e"))
+
+# site 4: sigma_t < sigma_p
+plot(stan4$stanFit2, pars=c("sigma_t","sigma_p","sigma_e"))
+
+plot(stan5$stanFit2, pars=c("sigma_t","sigma_p","sigma_e"))
+plot(stan6$stanFit2, pars=c("sigma_t","sigma_p","sigma_e"))
+plot(stan7$stanFit2, pars=c("sigma_t","sigma_p","sigma_e"))
+plot(stan8$stanFit2, pars=c("sigma_t","sigma_p","sigma_e"))
 
 
-# Variance
-var <- as.matrix(stanFit,pars=c("sigma_e","sigma_p","sigma_t"))
-head(var)
 
-var2 <- as.matrix(stanFit2,pars=c("sigma_e","sigma_p","sigma_t"))
-head(var2)
+
+
+
+
+
+
+
 
 
 
@@ -143,16 +178,8 @@ head(var2)
 mcmcCoda <- mcmc.list(lapply( 1:ncol(stanFit) ,
                               function(x) { mcmc(as.array(stanFit)[,x,])} ))
 
-par(mfrow=c(1,2))
 plot(stanFit, pars=c("sigma_t","sigma_p","sigma_e"), main="Variances (Model 1)")
 plot(stanFit2, pars=c("sigma_t","sigma_p","sigma_e"), main="Variances (Model 2)")
-
-
-
-
-
-
-
 
 
 

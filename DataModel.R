@@ -91,7 +91,7 @@ barplot(ranef(fit4)$patient$'(Intercept)'+ranef(fit1)$patient$tInd, main="Both R
 
 ## extract variance at 1000 sites
 nSites<-1000
-variances <- data.frame(sigmaT=numeric(nSites),sigmaP=numeric(nSites),sigmaE=numeric(nSites))
+sigmaLMER <- data.frame(sigmaT=numeric(nSites),sigmaP=numeric(nSites),sigmaE=numeric(nSites))
 
 ptm <- proc.time()
 for (i in 1:nSites){
@@ -102,23 +102,23 @@ for (i in 1:nSites){
   
   fit <- lmer(beta ~ tInd + (tInd|patient), DataI)
   
-  variances$sigmaT[i] <- as.data.frame(VarCorr(fit))$sdcor[1]
-  variances$sigmaP[i] <- as.data.frame(VarCorr(fit))$sdcor[2]
-  variances$sigmaE[i] <- as.data.frame(VarCorr(fit))$sdcor[4]
+  sigmaLMER$sigmaT[i] <- as.data.frame(VarCorr(fit))$sdcor[1]
+  sigmaLMER$sigmaP[i] <- as.data.frame(VarCorr(fit))$sdcor[2]
+  sigmaLMER$sigmaE[i] <- as.data.frame(VarCorr(fit))$sdcor[4]
 }
 proc.time() - ptm
 
-PTratio <- variances$sigmaP/variances$sigmaT
+PTratio <- sigmaLMER$sigmaP/sigmaLMER$sigmaT
 PTratio[PTratio>100] <- NA
 hist(PTratio,100)
 
-logPTratio <- log(variances$sigmaP/variances$sigmaT)
+logPTratio <- log(sigmaLMER$sigmaP/sigmaLMER$sigmaT)
 logPTratio[logPTratio>100] <- NA
 hist(logPTratio,100)
 
 library(reshape2)
 library(ggplot2)
-gg <- melt(variances)
+gg <- melt(sigmaLMER)
 ggplot(gg, aes(x=value, fill=variable)) +
   geom_histogram(binwidth=0.05)+
   facet_grid(variable~.)

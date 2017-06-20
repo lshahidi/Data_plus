@@ -61,11 +61,6 @@ Data7 <- site(7)
 Data8 <- site(8)
 Data9 <- site(9)
 
-Data <- list(NULL)
-for (i in 1:dim(FullAnnotation)[1]) {
-  Data[[i]] <- site(i)
-}
-
 
 ### FIT WITH LMER
 
@@ -112,6 +107,30 @@ sd
 
 
 
+# ALL SITES
+# Test on first ten sites
+
+Data <- list(NULL)
+for (i in 1:10) {
+  Data[[i]] <- site(i)
+}
+
+fit <- list(NULL)
+for (i in 1:10) {
+  fit[[i]] <- lmer(Data[[i]][,1] ~ tInd + (tInd|patient), Data[[i]])
+}
+
+
+temp <- as.data.frame(sapply(lapply(lapply(fit, VarCorr),as.data.frame), '[', i=5))[-3,]
+
+sd_lmer <- t(temp)
+colnames(sd_lmer) <- c("sigma_p", "sigma_t", "sigma_e")
+rownames(sd_lmer) <- paste("Site",1:10)
+
+sd_lmer
+
+
+
 
 ### FIT WITH STAN
 
@@ -127,19 +146,19 @@ stanfit <- function (dataset) {
   
   
   # Model 1: uniform priors
-  stanFit <- stan(file="model.stan",data=stanDat)
+   stanFit <- stan(file="model.stan",data=stanDat)
   
   
   # Using Model 2: wide range uniform prior on sd and flat normal on fixed effects
   stanFit2 <- stan(file="model2.stan", data=stanDat)
   
   # Estimates for first three samples
-  est <- head(as.matrix(stanFit,pars=c("mu","betaT","b_pat","bT_pat"))[,c(1:5,19:21)])
+   est <- head(as.matrix(stanFit,pars=c("mu","betaT","b_pat","bT_pat"))[,c(1:5,19:21)])
 
   est2 <- head(as.matrix(stanFit2,pars=c("mu","betaT","b_pat","bT_pat"))[,c(1:5,19:21)])
 
   # Variance
-  var <- head(as.matrix(stanFit,pars=c("sigma_e","sigma_p","sigma_t")))
+   var <- head(as.matrix(stanFit,pars=c("sigma_e","sigma_p","sigma_t")))
  
   var2 <- head(as.matrix(stanFit2,pars=c("sigma_e","sigma_p","sigma_t")))
  
@@ -192,10 +211,14 @@ summary(stan1$stanFit2)$summary[35:37,1]
 
 
 
+# ALL SITES
+# Test on first ten sites
 
+stan <- lapply(Data, stanfit)
 
-
-
+for (i in 1:10) {
+  rbind(sd_stan,summary(stan[i]$stanFit2)$summary[35:37,1])
+}
 
 
 

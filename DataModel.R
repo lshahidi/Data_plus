@@ -112,6 +112,10 @@ PTratio <- variances$sigmaP/variances$sigmaT
 PTratio[PTratio>100] <- NA
 hist(PTratio,100)
 
+logPTratio <- log(variances$sigmaP/variances$sigmaT)
+logPTratio[logPTratio>100] <- NA
+hist(logPTratio,100)
+
 library(reshape2)
 library(ggplot2)
 gg <- melt(variances)

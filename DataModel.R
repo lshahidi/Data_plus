@@ -89,7 +89,6 @@ barplot(ranef(fit4)$patient$tInd, main="Patient,Tumor Slope Random Effect", xlab
 barplot(ranef(fit4)$patient$'(Intercept)'+ranef(fit1)$patient$tInd, main="Both Random Effects", xlab="Patient", ylab=expression(paste("Both Estimates (",b[i]+b[iT],")")), names.arg = patLabs, cex.names = 0.7, ylim=c(-2,2))
 
 
-<<<<<<< HEAD
 ## extract variance at 1000 sites
 nSites<-1000
 variances <- data.frame(sigmaT=numeric(nSites),sigmaP=numeric(nSites),sigmaE=numeric(nSites))
@@ -119,7 +118,9 @@ gg <- melt(variances)
 ggplot(gg, aes(x=value, fill=variable)) +
   geom_histogram(binwidth=0.05)+
   facet_grid(variable~.)
-=======
+
+
+
 # Extract standard deviation in lmer models
 
 sd <- as.data.frame(VarCorr(fit1))[-3,5]
@@ -150,8 +151,6 @@ rownames(sd_lmer) <- paste("Site",1:10)
 
 sd_lmer
 
-
->>>>>>> 506500149095a7b837215486161774a149100758
 
 
 ### FIT WITH STAN

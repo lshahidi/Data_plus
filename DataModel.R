@@ -99,14 +99,6 @@ barplot(ranef(fit4)$patient$tInd, main="Patient,Tumor Slope Random Effect", xlab
 barplot(ranef(fit4)$patient$'(Intercept)'+ranef(fit1)$patient$tInd, main="Both Random Effects", xlab="Patient", ylab=expression(paste("Both Estimates (",b[i]+b[iT],")")), names.arg = patLabs, cex.names = 0.7, ylim=c(-2,2))
 
 
-# Extract standard deviation in lmer models
-
-sd <- as.data.frame(VarCorr(fit1))[-3,5]
-names(sd) <- c("sigma_p", "sigma_t", "sigma_e")
-sd
-
-
-
 # ALL SITES
 # Test on first ten sites
 
@@ -146,68 +138,68 @@ stanfit <- function (dataset) {
   
   
   # Model 1: uniform priors
-   stanFit <- stan(file="model.stan",data=stanDat)
+  # stanFit <- stan(file="model.stan",data=stanDat)
   
   
   # Using Model 2: wide range uniform prior on sd and flat normal on fixed effects
   stanFit2 <- stan(file="model2.stan", data=stanDat)
   
   # Estimates for first three samples
-   est <- head(as.matrix(stanFit,pars=c("mu","betaT","b_pat","bT_pat"))[,c(1:5,19:21)])
+  # est <- head(as.matrix(stanFit,pars=c("mu","betaT","b_pat","bT_pat"))[,c(1:5,19:21)])
 
   est2 <- head(as.matrix(stanFit2,pars=c("mu","betaT","b_pat","bT_pat"))[,c(1:5,19:21)])
 
   # Variance
-   var <- head(as.matrix(stanFit,pars=c("sigma_e","sigma_p","sigma_t")))
+  # var <- head(as.matrix(stanFit,pars=c("sigma_e","sigma_p","sigma_t")))
  
-  var2 <- head(as.matrix(stanFit2,pars=c("sigma_e","sigma_p","sigma_t")))
+  # var2 <- head(as.matrix(stanFit2,pars=c("sigma_e","sigma_p","sigma_t")))
  
-  return(list(stanFit=stanFit, stanFit2=stanFit2, est=est, est2=est2, var=var, var2=var2))
+  return(stanFit2)
 }
 
 stan1 <- stanfit(Data1)
-summary(stan1$stanFit2)
+summary(stan1)
 
 stan2 <- stanfit(Data2)
-summary(stan2$stanFit2)
+summary(stan2)
 
 
 stan3 <- stanfit(Data3)
-summary(stan3$stanFit2)
+summary(stan3)
 
 stan4 <- stanfit(Data4)
-summary(stan4$stanFit2)
+summary(stan4)
 
 stan5 <- stanfit(Data5)
-summary(stan5$stanFit2)
+summary(stan5)
 
 stan6 <- stanfit(Data6)
-summary(stan6$stanFit2)
+summary(stan6)
 
 stan7 <- stanfit(Data7)
-summary(stan7$stanFit2)
+summary(stan)
 
 stan8 <- stanfit(Data8)
-summary(stan8$stanFit2)
+summary(stan8)
 
 
-plot(stan1$stanFit2, pars=c("sigma_t","sigma_p","sigma_e"))
-plot(stan2$stanFit2, pars=c("sigma_t","sigma_p","sigma_e"))
-plot(stan3$stanFit2, pars=c("sigma_t","sigma_p","sigma_e"))
+plot(stan1, pars=c("sigma_t","sigma_p","sigma_e"))
+plot(stan2, pars=c("sigma_t","sigma_p","sigma_e"))
+plot(stan3, pars=c("sigma_t","sigma_p","sigma_e"))
 
 # site 4: sigma_t < sigma_p
-plot(stan4$stanFit2, pars=c("sigma_t","sigma_p","sigma_e"))
+plot(stan4, pars=c("sigma_t","sigma_p","sigma_e"))
 
-plot(stan5$stanFit2, pars=c("sigma_t","sigma_p","sigma_e"))
-plot(stan6$stanFit2, pars=c("sigma_t","sigma_p","sigma_e"))
-plot(stan7$stanFit2, pars=c("sigma_t","sigma_p","sigma_e"))
-plot(stan8$stanFit2, pars=c("sigma_t","sigma_p","sigma_e"))
+plot(stan5, pars=c("sigma_t","sigma_p","sigma_e"))
+plot(stan6, pars=c("sigma_t","sigma_p","sigma_e"))
+plot(stan7, pars=c("sigma_t","sigma_p","sigma_e"))
+plot(stan8, pars=c("sigma_t","sigma_p","sigma_e"))
 
 
 
 
 # Extract standard deviation from stan models
-summary(stan1$stanFit2)$summary[35:37,1]
+summary(stan1)$summary[35:37,1]
 
 
 
@@ -216,8 +208,9 @@ summary(stan1$stanFit2)$summary[35:37,1]
 
 stan <- lapply(Data, stanfit)
 
+sd_stan <- NULL
 for (i in 1:10) {
-  rbind(sd_stan,summary(stan[i]$stanFit2)$summary[35:37,1])
+  rbind(sd_stan,summary(stan[[i]])$summary[35:37,1])
 }
 
 

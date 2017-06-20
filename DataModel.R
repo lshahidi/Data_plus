@@ -61,6 +61,11 @@ Data7 <- site(7)
 Data8 <- site(8)
 Data9 <- site(9)
 
+Data <- list(NULL)
+for (i in 1:dim(FullAnnotation)[1]) {
+  Data[[i]] <- site(i)
+}
+
 
 ### FIT WITH LMER
 
@@ -97,6 +102,14 @@ barplot(fixef(fit4), main="Fixed Effects", xlab="Effect", ylab="Intercept Estima
 barplot(ranef(fit4)$patient$'(Intercept)', main="Patient Random Effect", xlab="Patient", ylab=expression(paste("Intercept Estimate (",b[i],")")), names.arg = patLabs, cex.names = 0.7, ylim=c(-2,2))
 barplot(ranef(fit4)$patient$tInd, main="Patient,Tumor Slope Random Effect", xlab="Patient", ylab=expression(paste("Slope Estimate (",b[iT],")")), names.arg = patLabs, cex.names = 0.7, ylim=c(-2,2))
 barplot(ranef(fit4)$patient$'(Intercept)'+ranef(fit1)$patient$tInd, main="Both Random Effects", xlab="Patient", ylab=expression(paste("Both Estimates (",b[i]+b[iT],")")), names.arg = patLabs, cex.names = 0.7, ylim=c(-2,2))
+
+
+# Extract standard deviation in lmer models
+
+sd <- as.data.frame(VarCorr(fit1))[-3,5]
+names(sd) <- c("sigma_p", "sigma_t", "sigma_e")
+sd
+
 
 
 
@@ -173,6 +186,9 @@ plot(stan8$stanFit2, pars=c("sigma_t","sigma_p","sigma_e"))
 
 
 
+
+# Extract standard deviation from stan models
+summary(stan1$stanFit2)$summary[35:37,1]
 
 
 

@@ -37,7 +37,7 @@ site <- function (site_no) {
   # extract CpG site xx to start
   temp <- FullAnnotation[site_no,]
   
-   # here we use all patient samples, excluding glands
+  # here we use all patient samples, excluding glands
   indices <- c(9:13, 15:39,46,47,57,58,72:75)
   patientLabel <- substr(colnames(temp[indices]),1,1)
   patientLabel[10:12] <- "K*"
@@ -74,7 +74,7 @@ fit7 <- lmer(X7 ~ tInd + (tInd|patient), Data7)
 fit8 <- lmer(X8 ~ tInd + (tInd|patient), Data8)
 fit9 <- lmer(X9 ~ tInd + (tInd|patient), Data9)
 
-fitGland <- lmer(X1 ~ tInd + (tInd|patient) + (0+gInd|patient:side), Data1)
+# fitGland <- lmer(X1 ~ tInd + (tInd|patient) + (0+gInd|patient:side), Data1)
 
 patLabs <- c("C", "D","E","F","H","J","K","K*","M","O","P","S","T","U","W","X")
 
@@ -83,21 +83,41 @@ barplot(ranef(fit1)$patient$'(Intercept)', main="Patient Random Effect", xlab="P
 barplot(ranef(fit1)$patient$tInd, main="Patient,Tumor Slope Random Effect", xlab="Patient", ylab=expression(paste("Slope Estimate (",b[iT],")")), names.arg = patLabs, cex.names = 0.7, ylim=c(-2,2))
 barplot(ranef(fit1)$patient$'(Intercept)'+ranef(fit1)$patient$tInd, main="Both Random Effects", xlab="Patient", ylab=expression(paste("Both Estimates (",b[i]+b[iT],")")), names.arg = patLabs, cex.names = 0.7, ylim=c(-2,2))
 
-barplot(fixef(fit2), main="Fixed Effects", xlab="Effect", ylab="Intercept Estimate", names.arg=c("mu","betaT"), ylim=c(-2,2))
-barplot(fixef(fit22), main="Fixed Effects", xlab="Effect", ylab="Intercept Estimate", names.arg=c("mu"), ylim=c(-2,2))
-barplot(ranef(fit2)$patient$'(Intercept)', main="Patient Random Effect", xlab="Patient", ylab=expression(paste("Intercept Estimate (",b[i],")")), names.arg = patLabs, cex.names = 0.7, ylim=c(-2,2))
-barplot(ranef(fit22)$patient$'(Intercept)', main="Patient Random Effect", xlab="Patient", ylab=expression(paste("Intercept Estimate (",b[i],")")), names.arg = patLabs, cex.names = 0.7, ylim=c(-2,2))
-barplot(ranef(fit2)$patient$tInd, main="Patient,Tumor Slope Random Effect", xlab="Patient", ylab=expression(paste("Slope Estimate (",b[iT],")")), names.arg = patLabs, cex.names = 0.7, ylim=c(-2,2))
-barplot(ranef(fit22)$patient$tInd, main="Patient,Tumor Slope Random Effect", xlab="Patient", ylab=expression(paste("Slope Estimate (",b[iT],")")), names.arg = patLabs, cex.names = 0.7, ylim=c(-2,2))
-barplot(ranef(fit2)$patient$'(Intercept)'+ranef(fit1)$patient$tInd, main="Both Random Effects", xlab="Patient", ylab=expression(paste("Both Estimates (",b[i]+b[iT],")")), names.arg = patLabs, cex.names = 0.7, ylim=c(-2,2))
-barplot(ranef(fit22)$patient$'(Intercept)'+ranef(fit1)$patient$tInd, main="Both Random Effects", xlab="Patient", ylab=expression(paste("Both Estimates (",b[i]+b[iT],")")), names.arg = patLabs, cex.names = 0.7, ylim=c(-2,2))
-
-
 barplot(fixef(fit4), main="Fixed Effects", xlab="Effect", ylab="Intercept Estimate", names.arg=c("mu","betaT"), ylim=c(-2,2))
 barplot(ranef(fit4)$patient$'(Intercept)', main="Patient Random Effect", xlab="Patient", ylab=expression(paste("Intercept Estimate (",b[i],")")), names.arg = patLabs, cex.names = 0.7, ylim=c(-2,2))
 barplot(ranef(fit4)$patient$tInd, main="Patient,Tumor Slope Random Effect", xlab="Patient", ylab=expression(paste("Slope Estimate (",b[iT],")")), names.arg = patLabs, cex.names = 0.7, ylim=c(-2,2))
 barplot(ranef(fit4)$patient$'(Intercept)'+ranef(fit1)$patient$tInd, main="Both Random Effects", xlab="Patient", ylab=expression(paste("Both Estimates (",b[i]+b[iT],")")), names.arg = patLabs, cex.names = 0.7, ylim=c(-2,2))
 
+
+## extract variance at 1000 sites
+nSites<-1000
+variances <- data.frame(sigmaT=numeric(nSites),sigmaP=numeric(nSites),sigmaE=numeric(nSites))
+
+ptm <- proc.time()
+for (i in 1:nSites){
+  print(paste("site ",i))
+  
+  DataI <- site(i)
+  names(DataI)[1] <- "beta"
+  
+  fit <- lmer(beta ~ tInd + (tInd|patient), DataI)
+  
+  variances$sigmaT[i] <- as.data.frame(VarCorr(fit))$sdcor[1]
+  variances$sigmaP[i] <- as.data.frame(VarCorr(fit))$sdcor[2]
+  variances$sigmaE[i] <- as.data.frame(VarCorr(fit))$sdcor[4]
+}
+proc.time() - ptm
+
+PTratio <- variances$sigmaP/variances$sigmaT
+PTratio[PTratio>100] <- NA
+hist(PTratio,100)
+
+library(reshape2)
+library(ggplot2)
+gg <- melt(variances)
+ggplot(gg, aes(x=value, fill=variable)) +
+  geom_histogram(binwidth=0.05)+
+  facet_grid(variable~.)
 
 
 ### FIT WITH STAN

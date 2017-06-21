@@ -322,19 +322,23 @@ sigmaSTAN_200 <- sigmaSTAN_200[,c(3,2,1)]
 # lmer vs. stan
 sigmaDIFF <- sigmaLMER_200 - sigmaSTAN_200
 
-plot(sigmaDIFF$sigmaT, main="Bias of sigma_t", 
+apply(sigmaDIFF,2,mean)
+sqrt(apply(sigmaDIFF,2,var))
+
+plot(sigmaDIFF$sigmaT, main="Differences of sigma_t", 
      sub="sigmaLMER - sigmaSTAN",
      ylab="Difference of sigma_t Estimates")
 abline(h=0, col="red")
 
-plot(sigmaDIFF$sigmaP, main="Bias of sigma_p", 
+plot(sigmaDIFF$sigmaP, main="Differences of sigma_p", 
      sub="sigmaLMER - sigmaSTAN",
      ylab="Difference of sigma_p Estimates")
 abline(h=0, col="red")
 
-plot(sigmaDIFF$sigmaE, main="Bias of sigma_e", 
+plot(sigmaDIFF$sigmaE, main="Differences of sigma_e", 
      sub="sigmaLMER - sigmaSTAN",
      ylab="Difference of sigma_e Estimates")
 abline(h=0, col="red")
+
 
 

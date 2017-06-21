@@ -125,35 +125,35 @@ ggplot(gg, aes(x=value, fill=variable)) +
 
 
 
-# Extract standard deviation in lmer models
-
-sd <- as.data.frame(VarCorr(fit1))[-3,5]
-names(sd) <- c("sigma_p", "sigma_t", "sigma_e")
-sd
-
-
-
-# ALL SITES
-# Test on first ten sites
-
-Data <- list(NULL)
-for (i in 1:10) {
-  Data[[i]] <- site(i)
-}
-
-fit <- list(NULL)
-for (i in 1:10) {
-  fit[[i]] <- lmer(Data[[i]][,1] ~ tInd + (tInd|patient), Data[[i]])
-}
-
-
-temp <- as.data.frame(sapply(lapply(lapply(fit, VarCorr),as.data.frame), '[', i=5))[-3,]
-
-sd_lmer <- t(temp)
-colnames(sd_lmer) <- c("sigma_p", "sigma_t", "sigma_e")
-rownames(sd_lmer) <- paste("Site",1:10)
-
-sd_lmer
+# # Extract standard deviation in lmer models
+# 
+# sd <- as.data.frame(VarCorr(fit1))[-3,5]
+# names(sd) <- c("sigma_p", "sigma_t", "sigma_e")
+# sd
+# 
+# 
+# 
+# # ALL SITES
+# # Test on first ten sites
+# 
+# Data <- list(NULL)
+# for (i in 1:10) {
+#   Data[[i]] <- site(i)
+# }
+# 
+# fit <- list(NULL)
+# for (i in 1:10) {
+#   fit[[i]] <- lmer(Data[[i]][,1] ~ tInd + (tInd|patient), Data[[i]])
+# }
+# 
+# 
+# temp <- as.data.frame(sapply(lapply(lapply(fit, VarCorr),as.data.frame), '[', i=5))[-3,]
+# 
+# sd_lmer <- t(temp)
+# colnames(sd_lmer) <- c("sigma_p", "sigma_t", "sigma_e")
+# rownames(sd_lmer) <- paste("Site",1:10)
+# 
+# sd_lmer
 
 
 
@@ -171,23 +171,23 @@ stanfit <- function (dataset) {
   
   
   # Model 1: uniform priors
-   stanFit <- stan(file="model.stan",data=stanDat)
+  # stanFit <- stan(file="model.stan",data=stanDat)
   
   
   # Using Model 2: wide range uniform prior on sd and flat normal on fixed effects
   stanFit2 <- stan(file="model2.stan", data=stanDat)
   
   # Estimates for first three samples
-   est <- head(as.matrix(stanFit,pars=c("mu","betaT","b_pat","bT_pat"))[,c(1:5,19:21)])
+  # est <- head(as.matrix(stanFit,pars=c("mu","betaT","b_pat","bT_pat"))[,c(1:5,19:21)])
 
-  est2 <- head(as.matrix(stanFit2,pars=c("mu","betaT","b_pat","bT_pat"))[,c(1:5,19:21)])
+  # est2 <- head(as.matrix(stanFit2,pars=c("mu","betaT","b_pat","bT_pat"))[,c(1:5,19:21)])
 
   # Variance
-   var <- head(as.matrix(stanFit,pars=c("sigma_e","sigma_p","sigma_t")))
+  # var <- head(as.matrix(stanFit,pars=c("sigma_e","sigma_p","sigma_t")))
  
-  var2 <- head(as.matrix(stanFit2,pars=c("sigma_e","sigma_p","sigma_t")))
+  # var2 <- head(as.matrix(stanFit2,pars=c("sigma_e","sigma_p","sigma_t")))
  
-  return(list(stanFit=stanFit, stanFit2=stanFit2, est=est, est2=est2, var=var, var2=var2))
+  return(stanFit2=stanFit2)
 }
 
 stan1 <- stanfit(Data1)
@@ -232,7 +232,10 @@ plot(stan8$stanFit2, pars=c("sigma_t","sigma_p","sigma_e"))
 
 
 # Extract standard deviation from stan models
-summary(stan1$stanFit2)$summary[35:37,1]
+summary(stan1)$summary[35:37,1]
+summary(stan2)$summary[35:37,1]
+
+rbind(summary(stan1)$summary[35:37,1],summary(stan2)$summary[35:37,1])
 
 
 
@@ -255,5 +258,83 @@ mcmcCoda <- mcmc.list(lapply( 1:ncol(stanFit) ,
 plot(stanFit, pars=c("sigma_t","sigma_p","sigma_e"), main="Variances (Model 1)")
 plot(stanFit2, pars=c("sigma_t","sigma_p","sigma_e"), main="Variances (Model 2)")
 
+
+
+# Comparing lmer and stan results, based on random 200 sites
+
+# Randomly choose 200 sites
+
+set.seed(123)
+indice <- sample(1:dim(FullAnnotation)[1],200,replace=FALSE)
+indice <- sort(indice)
+
+
+# lmer
+
+nSites<-200
+sigmaLMER_200 <- data.frame(sigmaT=numeric(nSites),sigmaP=numeric(nSites),sigmaE=numeric(nSites))
+
+ptm <- proc.time()
+
+count <- 1
+for (i in indice){
+  print(paste("site",i))
+  
+  DataI <- site(i)
+  names(DataI)[1] <- "beta"
+  
+  fit <- lmer(beta ~ tInd + (tInd|patient), DataI)
+  
+  sigmaLMER_200$sigmaT[count] <- as.data.frame(VarCorr(fit))$sdcor[1]
+  sigmaLMER_200$sigmaP[count] <- as.data.frame(VarCorr(fit))$sdcor[2]
+  sigmaLMER_200$sigmaE[count] <- as.data.frame(VarCorr(fit))$sdcor[4]
+  rownames(sigmaLMER_200)[count] <- paste("site",i)
+  
+  count <- count+1
+}
+proc.time() - ptm
+
+
+# stan
+
+Data_200 <- list(NULL)
+count <- 1
+
+ for (i in indice) {
+  Data_200[[count]] <- site(i)
+  count <- count+1
+ }
+
+
+stan_200 <- lapply(Data_200, stanfit)
+
+sigmaSTAN_200 <- as.data.frame(matrix(NA,200,3))
+
+for (i in 1:200) {
+  sigmaSTAN_200[i,] <- summary(stan_200[[i]])$summary[35:37,1]
+}
+
+colnames(sigmaSTAN_200) <- c("sigmaE","sigmaP","sigmaT")
+rownames(sigmaSTAN_200) <- paste("site",indice)
+
+sigmaSTAN_200 <- sigmaSTAN_200[,c(3,2,1)]
+
+# lmer vs. stan
+sigmaDIFF <- sigmaLMER_200 - sigmaSTAN_200
+
+plot(sigmaDIFF$sigmaT, main="Bias of sigma_t", 
+     sub="sigmaLMER - sigmaSTAN",
+     ylab="Difference of sigma_t Estimates")
+abline(h=0, col="red")
+
+plot(sigmaDIFF$sigmaP, main="Bias of sigma_p", 
+     sub="sigmaLMER - sigmaSTAN",
+     ylab="Difference of sigma_p Estimates")
+abline(h=0, col="red")
+
+plot(sigmaDIFF$sigmaE, main="Bias of sigma_e", 
+     sub="sigmaLMER - sigmaSTAN",
+     ylab="Difference of sigma_e Estimates")
+abline(h=0, col="red")
 
 

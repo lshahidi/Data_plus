@@ -15,7 +15,7 @@ $$N_i = b_i ~~~~~~~~~~~~~~~~~~+ \mu + \epsilon_i$$
 * $\mu$ = grand mean
 * $b_i \sim N(0,\sigma^2_P)$
 * $b_T_i \sim N(0,\sigma^2_T)$
-* $\epsilon_i \sim N(0,\sigma^2_y)$
+* $\epsilon_i \sim N(0,\sigma^2_e)$
 
 Please download the "model.stan" file from Git and save it in the folder where all the other data are stored. Please also make sure the annotation file is saved in that folder.
 

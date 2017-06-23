@@ -92,7 +92,6 @@ barplot(ranef(fit4)$patient$'(Intercept)'+ranef(fit1)$patient$tInd, main="Both R
 # proc.time() - ptm
 
 
-
 # plot variances
 library(reshape2)
 library(ggplot2)
@@ -103,6 +102,12 @@ ggplot(gg, aes(x=value, fill=variable)) +
   geom_histogram(binwidth=0.05)+
   facet_grid(variable~.)
 
+# log sigmaT
+logSigT <- log(sigmaLMER2$sigmaT)
+hist(logSigT[logSigT>(-30)],100)
+# log sigmaP
+hist(log(sigmaLMER2$sigmaP),100)
+
 # examine P/T ratio
 PTratio <- sigmaLMER$sigmaP/sigmaLMER$sigmaT
 PTratio[PTratio>100] <- NA
@@ -111,6 +116,12 @@ hist(PTratio,100)
 logPTratio <- log(sigmaLMER$sigmaP/sigmaLMER$sigmaT)
 logPTratio[logPTratio>30] <- NA
 hist(logPTratio,100)
+
+# layout boxplot is at the bottom 
+nf <- layout(mat = matrix(c(1,2),2,1, byrow=TRUE),  height = c(3,1))
+par(mar=c(3.1, 3.1, 1.1, 2.1))
+hist(logPTratio,xlim=c(-15,15),100)
+boxplot(logPTratio, horizontal=TRUE,  outline=TRUE, ylim=c(-15,15), frame=F, width = 10)
 
 mean(PTratio, na.rm=TRUE)
 mean(log(PTratio), na.rm=TRUE)
@@ -122,9 +133,16 @@ ordSigP <- sigmaLMER[order(sigmaLMER$sigmaP),]
 nTail = 8668 #866836/100
 lowP <- head(ordSigP, nTail)
 # number of methylated/unmethylated, based on mu [false true]
-as.numeric(summary(ordSigP$mu>=0)[2:3])/866836
-as.numeric(summary(ordSigP$betaT>=0)[2:3])/866836
-as.numeric(summary(ordSigP$sigmaT>=0)[2:3])/866836
+
+# plot variances again for lowP
+library(reshape2)
+library(ggplot2)
+sigmaLMER2 <- sigmaLMER[,c("sigmaT","sigmaP","sigmaE")]
+sigmaLMER2[sigmaLMER2>2] <- NA
+gg <- melt(sigmaLMER2)
+ggplot(gg, aes(x=value, fill=variable)) +
+  geom_histogram(binwidth=0.05)+
+  facet_grid(variable~.)
 
 # # Extract standard deviation in lmer models
 # 

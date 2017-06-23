@@ -91,15 +91,9 @@ barplot(ranef(fit4)$patient$'(Intercept)'+ranef(fit1)$patient$tInd, main="Both R
 # }
 # proc.time() - ptm
 
-PTratio <- sigmaLMER$sigmaP/sigmaLMER$sigmaT
-PTratio[PTratio>100] <- NA
-hist(PTratio,100)
-
-logPTratio <- log(sigmaLMER$sigmaP/sigmaLMER$sigmaT)
-logPTratio[logPTratio>100] <- NA
-hist(logPTratio,100)
 
 
+# plot variances
 library(reshape2)
 library(ggplot2)
 sigmaLMER2 <- sigmaLMER[,c("sigmaT","sigmaP","sigmaE")]
@@ -109,7 +103,28 @@ ggplot(gg, aes(x=value, fill=variable)) +
   geom_histogram(binwidth=0.05)+
   facet_grid(variable~.)
 
+# examine P/T ratio
+PTratio <- sigmaLMER$sigmaP/sigmaLMER$sigmaT
+PTratio[PTratio>100] <- NA
+hist(PTratio,100)
 
+logPTratio <- log(sigmaLMER$sigmaP/sigmaLMER$sigmaT)
+logPTratio[logPTratio>30] <- NA
+hist(logPTratio,100)
+
+mean(PTratio, na.rm=TRUE)
+mean(log(PTratio), na.rm=TRUE)
+
+# order by sigmaP
+ordSigP <- sigmaLMER[order(sigmaLMER$sigmaP),]
+
+# annotate conserved sites, with low sigmaP
+nTail = 8668 #866836/100
+lowP <- head(ordSigP, nTail)
+# number of methylated/unmethylated, based on mu [false true]
+as.numeric(summary(ordSigP$mu>=0)[2:3])/866836
+as.numeric(summary(ordSigP$betaT>=0)[2:3])/866836
+as.numeric(summary(ordSigP$sigmaT>=0)[2:3])/866836
 
 # # Extract standard deviation in lmer models
 # 

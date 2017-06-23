@@ -306,9 +306,15 @@ count <- 1
  }
 
 
+ptm <- proc.time()
+
 stan_200 <- lapply(Data_200, stanfit)
 
+proc.time() - ptm
+
+
 sigmaSTAN_200 <- as.data.frame(matrix(NA,200,3))
+
 
 for (i in 1:200) {
   sigmaSTAN_200[i,] <- summary(stan_200[[i]])$summary[35:37,1]
@@ -319,11 +325,23 @@ rownames(sigmaSTAN_200) <- paste("site",indice)
 
 sigmaSTAN_200 <- sigmaSTAN_200[,c(3,2,1)]
 
+
+# Variance sum
+sigmaLMER_200$var_sum <- apply(sigmaLMER_200^2,1,sum)
+sigmaSTAN_200$var_sum <- apply(sigmaSTAN_200^2,1,sum)
+
 # lmer vs. stan
 sigmaDIFF <- sigmaLMER_200 - sigmaSTAN_200
 
+
+# Difference mean
 apply(sigmaDIFF,2,mean)
+
+# Difference sd
 sqrt(apply(sigmaDIFF,2,var))
+
+
+
 
 plot(sigmaDIFF$sigmaT, main="Differences of sigma_t", 
      sub="sigmaLMER - sigmaSTAN",

@@ -128,21 +128,23 @@ mean(log(PTratio), na.rm=TRUE)
 
 # order by sigmaP
 ordSigP <- sigmaLMER[order(sigmaLMER$sigmaP),]
+# order by sigmaT
+ordSigT <- sigmaLMER[order(sigmaLMER$sigmaT),]
 
 # annotate conserved sites, with low sigmaP
 nTail = 8668 #866836/100
 lowP <- head(ordSigP, nTail)
 # number of methylated/unmethylated, based on mu [false true]
+as.numeric(summary(lowP$mu>=0)[2:3])/8668
+as.numeric(summary(ordSigP$mu>=0)[2:3])/866836
 
 # plot variances again for lowP
-library(reshape2)
-library(ggplot2)
-sigmaLMER2 <- sigmaLMER[,c("sigmaT","sigmaP","sigmaE")]
-sigmaLMER2[sigmaLMER2>2] <- NA
-gg <- melt(sigmaLMER2)
+gg <- melt(lowP)
 ggplot(gg, aes(x=value, fill=variable)) +
   geom_histogram(binwidth=0.05)+
   facet_grid(variable~.)
+
+plot(ordSigT$sigmaT)
 
 # # Extract standard deviation in lmer models
 # 
@@ -198,14 +200,14 @@ stanfit <- function (dataset) {
   
   # Estimates for first three samples
   # est <- head(as.matrix(stanFit,pars=c("mu","betaT","b_pat","bT_pat"))[,c(1:5,19:21)])
-
+  
   # est2 <- head(as.matrix(stanFit2,pars=c("mu","betaT","b_pat","bT_pat"))[,c(1:5,19:21)])
-
+  
   # Variance
   # var <- head(as.matrix(stanFit,pars=c("sigma_e","sigma_p","sigma_t")))
- 
+  
   # var2 <- head(as.matrix(stanFit2,pars=c("sigma_e","sigma_p","sigma_t")))
- 
+  
   return(stanFit2=stanFit2)
 }
 
@@ -319,10 +321,10 @@ proc.time() - ptm
 Data_200 <- list(NULL)
 count <- 1
 
- for (i in indice) {
+for (i in indice) {
   Data_200[[count]] <- site(i)
   count <- count+1
- }
+}
 
 
 stan_200 <- lapply(Data_200, stanfit)

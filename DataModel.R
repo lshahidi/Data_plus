@@ -12,6 +12,7 @@ library(arm)
 library(rstan)
 library(coda)
 library(gtools)
+library(bayesplot)
 
 # here set the working directory that points to the data folder
 # e.g. the folder with annotated data saved as "myFA.Rdata"
@@ -209,30 +210,40 @@ stanfit <- function (dataset) {
   return(stanFit2=stanFit2)
 }
 
+Data1 <- site(1)
+Data2 <- site(2)
+Data3 <- site(3)
+Data4 <- site(4)
+Data5 <- site(5)
+Data6 <- site(6)
+Data7 <- site(7)
+Data8 <- site(8)
+
+
 stan1 <- stanfit(Data1)
-summary(stan1$stanFit2)
+summary(stan1)
 
 stan2 <- stanfit(Data2)
-summary(stan2$stanFit2)
+summary(stan2)
 
 
 stan3 <- stanfit(Data3)
-summary(stan3$stanFit2)
+summary(stan3)
 
 stan4 <- stanfit(Data4)
-summary(stan4$stanFit2)
+summary(stan4)
 
 stan5 <- stanfit(Data5)
-summary(stan5$stanFit2)
+summary(stan5)
 
 stan6 <- stanfit(Data6)
-summary(stan6$stanFit2)
+summary(stan6)
 
 stan7 <- stanfit(Data7)
-summary(stan7$stanFit2)
+summary(stan7)
 
 stan8 <- stanfit(Data8)
-summary(stan8$stanFit2)
+summary(stan8)
 
 
 plot(stan1$stanFit2, pars=c("sigma_t","sigma_p","sigma_e"))
@@ -248,6 +259,63 @@ plot(stan7$stanFit2, pars=c("sigma_t","sigma_p","sigma_e"))
 plot(stan8$stanFit2, pars=c("sigma_t","sigma_p","sigma_e"))
 
 
+
+# Explore posterior distributions
+
+posterior1 <- as.array(stan1)
+  
+mcmc_areas(
+    posterior1, 
+    pars = c("sigma_e", "sigma_p", "sigma_t"),
+    prob = 0.8, # 80% intervals
+    prob_outer = 0.95, 
+    point_est = "mean"
+)
+  
+
+posterior2 <- as.array(stan2)
+
+mcmc_areas(
+  posterior2, 
+  pars = c("sigma_e", "sigma_p", "sigma_t"),
+  prob = 0.8, # 80% intervals
+  prob_outer = 0.95, 
+  point_est = "mean"
+)
+
+
+posterior3 <- as.array(stan3)
+
+mcmc_areas(
+  posterior3, 
+  pars = c("sigma_e", "sigma_p", "sigma_t"),
+  prob = 0.8, # 80% intervals
+  prob_outer = 0.95, 
+  point_est = "mean"
+)
+
+
+posterior4 <- as.array(stan4)
+
+mcmc_areas(
+  posterior4, 
+  pars = c("sigma_e", "sigma_p", "sigma_t"),
+  prob = 0.8, # 80% intervals
+  prob_outer = 0.95, 
+  point_est = "mean"
+)
+  
+
+posterior5 <- as.array(stan5)
+
+mcmc_areas(
+  posterior5, 
+  pars = c("sigma_e", "sigma_p", "sigma_t"),
+  prob = 0.8, # 80% intervals
+  prob_outer = 0.95, 
+  point_est = "mean"
+)
+  
 
 
 # Extract standard deviation from stan models
@@ -268,14 +336,6 @@ for (i in 1:10) {
 }
 
 
-
-
-# Diagnostic Graphs
-mcmcCoda <- mcmc.list(lapply( 1:ncol(stanFit) ,
-                              function(x) { mcmc(as.array(stanFit)[,x,])} ))
-
-plot(stanFit, pars=c("sigma_t","sigma_p","sigma_e"), main="Variances (Model 1)")
-plot(stanFit2, pars=c("sigma_t","sigma_p","sigma_e"), main="Variances (Model 2)")
 
 
 
@@ -360,7 +420,7 @@ apply(sigmaDIFF,2,mean)
 sqrt(apply(sigmaDIFF,2,var))
 
 
-
+# Plots of differences
 
 plot(sigmaDIFF$sigmaT, main="Differences of sigma_t", 
      sub="sigmaLMER - sigmaSTAN",
@@ -378,4 +438,27 @@ plot(sigmaDIFF$sigmaE, main="Differences of sigma_e",
 abline(h=0, col="red")
 
 
+# Plot of difference of var sum
+plot(sigmaDIFF$var_sum, main="Var Sum of lmer - Var Sum of Stan", 
+     ylab="Difference of Sum")
+abline(h=0, col="red")
 
+# Distribution of sigma
+par(mfrow=c(1,2))
+hist(sigmaLMER_200$sigmaT, main="Distribution of sigmaT (lmer)",
+     xlab="sigmaT (lmer)", breaks=200,xlim=c(0,2.5))
+hist(sigmaSTAN_200$sigmaT, main="Distribution of sigmaT (Stan)",
+     xlab="sigmaT (Stan)", breaks=300,xlim=c(0,2.5))
+
+par(mfrow=c(1,2))
+hist(sigmaLMER_200$sigmaP, main="Distribution of sigmaP (lmer)",
+     xlab="sigmaP (lmer)", breaks=200,xlim=c(0,2))
+hist(sigmaSTAN_200$sigmaP, main="Distribution of sigmaP (Stan)",
+     xlab="sigmaP (Stan)", breaks=300,xlim=c(0,2))
+
+
+par(mfrow=c(1,2))
+hist(sigmaLMER_200$sigmaE, main="Distribution of sigmaE (lmer)",
+     xlab="sigmaE (lmer)", breaks=200,xlim=c(0,1.2))
+hist(sigmaSTAN_200$sigmaE, main="Distribution of sigmaE (Stan)",
+     xlab="sigmaE (Stan)", breaks=300,xlim=c(0,1.2))

@@ -147,35 +147,116 @@ ggplot(gg, aes(x=value, fill=variable)) +
 
 plot(ordSigT$sigmaT)
 
-# # Extract standard deviation in lmer models
-# 
-# sd <- as.data.frame(VarCorr(fit1))[-3,5]
-# names(sd) <- c("sigma_p", "sigma_t", "sigma_e")
-# sd
-# 
-# 
-# 
-# # ALL SITES
-# # Test on first ten sites
-# 
-# Data <- list(NULL)
-# for (i in 1:10) {
-#   Data[[i]] <- site(i)
-# }
-# 
-# fit <- list(NULL)
-# for (i in 1:10) {
-#   fit[[i]] <- lmer(Data[[i]][,1] ~ tInd + (tInd|patient), Data[[i]])
-# }
-# 
-# 
-# temp <- as.data.frame(sapply(lapply(lapply(fit, VarCorr),as.data.frame), '[', i=5))[-3,]
-# 
-# sd_lmer <- t(temp)
-# colnames(sd_lmer) <- c("sigma_p", "sigma_t", "sigma_e")
-# rownames(sd_lmer) <- paste("Site",1:10)
-# 
-# sd_lmer
+
+
+
+
+
+# Variances analysis by functional regions (figure 2)
+
+load("myLMERVars.Rdata")
+sigmaLMER$logr <- log(sigmaLMER$sigmaP/sigmaLMER$sigmaT)
+
+# identify enhancers
+Enhancer <- rep(NA,dim(FullAnnotation)[1])
+for (i in 1:dim(FullAnnotation)[1]) {
+  if (FullAnnotation$Phantom4_Enhancers[i] != '' | FullAnnotation$Phantom5_Enhancers[i] != '') {
+    Enhancer[i] <- 1
+  } else {
+    Enhancer[i] <- 0
+  }
+}
+
+# identify all possibilities in gene groups
+temp <- strsplit(FullAnnotation$UCSC_RefGene_Group,";")
+unique(unlist(temp))
+
+# [1] "TSS1500" "Body"    "3'UTR"   "1stExon" "TSS200"  "5'UTR"   "5URT"    "3UTR"   
+# [9] "ExonBnd"
+
+Promoter <- rep(NA,dim(FullAnnotation)[1])
+Body <- rep(NA,dim(FullAnnotation)[1])
+Exon <- rep(NA,dim(FullAnnotation)[1])
+UTR_5 <- rep(NA,dim(FullAnnotation)[1])
+UTR_3 <- rep(NA,dim(FullAnnotation)[1])
+
+for (i in 1:dim(FullAnnotation)[1]) {
+  split <- strsplit(FullAnnotation$UCSC_RefGene_Group[i],";")
+  
+  if (sum(split[[1]] %in% "TSS1500" | split[[1]] %in% "TSS200") != 0) {
+    Promoter[i] <- 1
+  } else {
+    Promoter[i] <- 0
+  }
+  if (sum(split[[1]] %in% "Body") != 0 ) {
+    Body[i] <- 1
+  } else {
+    Body[i] <- 0
+  }
+  if (sum(split[[1]] %in% "1stExon" | split[[1]] %in% "ExonBnd") != 0 ) {
+    Exon[i] <- 1
+  } else {
+    Exon[i] <- 0
+  }
+  if (sum(split[[1]] %in% "5URT" | split[[1]] %in% "5'UTR") != 0 ) {
+    UTR_5[i] <- 1
+  } else {
+    UTR_5[i] <- 0
+  }
+  if (sum(split[[1]] %in% "3UTR" | split[[1]] %in% "3'UTR") != 0 ) {
+    UTR_3[i] <- 1
+  } else {
+    UTR_3[i] <- 0
+  }
+}
+
+sigmaLMER$Enhancer <- Enhancer
+sigmaLMER$Promoter <- Promoter
+sigmaLMER$Exon <- Exon
+sigmaLMER$Body <- Body
+sigmaLMER$UTR_3 <- UTR_3
+sigmaLMER$UTR_5 <- UTR_5
+
+par(mfrow=c(2,3))
+
+hist(sigmaLMER$logr[sigmaLMER$Enhancer==1],
+     main="Distribution of Enhancers",
+     xlab="log ratio of sigmaP/sigmaT",
+     breaks=1000,xlim=c(-10,10),ylim=c(0,20000),
+     col="cyan")
+
+hist(sigmaLMER$logr[sigmaLMER$Promoter==1],
+     main="Distribution of Promoters",
+     xlab="log ratio of sigmaP/sigmaT",
+     breaks=1000,xlim=c(-10,10),ylim=c(0,20000),
+     col="coral")
+
+hist(sigmaLMER$logr[sigmaLMER$Exon==1],
+     main="Distribution of Exon Regions",
+     xlab="log ratio of sigmaP/sigmaT",
+     breaks=1000,xlim=c(-10,10),ylim=c(0,20000),
+     col="darkorchid1")
+
+hist(sigmaLMER$logr[sigmaLMER$Body==1],
+     main="Distribution of Gene Body",
+     xlab="log ratio of sigmaP/sigmaT",
+     breaks=1000,xlim=c(-10,10),ylim=c(0,20000),
+     col="deeppink")
+
+hist(sigmaLMER$logr[sigmaLMER$UTR_3==1],
+     main="Distribution of 3'UTR",
+     xlab="log ratio of sigmaP/sigmaT",
+     breaks=1000,xlim=c(-10,10),ylim=c(0,15000),
+     col="dodgerblue")
+
+hist(sigmaLMER$logr[sigmaLMER$UTR_5==1],
+     main="Distribution of 5'UTR",
+     xlab="log ratio of sigmaP/sigmaT",
+     breaks=1000,xlim=c(-10,10),ylim=c(0,15000),
+     col="gold")
+
+
+# Analysis 1
 
 
 

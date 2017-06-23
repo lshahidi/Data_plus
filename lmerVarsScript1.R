@@ -37,7 +37,8 @@ site <- function (site_no) {
 
 ## extract variance at all sites
 nSites<-dim(FullAnnotation)[1]
-sigmaLMER <- data.frame(sigmaT=numeric(nSites),sigmaP=numeric(nSites),sigmaE=numeric(nSites))
+nSites<-1000
+sigmaLMER <- data.frame(sigmaT=numeric(nSites),sigmaP=numeric(nSites),sigmaE=numeric(nSites),betaT=numeric(nSites),mu=numeric(nSites))
 
 ptm <- proc.time()
 for (i in 1:nSites){
@@ -51,6 +52,8 @@ for (i in 1:nSites){
   sigmaLMER$sigmaT[i] <- as.data.frame(VarCorr(fit))$sdcor[1]
   sigmaLMER$sigmaP[i] <- as.data.frame(VarCorr(fit))$sdcor[2]
   sigmaLMER$sigmaE[i] <- as.data.frame(VarCorr(fit))$sdcor[4]
+  sigmaLMER$betaT[i] <- fixef(fit)[2]
+  sigmaLMER$mu[i] <- fixef(fit)[1]
 }
 proc.time() - ptm
 

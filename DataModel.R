@@ -29,7 +29,7 @@ setwd("D:/DataPlus2017/Data")
 
 # load fully annotated data (saved from LoadDataAndQC.R)
 load("myFA.Rdata")
-
+load("myLMERVars.Rdata")
 
 # Function used to read in data from each site
 
@@ -51,28 +51,11 @@ site <- function (site_no) {
   return(work)
 }
 
-Data1 <- site(1)
-Data2 <- site(2)
-Data3 <- site(3)
-Data4 <- site(4)
-Data5 <- site(5)
-Data6 <- site(6)
-Data7 <- site(7)
-Data8 <- site(8)
-Data9 <- site(9)
 
 
 ### FIT WITH LMER
 
 fit1 <- lmer(X1 ~ tInd + (tInd|patient), Data1)
-fit2 <- lmer(X2 ~ tInd + (tInd|patient), Data2)
-fit3 <- lmer(X3 ~ tInd + (tInd|patient), Data3)
-fit4 <- lmer(X4 ~ tInd + (tInd|patient), Data4)
-fit5 <- lmer(X5 ~ tInd + (tInd|patient), Data5)
-fit6 <- lmer(X6 ~ tInd + (tInd|patient), Data6)
-fit7 <- lmer(X7 ~ tInd + (tInd|patient), Data7)
-fit8 <- lmer(X8 ~ tInd + (tInd|patient), Data8)
-fit9 <- lmer(X9 ~ tInd + (tInd|patient), Data9)
 
 # fitGland <- lmer(X1 ~ tInd + (tInd|patient) + (0+gInd|patient:side), Data1)
 
@@ -90,40 +73,76 @@ barplot(ranef(fit4)$patient$'(Intercept)'+ranef(fit1)$patient$tInd, main="Both R
 
 
 ## extract variance at 1000 sites
-nSites<-1000
-sigmaLMER <- data.frame(sigmaT=numeric(nSites),sigmaP=numeric(nSites),sigmaE=numeric(nSites))
+# nSites<-1000
+# sigmaLMER <- data.frame(sigmaT=numeric(nSites),sigmaP=numeric(nSites),sigmaE=numeric(nSites))
+# 
+# ptm <- proc.time()
+# for (i in 1:nSites){
+#   print(paste("site ",i))
+#   
+#   DataI <- site(i)
+#   names(DataI)[1] <- "beta"
+#   
+#   fit <- lmer(beta ~ tInd + (tInd|patient), DataI)
+#   
+#   sigmaLMER$sigmaT[i] <- as.data.frame(VarCorr(fit))$sdcor[1]
+#   sigmaLMER$sigmaP[i] <- as.data.frame(VarCorr(fit))$sdcor[2]
+#   sigmaLMER$sigmaE[i] <- as.data.frame(VarCorr(fit))$sdcor[4]
+# }
+# proc.time() - ptm
 
-ptm <- proc.time()
-for (i in 1:nSites){
-  print(paste("site ",i))
-  
-  DataI <- site(i)
-  names(DataI)[1] <- "beta"
-  
-  fit <- lmer(beta ~ tInd + (tInd|patient), DataI)
-  
-  sigmaLMER$sigmaT[i] <- as.data.frame(VarCorr(fit))$sdcor[1]
-  sigmaLMER$sigmaP[i] <- as.data.frame(VarCorr(fit))$sdcor[2]
-  sigmaLMER$sigmaE[i] <- as.data.frame(VarCorr(fit))$sdcor[4]
-}
-proc.time() - ptm
 
+# plot variances
+library(reshape2)
+library(ggplot2)
+sigmaLMER2 <- sigmaLMER[,c("sigmaT","sigmaP","sigmaE")]
+sigmaLMER2[sigmaLMER2>2] <- NA
+gg <- melt(sigmaLMER2)
+ggplot(gg, aes(x=value, fill=variable)) +
+  geom_histogram(binwidth=0.05)+
+  facet_grid(variable~.)
+
+# log sigmaT
+logSigT <- log(sigmaLMER2$sigmaT)
+hist(logSigT[logSigT>(-30)],100)
+# log sigmaP
+hist(log(sigmaLMER2$sigmaP),100)
+
+# examine P/T ratio
 PTratio <- sigmaLMER$sigmaP/sigmaLMER$sigmaT
 PTratio[PTratio>100] <- NA
 hist(PTratio,100)
 
 logPTratio <- log(sigmaLMER$sigmaP/sigmaLMER$sigmaT)
-logPTratio[logPTratio>100] <- NA
+logPTratio[logPTratio>30] <- NA
 hist(logPTratio,100)
 
+# layout boxplot is at the bottom 
+nf <- layout(mat = matrix(c(1,2),2,1, byrow=TRUE),  height = c(3,1))
+par(mar=c(3.1, 3.1, 1.1, 2.1))
+hist(logPTratio,xlim=c(-15,15),100)
+boxplot(logPTratio, horizontal=TRUE,  outline=TRUE, ylim=c(-15,15), frame=F, width = 10)
+
+mean(PTratio, na.rm=TRUE)
+mean(log(PTratio), na.rm=TRUE)
+
+# order by sigmaP
+ordSigP <- sigmaLMER[order(sigmaLMER$sigmaP),]
+
+# annotate conserved sites, with low sigmaP
+nTail = 8668 #866836/100
+lowP <- head(ordSigP, nTail)
+# number of methylated/unmethylated, based on mu [false true]
+
+# plot variances again for lowP
 library(reshape2)
 library(ggplot2)
-gg <- melt(sigmaLMER)
+sigmaLMER2 <- sigmaLMER[,c("sigmaT","sigmaP","sigmaE")]
+sigmaLMER2[sigmaLMER2>2] <- NA
+gg <- melt(sigmaLMER2)
 ggplot(gg, aes(x=value, fill=variable)) +
   geom_histogram(binwidth=0.05)+
   facet_grid(variable~.)
-
-
 
 # # Extract standard deviation in lmer models
 # 

@@ -14,6 +14,7 @@ library(coda)
 library(gtools)
 library(reshape2)
 library(ggplot2)
+library(bayesplot)
 
 # here set the working directory that points to the data folder
 # e.g. the folder with annotated data saved as "myFA.Rdata"
@@ -177,35 +178,116 @@ ggplot(data = ordSigT, aes(x=seq_along(ordSigT$sigmaT), y=sigmaE), xlab="Index, 
 ggplot(data = ordSigT, aes(x=seq_along(ordSigT$sigmaT), y=logPTratio), xlab="Index, ordered by sigmaT") + geom_line()
 
 
-# # Extract standard deviation in lmer models
-# 
-# sd <- as.data.frame(VarCorr(fit1))[-3,5]
-# names(sd) <- c("sigma_p", "sigma_t", "sigma_e")
-# sd
-# 
-# 
-# 
-# # ALL SITES
-# # Test on first ten sites
-# 
-# Data <- list(NULL)
-# for (i in 1:10) {
-#   Data[[i]] <- site(i)
-# }
-# 
-# fit <- list(NULL)
-# for (i in 1:10) {
-#   fit[[i]] <- lmer(Data[[i]][,1] ~ tInd + (tInd|patient), Data[[i]])
-# }
-# 
-# 
-# temp <- as.data.frame(sapply(lapply(lapply(fit, VarCorr),as.data.frame), '[', i=5))[-3,]
-# 
-# sd_lmer <- t(temp)
-# colnames(sd_lmer) <- c("sigma_p", "sigma_t", "sigma_e")
-# rownames(sd_lmer) <- paste("Site",1:10)
-# 
-# sd_lmer
+
+
+
+
+
+# Variances analysis by functional regions (figure 2)
+
+load("myLMERVars.Rdata")
+sigmaLMER$logr <- log(sigmaLMER$sigmaP/sigmaLMER$sigmaT)
+
+# identify enhancers
+Enhancer <- rep(NA,dim(FullAnnotation)[1])
+for (i in 1:dim(FullAnnotation)[1]) {
+  if (FullAnnotation$Phantom4_Enhancers[i] != '' | FullAnnotation$Phantom5_Enhancers[i] != '') {
+    Enhancer[i] <- 1
+  } else {
+    Enhancer[i] <- 0
+  }
+}
+
+# identify all possibilities in gene groups
+temp <- strsplit(FullAnnotation$UCSC_RefGene_Group,";")
+unique(unlist(temp))
+
+# [1] "TSS1500" "Body"    "3'UTR"   "1stExon" "TSS200"  "5'UTR"   "5URT"    "3UTR"   
+# [9] "ExonBnd"
+
+Promoter <- rep(NA,dim(FullAnnotation)[1])
+Body <- rep(NA,dim(FullAnnotation)[1])
+Exon <- rep(NA,dim(FullAnnotation)[1])
+UTR_5 <- rep(NA,dim(FullAnnotation)[1])
+UTR_3 <- rep(NA,dim(FullAnnotation)[1])
+
+for (i in 1:dim(FullAnnotation)[1]) {
+  split <- strsplit(FullAnnotation$UCSC_RefGene_Group[i],";")
+  
+  if (sum(split[[1]] %in% "TSS1500" | split[[1]] %in% "TSS200") != 0) {
+    Promoter[i] <- 1
+  } else {
+    Promoter[i] <- 0
+  }
+  if (sum(split[[1]] %in% "Body") != 0 ) {
+    Body[i] <- 1
+  } else {
+    Body[i] <- 0
+  }
+  if (sum(split[[1]] %in% "1stExon" | split[[1]] %in% "ExonBnd") != 0 ) {
+    Exon[i] <- 1
+  } else {
+    Exon[i] <- 0
+  }
+  if (sum(split[[1]] %in% "5URT" | split[[1]] %in% "5'UTR") != 0 ) {
+    UTR_5[i] <- 1
+  } else {
+    UTR_5[i] <- 0
+  }
+  if (sum(split[[1]] %in% "3UTR" | split[[1]] %in% "3'UTR") != 0 ) {
+    UTR_3[i] <- 1
+  } else {
+    UTR_3[i] <- 0
+  }
+}
+
+sigmaLMER$Enhancer <- Enhancer
+sigmaLMER$Promoter <- Promoter
+sigmaLMER$Exon <- Exon
+sigmaLMER$Body <- Body
+sigmaLMER$UTR_3 <- UTR_3
+sigmaLMER$UTR_5 <- UTR_5
+
+par(mfrow=c(2,3))
+
+hist(sigmaLMER$logr[sigmaLMER$Enhancer==1],
+     main="Distribution of Enhancers",
+     xlab="log ratio of sigmaP/sigmaT",
+     breaks=1000,xlim=c(-10,10),ylim=c(0,20000),
+     col="cyan")
+
+hist(sigmaLMER$logr[sigmaLMER$Promoter==1],
+     main="Distribution of Promoters",
+     xlab="log ratio of sigmaP/sigmaT",
+     breaks=1000,xlim=c(-10,10),ylim=c(0,20000),
+     col="coral")
+
+hist(sigmaLMER$logr[sigmaLMER$Exon==1],
+     main="Distribution of Exon Regions",
+     xlab="log ratio of sigmaP/sigmaT",
+     breaks=1000,xlim=c(-10,10),ylim=c(0,20000),
+     col="darkorchid1")
+
+hist(sigmaLMER$logr[sigmaLMER$Body==1],
+     main="Distribution of Gene Body",
+     xlab="log ratio of sigmaP/sigmaT",
+     breaks=1000,xlim=c(-10,10),ylim=c(0,20000),
+     col="deeppink")
+
+hist(sigmaLMER$logr[sigmaLMER$UTR_3==1],
+     main="Distribution of 3'UTR",
+     xlab="log ratio of sigmaP/sigmaT",
+     breaks=1000,xlim=c(-10,10),ylim=c(0,15000),
+     col="dodgerblue")
+
+hist(sigmaLMER$logr[sigmaLMER$UTR_5==1],
+     main="Distribution of 5'UTR",
+     xlab="log ratio of sigmaP/sigmaT",
+     breaks=1000,xlim=c(-10,10),ylim=c(0,15000),
+     col="gold")
+
+
+# Analysis 1
 
 
 
@@ -242,30 +324,40 @@ stanfit <- function (dataset) {
   return(stanFit2=stanFit2)
 }
 
+Data1 <- site(1)
+Data2 <- site(2)
+Data3 <- site(3)
+Data4 <- site(4)
+Data5 <- site(5)
+Data6 <- site(6)
+Data7 <- site(7)
+Data8 <- site(8)
+
+
 stan1 <- stanfit(Data1)
-summary(stan1$stanFit2)
+summary(stan1)
 
 stan2 <- stanfit(Data2)
-summary(stan2$stanFit2)
+summary(stan2)
 
 
 stan3 <- stanfit(Data3)
-summary(stan3$stanFit2)
+summary(stan3)
 
 stan4 <- stanfit(Data4)
-summary(stan4$stanFit2)
+summary(stan4)
 
 stan5 <- stanfit(Data5)
-summary(stan5$stanFit2)
+summary(stan5)
 
 stan6 <- stanfit(Data6)
-summary(stan6$stanFit2)
+summary(stan6)
 
 stan7 <- stanfit(Data7)
-summary(stan7$stanFit2)
+summary(stan7)
 
 stan8 <- stanfit(Data8)
-summary(stan8$stanFit2)
+summary(stan8)
 
 
 plot(stan1$stanFit2, pars=c("sigma_t","sigma_p","sigma_e"))
@@ -281,6 +373,63 @@ plot(stan7$stanFit2, pars=c("sigma_t","sigma_p","sigma_e"))
 plot(stan8$stanFit2, pars=c("sigma_t","sigma_p","sigma_e"))
 
 
+
+# Explore posterior distributions
+
+posterior1 <- as.array(stan1)
+  
+mcmc_areas(
+    posterior1, 
+    pars = c("sigma_e", "sigma_p", "sigma_t"),
+    prob = 0.8, # 80% intervals
+    prob_outer = 0.95, 
+    point_est = "mean"
+)
+  
+
+posterior2 <- as.array(stan2)
+
+mcmc_areas(
+  posterior2, 
+  pars = c("sigma_e", "sigma_p", "sigma_t"),
+  prob = 0.8, # 80% intervals
+  prob_outer = 0.95, 
+  point_est = "mean"
+)
+
+
+posterior3 <- as.array(stan3)
+
+mcmc_areas(
+  posterior3, 
+  pars = c("sigma_e", "sigma_p", "sigma_t"),
+  prob = 0.8, # 80% intervals
+  prob_outer = 0.95, 
+  point_est = "mean"
+)
+
+
+posterior4 <- as.array(stan4)
+
+mcmc_areas(
+  posterior4, 
+  pars = c("sigma_e", "sigma_p", "sigma_t"),
+  prob = 0.8, # 80% intervals
+  prob_outer = 0.95, 
+  point_est = "mean"
+)
+  
+
+posterior5 <- as.array(stan5)
+
+mcmc_areas(
+  posterior5, 
+  pars = c("sigma_e", "sigma_p", "sigma_t"),
+  prob = 0.8, # 80% intervals
+  prob_outer = 0.95, 
+  point_est = "mean"
+)
+  
 
 
 # Extract standard deviation from stan models
@@ -301,14 +450,6 @@ for (i in 1:10) {
 }
 
 
-
-
-# Diagnostic Graphs
-mcmcCoda <- mcmc.list(lapply( 1:ncol(stanFit) ,
-                              function(x) { mcmc(as.array(stanFit)[,x,])} ))
-
-plot(stanFit, pars=c("sigma_t","sigma_p","sigma_e"), main="Variances (Model 1)")
-plot(stanFit2, pars=c("sigma_t","sigma_p","sigma_e"), main="Variances (Model 2)")
 
 
 
@@ -393,7 +534,7 @@ apply(sigmaDIFF,2,mean)
 sqrt(apply(sigmaDIFF,2,var))
 
 
-
+# Plots of differences
 
 plot(sigmaDIFF$sigmaT, main="Differences of sigma_t", 
      sub="sigmaLMER - sigmaSTAN",
@@ -411,4 +552,27 @@ plot(sigmaDIFF$sigmaE, main="Differences of sigma_e",
 abline(h=0, col="red")
 
 
+# Plot of difference of var sum
+plot(sigmaDIFF$var_sum, main="Var Sum of lmer - Var Sum of Stan", 
+     ylab="Difference of Sum")
+abline(h=0, col="red")
 
+# Distribution of sigma
+par(mfrow=c(1,2))
+hist(sigmaLMER_200$sigmaT, main="Distribution of sigmaT (lmer)",
+     xlab="sigmaT (lmer)", breaks=200,xlim=c(0,2.5))
+hist(sigmaSTAN_200$sigmaT, main="Distribution of sigmaT (Stan)",
+     xlab="sigmaT (Stan)", breaks=300,xlim=c(0,2.5))
+
+par(mfrow=c(1,2))
+hist(sigmaLMER_200$sigmaP, main="Distribution of sigmaP (lmer)",
+     xlab="sigmaP (lmer)", breaks=200,xlim=c(0,2))
+hist(sigmaSTAN_200$sigmaP, main="Distribution of sigmaP (Stan)",
+     xlab="sigmaP (Stan)", breaks=300,xlim=c(0,2))
+
+
+par(mfrow=c(1,2))
+hist(sigmaLMER_200$sigmaE, main="Distribution of sigmaE (lmer)",
+     xlab="sigmaE (lmer)", breaks=200,xlim=c(0,1.2))
+hist(sigmaSTAN_200$sigmaE, main="Distribution of sigmaE (Stan)",
+     xlab="sigmaE (Stan)", breaks=300,xlim=c(0,1.2))

@@ -12,6 +12,8 @@ library(arm)
 library(rstan)
 library(coda)
 library(gtools)
+library(reshape2)
+library(ggplot2)
 
 # here set the working directory that points to the data folder
 # e.g. the folder with annotated data saved as "myFA.Rdata"
@@ -93,8 +95,6 @@ barplot(ranef(fit4)$patient$'(Intercept)'+ranef(fit1)$patient$tInd, main="Both R
 
 
 # plot variances
-library(reshape2)
-library(ggplot2)
 sigmaLMER2 <- sigmaLMER[,c("sigmaT","sigmaP","sigmaE")]
 sigmaLMER2[sigmaLMER2>2] <- NA
 gg <- melt(sigmaLMER2)
@@ -139,12 +139,43 @@ as.numeric(summary(lowP$mu>=0)[2:3])/8668
 as.numeric(summary(ordSigP$mu>=0)[2:3])/866836
 
 # plot variances again for lowP
-gg <- melt(lowP)
+lowPsigs <- lowP[,c("sigmaT","sigmaP","sigmaE")]
+lowPsigs[lowPsigs>2] <- NA
+gg <- melt(lowPsigs)
 ggplot(gg, aes(x=value, fill=variable)) +
   geom_histogram(binwidth=0.05)+
   facet_grid(variable~.)
 
-plot(ordSigT$sigmaT)
+# print annotated gene names for lowP sites
+lowPnames <- FullAnnotation$UCSC_RefGene_Name[as.numeric(row.names(lowP))]
+uniqueNames <- list()
+for (i in 1:8668) {
+  uniqueNames <- c(uniqueNames, unique(unlist(strsplit(lowPnames[i],split=";"))))
+}
+uniqueNames <- unique(unlist(uniqueNames))
+
+lowlowP <- head(ordSigP, 1000)
+lowlowPnames <- FullAnnotation$UCSC_RefGene_Name[as.numeric(row.names(lowlowP))]
+uniqueNames <- list()
+for (i in 1:8668) {
+  uniqueNames <- c(uniqueNames, unique(unlist(strsplit(lowlowPnames[i],split=";"))))
+}
+uniqueNames <- unique(unlist(uniqueNames))
+
+# return indices of genes containing “GAPDH”
+# grep('GAPDH', uniqueNames)
+
+# return names of same genes
+grep('APC', uniqueNames, value=TRUE)
+
+
+
+# figure 3 - sort sigma T (done above) and plot in order with other sigmas
+ggplot(data = ordSigT, aes(x=seq_along(ordSigT$sigmaT), y=sigmaT), xlab="Index, ordered by sigmaT") + geom_line()
+ggplot(data = ordSigT, aes(x=seq_along(ordSigT$sigmaT), y=sigmaP), xlab="Index, ordered by sigmaT") + geom_line()
+ggplot(data = ordSigT, aes(x=seq_along(ordSigT$sigmaT), y=sigmaE), xlab="Index, ordered by sigmaT") + geom_line()
+ggplot(data = ordSigT, aes(x=seq_along(ordSigT$sigmaT), y=logPTratio), xlab="Index, ordered by sigmaT") + geom_line()
+
 
 # # Extract standard deviation in lmer models
 # 

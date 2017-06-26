@@ -15,7 +15,7 @@ library(gtools)
 library(reshape2)
 library(ggplot2)
 library(bayesplot)
-library(FSA)
+library(dunn.test)
 
 # here set the working directory that points to the data folder
 # e.g. the folder with annotated data saved as "myFA.Rdata"
@@ -325,7 +325,7 @@ plot(test)
 kruskal.test(y~region, data=test.data)
 
 # Dunn test for multiple comparison 
-dunnTest(y~region, data=test.data, method="bh")
+dunn.test(test.data$y,test.data$region, method="bh")
 
 
 # visualizaion

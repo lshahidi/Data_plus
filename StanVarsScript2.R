@@ -1,5 +1,5 @@
 # script for extracting variance from Stan model 
-# part 1: on sites 1-425K
+# part 2: on second half
 
 
 library(rstan)
@@ -49,7 +49,7 @@ nsites <- dim(FullAnnotation)[1]/2
 
 Data <- list(NULL)
 
-for (i in 1:nsites) {
+for (i in (nsites+1):(2*nsites)) {
   Data[[count]] <- site(i)
 }
 
@@ -63,9 +63,9 @@ for (i in 1:nsites) {
 }
 
 colnames(sigmaSTAN) <- c("sigmaE","sigmaP","sigmaT")
-rownames(sigmaSTAN) <- paste("site",1:nsites)
+rownames(sigmaSTAN) <- paste("site",(nsites+1):(2*nsites))
 
 sigmaSTAN <- sigmaSTAN[,c(3,2,1)]
 
 # save data
-save(sigmaSTAN,file="mySTANVars1.RData")
+save(sigmaSTAN,file="mySTANVars2.RData")

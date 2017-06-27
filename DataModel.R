@@ -310,6 +310,25 @@ test.data <- data.frame(y=c(r_enhancer,r_promoter,r_exon,r_body,r_3,r_5),
 # Elimintate infinite values
 test.data <- test.data[test.data$y != Inf,]
 
+
+
+mean(test.data$y[test.data$region=="Enhancer"])
+mean(test.data$y[test.data$region=="Promoter"])
+mean(test.data$y[test.data$region=="Exon"])
+mean(test.data$y[test.data$region=="Body"])
+mean(test.data$y[test.data$region=="3'UTR"])
+mean(test.data$y[test.data$region=="5'UTR"])
+
+
+median(test.data$y[test.data$region=="Enhancer"])
+median(test.data$y[test.data$region=="Promoter"])
+median(test.data$y[test.data$region=="Exon"])
+median(test.data$y[test.data$region=="Body"])
+median(test.data$y[test.data$region=="3'UTR"])
+median(test.data$y[test.data$region=="5'UTR"])
+
+
+
 test <- aov(y ~ region, data=test.data)
 anova(test)
 

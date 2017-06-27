@@ -4,9 +4,6 @@
 
 ### INITIALIZE
 
-# install.packages("coda")
-# install.packages("gtools")
-
 library(lme4)
 library(arm)
 library(rstan)
@@ -15,7 +12,6 @@ library(gtools)
 library(reshape2)
 library(ggplot2)
 library(bayesplot)
-library(dunn.test)
 
 # here set the working directory that points to the data folder
 # e.g. the folder with annotated data saved as "myFA.Rdata"
@@ -128,10 +124,15 @@ boxplot(logPTratio, horizontal=TRUE,  outline=TRUE, ylim=c(-15,15), frame=F, wid
 mean(PTratio, na.rm=TRUE)
 mean(log(PTratio), na.rm=TRUE)
 
+sigmaLMER$logPTratio <- logPTratio
+
+inf2NA <- function(x) { x[is.infinite(x)] <- NA; x }
 # order by sigmaP
 ordSigP <- sigmaLMER[order(sigmaLMER$sigmaP),]
+ordSigP$logPTratio <- inf2NA(ordSigP$logPTratio)
 # order by sigmaT
 ordSigT <- sigmaLMER[order(sigmaLMER$sigmaT),]
+ordSigT$logPTratio <- inf2NA(ordSigT$logPTratio)
 
 # annotate conserved sites, with low sigmaP
 nTail = 8668 #866836/100
@@ -156,11 +157,13 @@ for (i in 1:8668) {
 }
 uniqueNames <- unique(unlist(uniqueNames))
 
-lowlowP <- head(ordSigP, 1000)
-lowlowPnames <- FullAnnotation$UCSC_RefGene_Name[as.numeric(row.names(lowlowP))]
+# order by sigma T, select top 10%
+lowPordSigT <- lowP[order(lowP$sigmaT),]
+lowPhiT <- tail(lowPordSigT,2000)
+lowPhiTnames <- FullAnnotation$UCSC_RefGene_Name[as.numeric(row.names(lowPhiT))]
 uniqueNames <- list()
 for (i in 1:8668) {
-  uniqueNames <- c(uniqueNames, unique(unlist(strsplit(lowlowPnames[i],split=";"))))
+  uniqueNames <- c(uniqueNames, unique(unlist(strsplit(lowPhiTnames[i],split=";"))))
 }
 uniqueNames <- unique(unlist(uniqueNames))
 
@@ -171,18 +174,60 @@ uniqueNames <- unique(unlist(uniqueNames))
 grep('APC', uniqueNames, value=TRUE)
 
 
-
 # figure 3 - sort sigma T (done above) and plot in order with other sigmas
-ggplot(data = ordSigT, aes(x=seq_along(ordSigT$sigmaT), y=sigmaT), xlab="Index, ordered by sigmaT") + geom_line()
-ggplot(data = ordSigT, aes(x=seq_along(ordSigT$sigmaT), y=sigmaP), xlab="Index, ordered by sigmaT") + geom_line()
-ggplot(data = ordSigT, aes(x=seq_along(ordSigT$sigmaT), y=sigmaE), xlab="Index, ordered by sigmaT") + geom_line()
-ggplot(data = ordSigT, aes(x=seq_along(ordSigT$sigmaT), y=logPTratio), xlab="Index, ordered by sigmaT") + geom_line()
+ggplot(data = ordSigT, aes(x=seq_along(ordSigT$sigmaT), y=sigmaT)) + geom_point(alpha = 0.05) + labs(x="Index, ordered by sigmaT")
+ggplot(data = ordSigT, aes(x=seq_along(ordSigT$sigmaT), y=sigmaP)) + geom_point(alpha = 0.05) + labs(x="Index, ordered by sigmaT")
+ggplot(data = ordSigT, aes(x=seq_along(ordSigT$sigmaT), y=sigmaE)) + geom_point(alpha = 0.05) + labs(x="Index, ordered by sigmaT")
+ggplot(data = ordSigT, aes(x=seq_along(ordSigT$sigmaT), y=logPTratio)) + geom_point(alpha = 0.05) + labs(x="Index, ordered by sigmaT")
 
 
+# same for sigma p
+ggplot(data = ordSigP, aes(x=seq_along(ordSigT$sigmaP), y=sigmaP)) + geom_point(alpha = 0.05) + labs(x="Index, ordered by sigmaP")
+ggplot(data = ordSigP, aes(x=seq_along(ordSigT$sigmaP), y=sigmaT)) + geom_point(alpha = 0.05) + labs(x="Index, ordered by sigmaP")
+ggplot(data = ordSigP, aes(x=seq_along(ordSigT$sigmaP), y=sigmaE)) + geom_point(alpha = 0.05) + labs(x="Index, ordered by sigmaP")
+ggplot(data = ordSigP, aes(x=seq_along(ordSigT$sigmaP), y=logPTratio)) + geom_point(alpha = 0.05) + labs(x="Index, ordered by sigmaP")
+
+cor(ordSigT$sigmaT,ordSigT$logPTratio, use = "pairwise.complete.obs")
+cor(ordSigP$sigmaP,ordSigP$logPTratio, use = "pairwise.complete.obs")
 
 
+# take all zero sigmaT
+zeroSigT <- head(ordSigT,112790)
+gg <- melt(zeroSigT[c("sigmaP","sigmaE")])
+ggplot(gg, aes(x=value, fill=variable)) +
+  geom_histogram(binwidth=0.05)+
+  facet_grid(variable~.)
+zeroSigTraw <- FullAnnotation[as.numeric(row.names(zeroSigT)),]
+zeroSigTraw2 <- site(as.numeric(row.names(zeroSigT)))
 
 
+# find sites with unique names
+geneNames <- list(866836)
+for (i in 1:866836) {
+  geneNames[[i]] <- unique(unlist(strsplit(FullAnnotation$UCSC_RefGene_Name[i],split=";")))
+}
+# return indices of sites specifically named "APC", and so on
+APCind <- grep('APC', geneNames)[(grep('APC', geneNames, value=TRUE)=="APC")]
+TP53ind <- grep('TP53', geneNames)[(grep('TP53', geneNames, value=TRUE)=="TP53")]
+TTNind <- grep('TTN', geneNames)[(grep('TTN', geneNames, value=TRUE)=="TTN")]
+B2Mind <- grep('B2M', geneNames)[(grep('B2M', geneNames, value=TRUE)=="B2M")]
+HLAAind <- grep('HLA-A', geneNames)[(grep('HLA-A', geneNames, value=TRUE)=="HLA-A")]
+HLABind <- grep('HLA-B', geneNames)[(grep('HLA-B', geneNames, value=TRUE)=="HLA-B")]
+
+# plot histogram of PT ratio
+df <- data.frame(inf2NA(logPTratio))
+ggplot(df, aes(x=logPTratio)) + geom_histogram(bins = 100) + ggtitle("APC locations") + xlim(c(-15,15)) + annotate("text", x=logPTratio[APCind], y = rep(c(20000,25000,30000,35000,40000),11), label="V")
+mean(logPTratio[APCind], na.rm=TRUE)
+ggplot(df, aes(x=logPTratio)) + geom_histogram(bins = 100) + ggtitle("TP53 locations") + xlim(c(-15,15)) + annotate("text", x=logPTratio[TP53ind], y = rep(c(20000,25000,30000,35000,40000),3), label="V")
+mean(logPTratio[TP53ind], na.rm=TRUE)
+ggplot(df, aes(x=logPTratio)) + geom_histogram(bins = 100) + ggtitle("TTN locations") + xlim(c(-15,15)) + annotate("text", x=logPTratio[TTNind], y = rep(c(20000,25000,30000,35000,40000),7), label="V")
+mean(logPTratio[TTNind], na.rm=TRUE)
+ggplot(df, aes(x=logPTratio)) + geom_histogram(bins = 100) + ggtitle("B2M locations") + xlim(c(-15,15)) + annotate("text", x=logPTratio[B2Mind], y = rep(c(20000,25000,30000,35000,40000),5)[-1], label="V")
+mean(logPTratio[B2Mind], na.rm=TRUE)
+ggplot(df, aes(x=logPTratio)) + geom_histogram(bins = 100) + ggtitle("HLA-A locations") + xlim(c(-15,15)) + annotate("text", x=logPTratio[HLAAind], y = rep(c(20000,25000,30000,35000,40000),7)[-1], label="V")
+mean(logPTratio[HLAAind], na.rm=TRUE)
+ggplot(df, aes(x=logPTratio)) + geom_histogram(bins = 100) + ggtitle("HLA-B locations") + xlim(c(-15,15)) + annotate("text", x=logPTratio[HLABind], y = rep(c(20000,25000,30000,35000,40000),9)[-1:-2], label="V")
+mean(logPTratio[HLABind], na.rm=TRUE)
 
 # Variances analysis by functional regions (figure 2)
 
@@ -290,6 +335,7 @@ hist(sigmaLMER$logr[sigmaLMER$UTR_5==1],
 
 # Analysis 1
 
+<<<<<<< HEAD
 r_enhancer <- sigmaLMER$logr[sigmaLMER$Enhancer==1]
 r_promoter <- sigmaLMER$logr[sigmaLMER$Promoter==1]
 r_exon <- sigmaLMER$logr[sigmaLMER$Exon==1]
@@ -346,9 +392,9 @@ kruskal.test(y~region, data=test.data)
 # Dunn test for multiple comparison 
 dunn.test(test.data$y,test.data$region, method="bh")
 
+=======
+>>>>>>> 352af2fea302103c784daf541a15f9f4c9ed7397
 
-# visualizaion
-boxplot(test.data$y ~ test.data$region, ylim=c(-20,300))
 
 ### FIT WITH STAN
 

@@ -12,7 +12,6 @@ library(gtools)
 library(reshape2)
 library(ggplot2)
 library(bayesplot)
-library(dunn.test)
 
 # here set the working directory that points to the data folder
 # e.g. the folder with annotated data saved as "myFA.Rdata"
@@ -127,10 +126,13 @@ mean(log(PTratio), na.rm=TRUE)
 
 sigmaLMER$logPTratio <- logPTratio
 
+inf2NA <- function(x) { x[is.infinite(x)] <- NA; x }
 # order by sigmaP
 ordSigP <- sigmaLMER[order(sigmaLMER$sigmaP),]
+ordSigP$logPTratio <- inf2NA(ordSigP$logPTratio)
 # order by sigmaT
 ordSigT <- sigmaLMER[order(sigmaLMER$sigmaT),]
+ordSigT$logPTratio <- inf2NA(ordSigT$logPTratio)
 
 # annotate conserved sites, with low sigmaP
 nTail = 8668 #866836/100
@@ -172,18 +174,60 @@ uniqueNames <- unique(unlist(uniqueNames))
 grep('APC', uniqueNames, value=TRUE)
 
 
-
 # figure 3 - sort sigma T (done above) and plot in order with other sigmas
-ggplot(data = ordSigT, aes(x=seq_along(ordSigT$sigmaT), y=sigmaT), xlab="Index, ordered by sigmaT") + geom_point()
-ggplot(data = ordSigT, aes(x=seq_along(ordSigT$sigmaT), y=sigmaP), xlab="Index, ordered by sigmaT") + geom_point()
-ggplot(data = ordSigT, aes(x=seq_along(ordSigT$sigmaT), y=sigmaE), xlab="Index, ordered by sigmaT") + geom_point()
-ggplot(data = ordSigT, aes(x=seq_along(ordSigT$sigmaT), y=logPTratio), xlab="Index, ordered by sigmaT") + geom_point()
+ggplot(data = ordSigT, aes(x=seq_along(ordSigT$sigmaT), y=sigmaT)) + geom_point(alpha = 0.05) + labs(x="Index, ordered by sigmaT")
+ggplot(data = ordSigT, aes(x=seq_along(ordSigT$sigmaT), y=sigmaP)) + geom_point(alpha = 0.05) + labs(x="Index, ordered by sigmaT")
+ggplot(data = ordSigT, aes(x=seq_along(ordSigT$sigmaT), y=sigmaE)) + geom_point(alpha = 0.05) + labs(x="Index, ordered by sigmaT")
+ggplot(data = ordSigT, aes(x=seq_along(ordSigT$sigmaT), y=logPTratio)) + geom_point(alpha = 0.05) + labs(x="Index, ordered by sigmaT")
 
 
+# same for sigma p
+ggplot(data = ordSigP, aes(x=seq_along(ordSigT$sigmaP), y=sigmaP)) + geom_point(alpha = 0.05) + labs(x="Index, ordered by sigmaP")
+ggplot(data = ordSigP, aes(x=seq_along(ordSigT$sigmaP), y=sigmaT)) + geom_point(alpha = 0.05) + labs(x="Index, ordered by sigmaP")
+ggplot(data = ordSigP, aes(x=seq_along(ordSigT$sigmaP), y=sigmaE)) + geom_point(alpha = 0.05) + labs(x="Index, ordered by sigmaP")
+ggplot(data = ordSigP, aes(x=seq_along(ordSigT$sigmaP), y=logPTratio)) + geom_point(alpha = 0.05) + labs(x="Index, ordered by sigmaP")
+
+cor(ordSigT$sigmaT,ordSigT$logPTratio, use = "pairwise.complete.obs")
+cor(ordSigP$sigmaP,ordSigP$logPTratio, use = "pairwise.complete.obs")
 
 
+# take all zero sigmaT
+zeroSigT <- head(ordSigT,112790)
+gg <- melt(zeroSigT[c("sigmaP","sigmaE")])
+ggplot(gg, aes(x=value, fill=variable)) +
+  geom_histogram(binwidth=0.05)+
+  facet_grid(variable~.)
+zeroSigTraw <- FullAnnotation[as.numeric(row.names(zeroSigT)),]
+zeroSigTraw2 <- site(as.numeric(row.names(zeroSigT)))
 
 
+# find sites with unique names
+geneNames <- list(866836)
+for (i in 1:866836) {
+  geneNames[[i]] <- unique(unlist(strsplit(FullAnnotation$UCSC_RefGene_Name[i],split=";")))
+}
+# return indices of sites specifically named "APC", and so on
+APCind <- grep('APC', geneNames)[(grep('APC', geneNames, value=TRUE)=="APC")]
+TP53ind <- grep('TP53', geneNames)[(grep('TP53', geneNames, value=TRUE)=="TP53")]
+TTNind <- grep('TTN', geneNames)[(grep('TTN', geneNames, value=TRUE)=="TTN")]
+B2Mind <- grep('B2M', geneNames)[(grep('B2M', geneNames, value=TRUE)=="B2M")]
+HLAAind <- grep('HLA-A', geneNames)[(grep('HLA-A', geneNames, value=TRUE)=="HLA-A")]
+HLABind <- grep('HLA-B', geneNames)[(grep('HLA-B', geneNames, value=TRUE)=="HLA-B")]
+
+# plot histogram of PT ratio
+df <- data.frame(inf2NA(logPTratio))
+ggplot(df, aes(x=logPTratio)) + geom_histogram(bins = 100) + ggtitle("APC locations") + xlim(c(-15,15)) + annotate("text", x=logPTratio[APCind], y = rep(c(20000,25000,30000,35000,40000),11), label="V")
+mean(logPTratio[APCind], na.rm=TRUE)
+ggplot(df, aes(x=logPTratio)) + geom_histogram(bins = 100) + ggtitle("TP53 locations") + xlim(c(-15,15)) + annotate("text", x=logPTratio[TP53ind], y = rep(c(20000,25000,30000,35000,40000),3), label="V")
+mean(logPTratio[TP53ind], na.rm=TRUE)
+ggplot(df, aes(x=logPTratio)) + geom_histogram(bins = 100) + ggtitle("TTN locations") + xlim(c(-15,15)) + annotate("text", x=logPTratio[TTNind], y = rep(c(20000,25000,30000,35000,40000),7), label="V")
+mean(logPTratio[TTNind], na.rm=TRUE)
+ggplot(df, aes(x=logPTratio)) + geom_histogram(bins = 100) + ggtitle("B2M locations") + xlim(c(-15,15)) + annotate("text", x=logPTratio[B2Mind], y = rep(c(20000,25000,30000,35000,40000),5)[-1], label="V")
+mean(logPTratio[B2Mind], na.rm=TRUE)
+ggplot(df, aes(x=logPTratio)) + geom_histogram(bins = 100) + ggtitle("HLA-A locations") + xlim(c(-15,15)) + annotate("text", x=logPTratio[HLAAind], y = rep(c(20000,25000,30000,35000,40000),7)[-1], label="V")
+mean(logPTratio[HLAAind], na.rm=TRUE)
+ggplot(df, aes(x=logPTratio)) + geom_histogram(bins = 100) + ggtitle("HLA-B locations") + xlim(c(-15,15)) + annotate("text", x=logPTratio[HLABind], y = rep(c(20000,25000,30000,35000,40000),9)[-1:-2], label="V")
+mean(logPTratio[HLABind], na.rm=TRUE)
 
 # Variances analysis by functional regions (figure 2)
 
@@ -291,46 +335,7 @@ hist(sigmaLMER$logr[sigmaLMER$UTR_5==1],
 
 # Analysis 1
 
-r_enhancer <- sigmaLMER$logr[sigmaLMER$Enhancer==1]
-r_promoter <- sigmaLMER$logr[sigmaLMER$Promoter==1]
-r_exon <- sigmaLMER$logr[sigmaLMER$Exon==1]
-r_body <- sigmaLMER$logr[sigmaLMER$Body==1]
-r_3 <- sigmaLMER$logr[sigmaLMER$UTR_3==1]
-r_5 <- sigmaLMER$logr[sigmaLMER$UTR_5==1]
 
-
-test.data <- data.frame(y=c(r_enhancer,r_promoter,r_exon,r_body,r_3,r_5),
-                        region=factor(rep(c("Enhancer","Promoter","Exon","Body",
-                                     "3'UTR","5'UTR"),times=c(length(r_enhancer),
-                                                              length(r_promoter),
-                                                              length(r_exon),
-                                                              length(r_body),
-                                                              length(r_3),
-                                                              length(r_5)))))
-
-# Elimintate infinite values
-test.data <- test.data[test.data$y != Inf,]
-
-test <- aov(y ~ region, data=test.data)
-anova(test)
-
-# Tukey
-TukeyHSD(test)
-
-# Model Checking
-par(mfrow=c(2,2))
-plot(test)
-
-
-# Kruskal-Wallis Test
-kruskal.test(y~region, data=test.data)
-
-# Dunn test for multiple comparison 
-dunn.test(test.data$y,test.data$region, method="bh")
-
-
-# visualizaion
-boxplot(test.data$y ~ test.data$region, ylim=c(-20,300))
 
 ### FIT WITH STAN
 

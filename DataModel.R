@@ -294,6 +294,11 @@ sigmaLMER$Body <- Body
 sigmaLMER$UTR_3 <- UTR_3
 sigmaLMER$UTR_5 <- UTR_5
 
+# Exclude inf values
+sigmaLMER <- sigmaLMER[sigmaLMER$logr != Inf,]
+
+# Seperate plots
+
 par(mfrow=c(2,3))
 
 hist(sigmaLMER$logr[sigmaLMER$Enhancer==1],
@@ -332,10 +337,83 @@ hist(sigmaLMER$logr[sigmaLMER$UTR_5==1],
      breaks=1000,xlim=c(-10,10),ylim=c(0,15000),
      col="gold")
 
+# All plots
+
+par(mfrow=c(1,1))
+
+hist(sigmaLMER$logr,main="Distribution of Enhancers",
+     xlab="log ratio of sigmaP/sigmaT",
+     breaks=1000,xlim=c(-15,15),ylim=c(0,50000),
+     col=grey.colors(1,alpha=0.1))
+
+hist(sigmaLMER$logr[sigmaLMER$Enhancer==1],
+     breaks=1000,col="cyan", add=TRUE)
+
+legend("topright",c("All Sites","Enhancer"),fill=c(grey.colors(1,alpha=0.1),"cyan"))
+
+
+hist(sigmaLMER$logr,main="Distribution of Promoters",
+     xlab="log ratio of sigmaP/sigmaT",
+     breaks=1000,xlim=c(-15,15),ylim=c(0,50000),
+     col=grey.colors(1,alpha=0.1))
+
+hist(sigmaLMER$logr[sigmaLMER$Promoter==1],
+     breaks=1000,col="coral", add=TRUE)
+
+legend("topright",c("All Sites","Promoter"),fill=c(grey.colors(1,alpha=0.1),"coral"))
+
+
+hist(sigmaLMER$logr,main="Distribution of Exon Regions",
+     xlab="log ratio of sigmaP/sigmaT",
+     breaks=1000,xlim=c(-15,15),ylim=c(0,50000),
+     col=grey.colors(1,alpha=0.1))
+
+hist(sigmaLMER$logr[sigmaLMER$Exon==1],
+     breaks=1000,col="darkorchid1", add=TRUE)
+
+legend("topright",c("All Sites","Exon Region"),fill=c(grey.colors(1,alpha=0.1),"darkorchid1"))
+
+
+hist(sigmaLMER$logr,main="Distribution of Gene Body",
+     xlab="log ratio of sigmaP/sigmaT",
+     breaks=1000,xlim=c(-15,15),ylim=c(0,50000),
+     col=grey.colors(1,alpha=0.1))
+
+hist(sigmaLMER$logr[sigmaLMER$Body==1],
+     breaks=1000,col="deeppink", add=TRUE)
+
+legend("topright",c("All Sites","Gene Body"),fill=c(grey.colors(1,alpha=0.1),"deeppink"))
+
+
+
+hist(sigmaLMER$logr,main="Distribution of 3'UTR",
+     xlab="log ratio of sigmaP/sigmaT",
+     breaks=1000,xlim=c(-15,15),ylim=c(0,50000),
+     col=grey.colors(1,alpha=0.1))
+
+hist(sigmaLMER$logr[sigmaLMER$UTR_3==1],
+     breaks=1000,col="dodgerblue", add=TRUE)
+
+legend("topright",c("All Sites","3'UTR"),fill=c(grey.colors(1,alpha=0.1),"dodgerblue"))
+
+
+hist(sigmaLMER$logr,main="Distribution of 5'UTR",
+     xlab="log ratio of sigmaP/sigmaT",
+     breaks=1000,xlim=c(-15,15),ylim=c(0,50000),
+     col=grey.colors(1,alpha=0.1))
+
+hist(sigmaLMER$logr[sigmaLMER$UTR_5==1],
+     breaks=1000,col="gold", add=TRUE)
+
+legend("topright",c("All Sites","5'UTR"),fill=c(grey.colors(1,alpha=0.1),"gold"))
+
+
+
+
+
 
 # Analysis 1
 
-<<<<<<< HEAD
 r_enhancer <- sigmaLMER$logr[sigmaLMER$Enhancer==1]
 r_promoter <- sigmaLMER$logr[sigmaLMER$Promoter==1]
 r_exon <- sigmaLMER$logr[sigmaLMER$Exon==1]

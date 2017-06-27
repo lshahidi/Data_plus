@@ -12,6 +12,7 @@ library(gtools)
 library(reshape2)
 library(ggplot2)
 library(bayesplot)
+library(dunn.test)
 
 # here set the working directory that points to the data folder
 # e.g. the folder with annotated data saved as "myFA.Rdata"
@@ -290,7 +291,46 @@ hist(sigmaLMER$logr[sigmaLMER$UTR_5==1],
 
 # Analysis 1
 
+r_enhancer <- sigmaLMER$logr[sigmaLMER$Enhancer==1]
+r_promoter <- sigmaLMER$logr[sigmaLMER$Promoter==1]
+r_exon <- sigmaLMER$logr[sigmaLMER$Exon==1]
+r_body <- sigmaLMER$logr[sigmaLMER$Body==1]
+r_3 <- sigmaLMER$logr[sigmaLMER$UTR_3==1]
+r_5 <- sigmaLMER$logr[sigmaLMER$UTR_5==1]
 
+
+test.data <- data.frame(y=c(r_enhancer,r_promoter,r_exon,r_body,r_3,r_5),
+                        region=factor(rep(c("Enhancer","Promoter","Exon","Body",
+                                     "3'UTR","5'UTR"),times=c(length(r_enhancer),
+                                                              length(r_promoter),
+                                                              length(r_exon),
+                                                              length(r_body),
+                                                              length(r_3),
+                                                              length(r_5)))))
+
+# Elimintate infinite values
+test.data <- test.data[test.data$y != Inf,]
+
+test <- aov(y ~ region, data=test.data)
+anova(test)
+
+# Tukey
+TukeyHSD(test)
+
+# Model Checking
+par(mfrow=c(2,2))
+plot(test)
+
+
+# Kruskal-Wallis Test
+kruskal.test(y~region, data=test.data)
+
+# Dunn test for multiple comparison 
+dunn.test(test.data$y,test.data$region, method="bh")
+
+
+# visualizaion
+boxplot(test.data$y ~ test.data$region, ylim=c(-20,300))
 
 ### FIT WITH STAN
 

@@ -4,9 +4,6 @@
 
 ### INITIALIZE
 
-# install.packages("coda")
-# install.packages("gtools")
-
 library(lme4)
 library(arm)
 library(rstan)
@@ -127,6 +124,8 @@ boxplot(logPTratio, horizontal=TRUE,  outline=TRUE, ylim=c(-15,15), frame=F, wid
 mean(PTratio, na.rm=TRUE)
 mean(log(PTratio), na.rm=TRUE)
 
+sigmaLMER$logPTratio <- logPTratio
+
 # order by sigmaP
 ordSigP <- sigmaLMER[order(sigmaLMER$sigmaP),]
 # order by sigmaT
@@ -155,11 +154,13 @@ for (i in 1:8668) {
 }
 uniqueNames <- unique(unlist(uniqueNames))
 
-lowlowP <- head(ordSigP, 1000)
-lowlowPnames <- FullAnnotation$UCSC_RefGene_Name[as.numeric(row.names(lowlowP))]
+# order by sigma T, select top 10%
+lowPordSigT <- lowP[order(lowP$sigmaT),]
+lowPhiT <- tail(lowPordSigT,2000)
+lowPhiTnames <- FullAnnotation$UCSC_RefGene_Name[as.numeric(row.names(lowPhiT))]
 uniqueNames <- list()
 for (i in 1:8668) {
-  uniqueNames <- c(uniqueNames, unique(unlist(strsplit(lowlowPnames[i],split=";"))))
+  uniqueNames <- c(uniqueNames, unique(unlist(strsplit(lowPhiTnames[i],split=";"))))
 }
 uniqueNames <- unique(unlist(uniqueNames))
 
@@ -172,10 +173,10 @@ grep('APC', uniqueNames, value=TRUE)
 
 
 # figure 3 - sort sigma T (done above) and plot in order with other sigmas
-ggplot(data = ordSigT, aes(x=seq_along(ordSigT$sigmaT), y=sigmaT), xlab="Index, ordered by sigmaT") + geom_line()
-ggplot(data = ordSigT, aes(x=seq_along(ordSigT$sigmaT), y=sigmaP), xlab="Index, ordered by sigmaT") + geom_line()
-ggplot(data = ordSigT, aes(x=seq_along(ordSigT$sigmaT), y=sigmaE), xlab="Index, ordered by sigmaT") + geom_line()
-ggplot(data = ordSigT, aes(x=seq_along(ordSigT$sigmaT), y=logPTratio), xlab="Index, ordered by sigmaT") + geom_line()
+ggplot(data = ordSigT, aes(x=seq_along(ordSigT$sigmaT), y=sigmaT), xlab="Index, ordered by sigmaT") + geom_point()
+ggplot(data = ordSigT, aes(x=seq_along(ordSigT$sigmaT), y=sigmaP), xlab="Index, ordered by sigmaT") + geom_point()
+ggplot(data = ordSigT, aes(x=seq_along(ordSigT$sigmaT), y=sigmaE), xlab="Index, ordered by sigmaT") + geom_point()
+ggplot(data = ordSigT, aes(x=seq_along(ordSigT$sigmaT), y=logPTratio), xlab="Index, ordered by sigmaT") + geom_point()
 
 
 

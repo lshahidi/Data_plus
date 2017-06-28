@@ -706,59 +706,27 @@ indice <- sort(indice)
 
 # lmer
 
-nSites<-200
-sigmaLMER_200 <- data.frame(sigmaT=numeric(nSites),sigmaP=numeric(nSites),sigmaE=numeric(nSites))
-
-ptm <- proc.time()
-
-count <- 1
-for (i in indice){
-  print(paste("site",i))
-  
-  DataI <- site(i)
-  names(DataI)[1] <- "beta"
-  
-  fit <- lmer(beta ~ tInd + (tInd|patient), DataI)
-  
-  sigmaLMER_200$sigmaT[count] <- as.data.frame(VarCorr(fit))$sdcor[1]
-  sigmaLMER_200$sigmaP[count] <- as.data.frame(VarCorr(fit))$sdcor[2]
-  sigmaLMER_200$sigmaE[count] <- as.data.frame(VarCorr(fit))$sdcor[4]
-  rownames(sigmaLMER_200)[count] <- paste("site",i)
-  
-  count <- count+1
-}
-proc.time() - ptm
-
+sigmaLMER_200 <- sigmaLMER[indice,1:3]
 
 # stan
 
-Data_200 <- list(NULL)
+sigmaSTAN_200 <- as.data.frame(matrix(NA,200,3))
 count <- 1
 
 for (i in indice) {
-  Data_200[[count]] <- site(i)
+  data <- site(i)
+  fit <- stanfit(data)
+  sigmaSTAN_200[count,] <- summary(fit)$summary[35:37,1]
+  
   count <- count+1
 }
 
 
-ptm <- proc.time()
-
-stan_200 <- lapply(Data_200, stanfit)
-
-proc.time() - ptm
-
-
-sigmaSTAN_200 <- as.data.frame(matrix(NA,200,3))
-
-
-for (i in 1:200) {
-  sigmaSTAN_200[i,] <- summary(stan_200[[i]])$summary[35:37,1]
-}
 
 colnames(sigmaSTAN_200) <- c("sigmaE","sigmaP","sigmaT")
-rownames(sigmaSTAN_200) <- paste("site",indice)
+rownames(sigmaSTAN_200) <- indice
 
-sigmaSTAN_200 <- sigmaSTAN_200[,c(3,2,1)]
+sigmaSTAN_200 <- sigmaSTAN_200[,c(2,3,1)]
 
 
 # Variance sum

@@ -80,8 +80,8 @@ sigma_t <- data.frame(mean=numeric(nsites),mode=numeric(nsites),p2.5=numeric(nsi
                       p97.5=numeric(nsites))
 
 
-
-for (i in (nsites+1):(2*nsites)) {
+#for (i in (nsites+1):(2*nsites)) {
+for (i in 10) {
   data <- site(i)
   stan <- stanfit(data)
   posterior <- as.array(stan)
@@ -100,20 +100,15 @@ for (i in (nsites+1):(2*nsites)) {
   
   
   sigma_p[i,1] <- summary(stan)$summary[36,1]
-  sigma_p[i,2] <- getmode(posterior1[1:1000,1:4,36])
+  sigma_p[i,2] <- getmode(posterior[1:1000,1:4,36])
   sigma_p[i,3:7] <- summary(stan)$summary[36,3:7]
   
   
   sigma_t[i,1] <- summary(stan)$summary[37,1]
-  sigma_t[i,2] <- getmode(posterior1[1:1000,1:4,37])
+  sigma_t[i,2] <- getmode(posterior[1:1000,1:4,37])
   sigma_t[i,3:7] <- summary(stan)$summary[37,3:7]
 }
 
 
-
 # save data
-save(betaT,file="betaTSTAN2.RData")
-save(mu,file="muSTAN2.RData")
-save(sigma_e,file="sigmaESTAN2.RData")
-save(sigma_p,file="sigmaPSTAN2.RData")
-save(sigma_t,file="sigmaTSTAN2.RData")
+save(betaT,mu,sigma_e,sigma_p,sigma_t,file="sigmaSTAN2.RData")

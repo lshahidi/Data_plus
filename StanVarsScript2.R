@@ -39,11 +39,10 @@ stanfit <- function (dataset) {
                   y = dataset[,1])
 
   # Using Model 2: wide range uniform prior on sd and flat normal on fixed effects
-  stanFit2 <- stan(file="model2.stan", data=stanDat, control = list(adapt_delta = 0.999))
+  stanFit2 <- stan(file="model2.stan", data=stanDat, control = list(adapt_delta = 0.999), refresh= , verbose=FALSE)
 
   return(stanFit2=stanFit2)
 }
-
 
 # Function to get mode
 
@@ -53,9 +52,7 @@ getmode <- function(v) {
 }
 
 
-
 nsites <- dim(FullAnnotation)[1]/2
-
 
 betaT <- data.frame(mean=numeric(nsites),mode=numeric(nsites),p2.5=numeric(nsites),
                     p25=numeric(nsites),p50=numeric(nsites),p75=numeric(nsites),
@@ -81,7 +78,7 @@ sigma_t <- data.frame(mean=numeric(nsites),mode=numeric(nsites),p2.5=numeric(nsi
 
 
 #for (i in (nsites+1):(2*nsites)) {
-for (i in 10) {
+for (i in 1:10) {
   data <- site(i)
   stan <- stanfit(data)
   posterior <- as.array(stan)

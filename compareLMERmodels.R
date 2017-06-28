@@ -66,3 +66,18 @@ for (i in 1:nSites){
   sigmaLMER2$mu[i] <- fixef(fit2)[1]
 }
 proc.time() - ptm
+
+
+DataI <- site(1)
+names(DataI)[1] <- "logitbeta"
+fit <- lmer(logitbeta ~ tInd + (tInd|patient), DataI)
+#fit <- lmer(logitbeta ~ tInd + (1|patient) + (0+tInd|patient), DataI)
+mu <- fixef(fit)[1]
+betaT <-fixef(fit)[2]
+bi <- ranef(fit)$patient[DataI$patient,1]
+bTi <- ranef(fit)$patient[DataI$patient,2]
+sigmaP <- as.data.frame(VarCorr(fit))$sdcor[1]
+sigmaT <- as.data.frame(VarCorr(fit))$sdcor[2]
+sigmaE <- as.data.frame(VarCorr(fit))$sdcor[4]
+DataI$estBeta <- mu + betaT*DataI$tInd + bi + bTi*DataI$tInd
+ggplot() + geom_point(data=DataI, aes(x = tInd, y=logitbeta, color=patient, group=patient)) + geom_line(data=DataI, aes(x = tInd, y=estBeta, color=patient, group=patient)) + labs(title="Site 1") + annotate("text", x=c(0.25, 0.75, 0.5), y = c(-0.5, -0.5, -0.7), label=c(paste("sigmaP: ",sigmaP),paste("sigmaT: ",sigmaT),paste("sigmaE: ",sigmaE)))

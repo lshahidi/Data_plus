@@ -39,7 +39,7 @@ stanfit <- function (dataset) {
                   y = dataset[,1])
 
   # Using Model 2: wide range uniform prior on sd and flat normal on fixed effects
-  stanFit2 <- stan(file="model2.stan", data=stanDat, control = list(adapt_delta = 0.999))
+  stanFit2 <- stan(file="model2.stan", data=stanDat, control = list(adapt_delta = 0.999), verbose=FALSE)
 
   return(stanFit2=stanFit2)
 }
@@ -107,5 +107,4 @@ for (i in 1:nsites) {
 
 
 # save data
-save(betaT,mu,sigma_e,sigma_p,sigma_t,file="sigmaSTAN2.RData")
-
+save(betaT,mu,sigma_e,sigma_p,sigma_t,file="sigmaSTAN1.RData")

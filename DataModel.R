@@ -470,8 +470,9 @@ kruskal.test(y~region, data=test.data)
 # Dunn test for multiple comparison 
 dunn.test(test.data$y,test.data$region, method="bh")
 
-=======
->>>>>>> 352af2fea302103c784daf541a15f9f4c9ed7397
+
+
+
 
 
 ### FIT WITH STAN
@@ -492,7 +493,7 @@ stanfit <- function (dataset) {
   
   
   # Using Model 2: wide range uniform prior on sd and flat normal on fixed effects
-  stanFit2 <- stan(file="model2.stan", data=stanDat)
+  stanFit2 <- stan(file="model2.stan", data=stanDat, control = list(adapt_delta = 0.999))
   
   # Estimates for first three samples
   # est <- head(as.matrix(stanFit,pars=c("mu","betaT","b_pat","bT_pat"))[,c(1:5,19:21)])
@@ -543,8 +544,8 @@ stan8 <- stanfit(Data8)
 summary(stan8)
 
 
-plot(stan1$stanFit2, pars=c("sigma_t","sigma_p","sigma_e"))
-plot(stan2$stanFit2, pars=c("sigma_t","sigma_p","sigma_e"))
+plot(stan1, pars=c("sigma_t","sigma_p","sigma_e"))
+plot(stan2, pars=c("sigma_t","sigma_p","sigma_e"))
 plot(stan3$stanFit2, pars=c("sigma_t","sigma_p","sigma_e"))
 
 # site 4: sigma_t < sigma_p
@@ -615,21 +616,79 @@ mcmc_areas(
   
 
 
-# Extract standard deviation from stan models
-summary(stan1)$summary[35:37,1]
-summary(stan2)$summary[35:37,1]
+# Extract estimates from stan models
 
-rbind(summary(stan1)$summary[35:37,1],summary(stan2)$summary[35:37,1])
+getmode <- function(v) {
+  uniqv <- unique(v)
+  uniqv[which.max(tabulate(match(v, uniqv)))]
+}
+
+summary(stan1)$summary[33:37,1]
+
+getmode(posterior1[1:1000,1:4,33])
+getmode(posterior1[1:1000,1:4,37])
+
+
+summary(stan2)$summary[33:37,1]
+
+rbind(summary(stan1)$summary[33:37,1],summary(stan2)$summary[33:37,1])
 
 
 
 # ALL SITES
 # Test on first ten sites
 
-stan <- lapply(Data, stanfit)
+nsites <- 10
+
+betaT <- data.frame(mean=numeric(nsites),mode=numeric(nsites),p2.5=numeric(nsites),
+                    p25=numeric(nsites),p50=numeric(nsites),p75=numeric(nsites),
+                    p97.5=numeric(nsites))
+
+mu <- data.frame(mean=numeric(nsites),mode=numeric(nsites),p2.5=numeric(nsites),
+                 p25=numeric(nsites),p50=numeric(nsites),p75=numeric(nsites),
+                 p97.5=numeric(nsites))
+
+sigma_e <- data.frame(mean=numeric(nsites),mode=numeric(nsites),p2.5=numeric(nsites),
+                      p25=numeric(nsites),p50=numeric(nsites),p75=numeric(nsites),
+                      p97.5=numeric(nsites))
+
+
+sigma_p <- data.frame(mean=numeric(nsites),mode=numeric(nsites),p2.5=numeric(nsites),
+                      p25=numeric(nsites),p50=numeric(nsites),p75=numeric(nsites),
+                      p97.5=numeric(nsites))
+
+
+sigma_t <- data.frame(mean=numeric(nsites),mode=numeric(nsites),p2.5=numeric(nsites),
+                      p25=numeric(nsites),p50=numeric(nsites),p75=numeric(nsites),
+                      p97.5=numeric(nsites))
+
 
 for (i in 1:10) {
-  rbind(sd_stan,summary(stan[i]$stanFit2)$summary[35:37,1])
+  data <- site(i)
+  stan <- stanfit(data)
+  posterior <- as.array(stan)
+  
+  betaT[i,1] <- summary(stan)$summary[33,1]
+  betaT[i,2] <- getmode(posterior[1:1000,1:4,33])
+  betaT[i,3:7] <- summary(stan)$summary[33,3:7]
+  
+  mu[i,1] <- summary(stan)$summary[34,1]
+  mu[i,2] <- getmode(posterior[1:1000,1:4,34])
+  mu[i,3:7] <- summary(stan)$summary[34,3:7]
+  
+  sigma_e[i,1] <- summary(stan)$summary[35,1]
+  sigma_e[i,2] <- getmode(posterior[1:1000,1:4,35])
+  sigma_e[i,3:7] <- summary(stan)$summary[35,3:7]
+  
+  
+  sigma_p[i,1] <- summary(stan)$summary[36,1]
+  sigma_p[i,2] <- getmode(posterior1[1:1000,1:4,36])
+  sigma_p[i,3:7] <- summary(stan)$summary[36,3:7]
+  
+  
+  sigma_t[i,1] <- summary(stan)$summary[37,1]
+  sigma_t[i,2] <- getmode(posterior1[1:1000,1:4,37])
+  sigma_t[i,3:7] <- summary(stan)$summary[37,3:7]
 }
 
 

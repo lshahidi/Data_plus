@@ -39,33 +39,81 @@ stanfit <- function (dataset) {
                   y = dataset[,1])
 
   # Using Model 2: wide range uniform prior on sd and flat normal on fixed effects
-  stanFit2 <- stan(file="model2.stan", data=stanDat)
+  stanFit2 <- stan(file="model2.stan", data=stanDat, control = list(adapt_delta = 0.999))
 
   return(stanFit2=stanFit2)
 }
 
 
+# Function to get mode
+
+getmode <- function(v) {
+  uniqv <- unique(v)
+  uniqv[which.max(tabulate(match(v, uniqv)))]
+}
+
+
+
 nsites <- dim(FullAnnotation)[1]/2
 
-Data <- list(NULL)
+
+betaT <- data.frame(mean=numeric(nsites),mode=numeric(nsites),p2.5=numeric(nsites),
+                    p25=numeric(nsites),p50=numeric(nsites),p75=numeric(nsites),
+                    p97.5=numeric(nsites))
+
+mu <- data.frame(mean=numeric(nsites),mode=numeric(nsites),p2.5=numeric(nsites),
+                 p25=numeric(nsites),p50=numeric(nsites),p75=numeric(nsites),
+                 p97.5=numeric(nsites))
+
+sigma_e <- data.frame(mean=numeric(nsites),mode=numeric(nsites),p2.5=numeric(nsites),
+                      p25=numeric(nsites),p50=numeric(nsites),p75=numeric(nsites),
+                      p97.5=numeric(nsites))
+
+
+sigma_p <- data.frame(mean=numeric(nsites),mode=numeric(nsites),p2.5=numeric(nsites),
+                      p25=numeric(nsites),p50=numeric(nsites),p75=numeric(nsites),
+                      p97.5=numeric(nsites))
+
+
+sigma_t <- data.frame(mean=numeric(nsites),mode=numeric(nsites),p2.5=numeric(nsites),
+                      p25=numeric(nsites),p50=numeric(nsites),p75=numeric(nsites),
+                      p97.5=numeric(nsites))
+
+
 
 for (i in (nsites+1):(2*nsites)) {
-  Data[[count]] <- site(i)
+  data <- site(i)
+  stan <- stanfit(data)
+  posterior <- as.array(stan)
+  
+  betaT[i,1] <- summary(stan)$summary[33,1]
+  betaT[i,2] <- getmode(posterior[1:1000,1:4,33])
+  betaT[i,3:7] <- summary(stan)$summary[33,3:7]
+  
+  mu[i,1] <- summary(stan)$summary[34,1]
+  mu[i,2] <- getmode(posterior[1:1000,1:4,34])
+  mu[i,3:7] <- summary(stan)$summary[34,3:7]
+  
+  sigma_e[i,1] <- summary(stan)$summary[35,1]
+  sigma_e[i,2] <- getmode(posterior[1:1000,1:4,35])
+  sigma_e[i,3:7] <- summary(stan)$summary[35,3:7]
+  
+  
+  sigma_p[i,1] <- summary(stan)$summary[36,1]
+  sigma_p[i,2] <- getmode(posterior1[1:1000,1:4,36])
+  sigma_p[i,3:7] <- summary(stan)$summary[36,3:7]
+  
+  
+  sigma_t[i,1] <- summary(stan)$summary[37,1]
+  sigma_t[i,2] <- getmode(posterior1[1:1000,1:4,37])
+  sigma_t[i,3:7] <- summary(stan)$summary[37,3:7]
 }
 
-stan <- lapply(Data, stanfit)
 
-sigmaSTAN <- as.data.frame(matrix(NA,nsites,3))
-
-
-for (i in 1:nsites) {
-  sigmaSTAN[i,] <- summary(stan[[i]])$summary[35:37,1]
-}
-
-colnames(sigmaSTAN) <- c("sigmaE","sigmaP","sigmaT")
-rownames(sigmaSTAN) <- paste("site",(nsites+1):(2*nsites))
-
-sigmaSTAN <- sigmaSTAN[,c(3,2,1)]
 
 # save data
-save(sigmaSTAN,file="mySTANVars2.RData")
+save(betaT,file="betaTSTAN2.RData")
+save(mu,file="muSTAN2.RData")
+save(sigma_e,file="sigmaESTAN2.RData")
+save(sigma_p,file="sigmaPSTAN2.RData")
+save(sigma_t,file="sigmaTSTAN2.RData")

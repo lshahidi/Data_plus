@@ -472,7 +472,7 @@ dunn.test(test.data$y,test.data$region, method="bh")
 
 
 # Function to build stan model for each site
-stanfit <- function (dataset) {
+stanfit2 <- function (dataset) {
   
   stanDat <- list(pID = as.integer(factor(dataset$patient)),
                   tInd = dataset$tInd,
@@ -488,17 +488,25 @@ stanfit <- function (dataset) {
   # Using Model 2: wide range uniform prior on sd and flat normal on fixed effects
   stanFit2 <- stan(file="model2.stan", data=stanDat, control = list(adapt_delta = 0.999))
   
-  # Estimates for first three samples
-  # est <- head(as.matrix(stanFit,pars=c("mu","betaT","b_pat","bT_pat"))[,c(1:5,19:21)])
-  
-  # est2 <- head(as.matrix(stanFit2,pars=c("mu","betaT","b_pat","bT_pat"))[,c(1:5,19:21)])
-  
-  # Variance
-  # var <- head(as.matrix(stanFit,pars=c("sigma_e","sigma_p","sigma_t")))
-  
-  # var2 <- head(as.matrix(stanFit2,pars=c("sigma_e","sigma_p","sigma_t")))
   
   return(stanFit2=stanFit2)
+}
+
+
+
+stanfit3 <- function (dataset) {
+  
+  stanDat <- list(pID = as.integer(factor(dataset$patient)),
+                  tInd = dataset$tInd,
+                  N = nrow(dataset),
+                  P = nlevels(dataset$patient),
+                  y = dataset[,1])
+  
+  
+  # Using Model 3: add intra-tumoral variances
+  stanFit3 <- stan(file="model3.stan", data=stanDat, control = list(adapt_delta = 0.999))
+  
+  return(stanFit3=stanFit3)
 }
 
 Data1 <- site(1)
@@ -511,43 +519,13 @@ Data7 <- site(7)
 Data8 <- site(8)
 
 
-stan1 <- stanfit(Data1)
-summary(stan1)
-
-stan2 <- stanfit(Data2)
-summary(stan2)
-
-
-stan3 <- stanfit(Data3)
-summary(stan3)
-
-stan4 <- stanfit(Data4)
-summary(stan4)
-
-stan5 <- stanfit(Data5)
-summary(stan5)
-
-stan6 <- stanfit(Data6)
-summary(stan6)
-
-stan7 <- stanfit(Data7)
-summary(stan7)
-
-stan8 <- stanfit(Data8)
-summary(stan8)
-
+stan1 <- stanfit2(Data1)
+stan1t <- stanfit3(Data1)
 
 plot(stan1, pars=c("sigma_t","sigma_p","sigma_e"))
-plot(stan2, pars=c("sigma_t","sigma_p","sigma_e"))
-plot(stan3$stanFit2, pars=c("sigma_t","sigma_p","sigma_e"))
+plot(stan1t, pars=c("sigma_t","sigma_p","sigma_e","sigma_pt"))
 
-# site 4: sigma_t < sigma_p
-plot(stan4$stanFit2, pars=c("sigma_t","sigma_p","sigma_e"))
 
-plot(stan5$stanFit2, pars=c("sigma_t","sigma_p","sigma_e"))
-plot(stan6$stanFit2, pars=c("sigma_t","sigma_p","sigma_e"))
-plot(stan7$stanFit2, pars=c("sigma_t","sigma_p","sigma_e"))
-plot(stan8$stanFit2, pars=c("sigma_t","sigma_p","sigma_e"))
 
 
 
@@ -699,59 +677,27 @@ indice <- sort(indice)
 
 # lmer
 
-nSites<-200
-sigmaLMER_200 <- data.frame(sigmaT=numeric(nSites),sigmaP=numeric(nSites),sigmaE=numeric(nSites))
-
-ptm <- proc.time()
-
-count <- 1
-for (i in indice){
-  print(paste("site",i))
-  
-  DataI <- site(i)
-  names(DataI)[1] <- "beta"
-  
-  fit <- lmer(beta ~ tInd + (tInd|patient), DataI)
-  
-  sigmaLMER_200$sigmaT[count] <- as.data.frame(VarCorr(fit))$sdcor[1]
-  sigmaLMER_200$sigmaP[count] <- as.data.frame(VarCorr(fit))$sdcor[2]
-  sigmaLMER_200$sigmaE[count] <- as.data.frame(VarCorr(fit))$sdcor[4]
-  rownames(sigmaLMER_200)[count] <- paste("site",i)
-  
-  count <- count+1
-}
-proc.time() - ptm
-
+sigmaLMER_200 <- sigmaLMER[indice,1:3]
 
 # stan
 
-Data_200 <- list(NULL)
+sigmaSTAN_200 <- as.data.frame(matrix(NA,200,3))
 count <- 1
 
 for (i in indice) {
-  Data_200[[count]] <- site(i)
+  data <- site(i)
+  fit <- stanfit(data)
+  sigmaSTAN_200[count,] <- summary(fit)$summary[35:37,1]
+  
   count <- count+1
 }
 
 
-ptm <- proc.time()
-
-stan_200 <- lapply(Data_200, stanfit)
-
-proc.time() - ptm
-
-
-sigmaSTAN_200 <- as.data.frame(matrix(NA,200,3))
-
-
-for (i in 1:200) {
-  sigmaSTAN_200[i,] <- summary(stan_200[[i]])$summary[35:37,1]
-}
 
 colnames(sigmaSTAN_200) <- c("sigmaE","sigmaP","sigmaT")
-rownames(sigmaSTAN_200) <- paste("site",indice)
+rownames(sigmaSTAN_200) <- indice
 
-sigmaSTAN_200 <- sigmaSTAN_200[,c(3,2,1)]
+sigmaSTAN_200 <- sigmaSTAN_200[,c(2,3,1)]
 
 
 # Variance sum

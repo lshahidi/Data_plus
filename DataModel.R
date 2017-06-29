@@ -59,18 +59,6 @@ fit1 <- lmer(X1 ~ tInd + (tInd|patient), Data1)
 
 # fitGland <- lmer(X1 ~ tInd + (tInd|patient) + (0+gInd|patient:side), Data1)
 
-patLabs <- c("C", "D","E","F","H","J","K","K*","M","O","P","S","T","U","W","X")
-
-barplot(fixef(fit1), main="Fixed Effects", xlab="Effect", ylab="Intercept Estimate", names.arg=c("mu","betaT"), ylim=c(-2,2))
-barplot(ranef(fit1)$patient$'(Intercept)', main="Patient Random Effect", xlab="Patient", ylab=expression(paste("Intercept Estimate (",b[i],")")), names.arg = patLabs, cex.names = 0.7, ylim=c(-2,2))
-barplot(ranef(fit1)$patient$tInd, main="Patient,Tumor Slope Random Effect", xlab="Patient", ylab=expression(paste("Slope Estimate (",b[iT],")")), names.arg = patLabs, cex.names = 0.7, ylim=c(-2,2))
-barplot(ranef(fit1)$patient$'(Intercept)'+ranef(fit1)$patient$tInd, main="Both Random Effects", xlab="Patient", ylab=expression(paste("Both Estimates (",b[i]+b[iT],")")), names.arg = patLabs, cex.names = 0.7, ylim=c(-2,2))
-
-barplot(fixef(fit4), main="Fixed Effects", xlab="Effect", ylab="Intercept Estimate", names.arg=c("mu","betaT"), ylim=c(-2,2))
-barplot(ranef(fit4)$patient$'(Intercept)', main="Patient Random Effect", xlab="Patient", ylab=expression(paste("Intercept Estimate (",b[i],")")), names.arg = patLabs, cex.names = 0.7, ylim=c(-2,2))
-barplot(ranef(fit4)$patient$tInd, main="Patient,Tumor Slope Random Effect", xlab="Patient", ylab=expression(paste("Slope Estimate (",b[iT],")")), names.arg = patLabs, cex.names = 0.7, ylim=c(-2,2))
-barplot(ranef(fit4)$patient$'(Intercept)'+ranef(fit1)$patient$tInd, main="Both Random Effects", xlab="Patient", ylab=expression(paste("Both Estimates (",b[i]+b[iT],")")), names.arg = patLabs, cex.names = 0.7, ylim=c(-2,2))
-
 
 ## extract variance at 1000 sites
 # nSites<-1000
@@ -93,7 +81,7 @@ barplot(ranef(fit4)$patient$'(Intercept)'+ranef(fit1)$patient$tInd, main="Both R
 
 
 # plot variances
-sigmaLMER2 <- sigmaLMER[,c("sigmaT","sigmaP","sigmaE")]
+sigmaLMER2 <- sigmaLMER[,c("sigmaP","sigmaT","sigmaE")]
 sigmaLMER2[sigmaLMER2>2] <- NA
 gg <- melt(sigmaLMER2)
 ggplot(gg, aes(x=value, fill=variable)) +
@@ -112,7 +100,7 @@ PTratio[PTratio>100] <- NA
 hist(PTratio,100)
 
 logPTratio <- log(sigmaLMER$sigmaP/sigmaLMER$sigmaT)
-logPTratio[logPTratio>30] <- NA
+logPTratio[logPTratio<(-30)] <- NA
 hist(logPTratio,100)
 
 # layout boxplot is at the bottom 
@@ -142,7 +130,7 @@ as.numeric(summary(lowP$mu>=0)[2:3])/8668
 as.numeric(summary(ordSigP$mu>=0)[2:3])/866836
 
 # plot variances again for lowP
-lowPsigs <- lowP[,c("sigmaT","sigmaP","sigmaE")]
+lowPsigs <- lowP[,c("sigmaP","sigmaT","sigmaE")]
 lowPsigs[lowPsigs>2] <- NA
 gg <- melt(lowPsigs)
 ggplot(gg, aes(x=value, fill=variable)) +
@@ -167,12 +155,16 @@ for (i in 1:8668) {
 }
 uniqueNames <- unique(unlist(uniqueNames))
 
-# return indices of genes containing “GAPDH”
-# grep('GAPDH', uniqueNames)
 
-# return names of same genes
-grep('APC', uniqueNames, value=TRUE)
-
+# sigmaT vs sigmaP vs sigmaE
+ggplot(data = ordSigT, aes(x=sigmaT, y=sigmaP)) + geom_point(alpha = 0.05)
+ggplot(data = ordSigT, aes(x=sigmaT, y=sigmaE)) + geom_point(alpha = 0.05)
+ggplot(data = ordSigT, aes(x=sigmaP, y=sigmaE)) + geom_point(alpha = 0.05)
+cor(ordSigT$sigmaT,ordSigT$sigmaP, use = "pairwise.complete.obs")
+cor(ordSigT$sigmaT,ordSigT$sigmaE, use = "pairwise.complete.obs")
+cor(ordSigT$sigmaP,ordSigT$sigmaE, use = "pairwise.complete.obs")
+# vs logPTratio might be useful
+ggplot(data = ordSigT, aes(x=sigmaT, y=logPTratio)) + geom_point(alpha = 0.05)
 
 # figure 3 - sort sigma T (done above) and plot in order with other sigmas
 ggplot(data = ordSigT, aes(x=seq_along(ordSigT$sigmaT), y=sigmaT)) + geom_point(alpha = 0.05) + labs(x="Index, ordered by sigmaT")
@@ -180,25 +172,29 @@ ggplot(data = ordSigT, aes(x=seq_along(ordSigT$sigmaT), y=sigmaP)) + geom_point(
 ggplot(data = ordSigT, aes(x=seq_along(ordSigT$sigmaT), y=sigmaE)) + geom_point(alpha = 0.05) + labs(x="Index, ordered by sigmaT")
 ggplot(data = ordSigT, aes(x=seq_along(ordSigT$sigmaT), y=logPTratio)) + geom_point(alpha = 0.05) + labs(x="Index, ordered by sigmaT")
 
-
 # same for sigma p
-ggplot(data = ordSigP, aes(x=seq_along(ordSigT$sigmaP), y=sigmaP)) + geom_point(alpha = 0.05) + labs(x="Index, ordered by sigmaP")
-ggplot(data = ordSigP, aes(x=seq_along(ordSigT$sigmaP), y=sigmaT)) + geom_point(alpha = 0.05) + labs(x="Index, ordered by sigmaP")
-ggplot(data = ordSigP, aes(x=seq_along(ordSigT$sigmaP), y=sigmaE)) + geom_point(alpha = 0.05) + labs(x="Index, ordered by sigmaP")
-ggplot(data = ordSigP, aes(x=seq_along(ordSigT$sigmaP), y=logPTratio)) + geom_point(alpha = 0.05) + labs(x="Index, ordered by sigmaP")
+ggplot(data = ordSigP, aes(x=seq_along(ordSigP$sigmaP), y=sigmaP)) + geom_point(alpha = 0.05) + labs(x="Index, ordered by sigmaP")
+ggplot(data = ordSigP, aes(x=seq_along(ordSigP$sigmaP), y=sigmaT)) + geom_point(alpha = 0.05) + labs(x="Index, ordered by sigmaP")
+ggplot(data = ordSigP, aes(x=seq_along(ordSigP$sigmaP), y=sigmaE)) + geom_point(alpha = 0.05) + labs(x="Index, ordered by sigmaP")
+ggplot(data = ordSigP, aes(x=seq_along(ordSigP$sigmaP), y=logPTratio)) + geom_point(alpha = 0.05) + labs(x="Index, ordered by sigmaP")
 
-cor(ordSigT$sigmaT,ordSigT$logPTratio, use = "pairwise.complete.obs")
-cor(ordSigP$sigmaP,ordSigP$logPTratio, use = "pairwise.complete.obs")
+
+cor(seq_along(ordSigT$sigmaT),ordSigT$sigmaP, use = "pairwise.complete.obs")
+cor(seq_along(ordSigT$sigmaT),ordSigT$sigmaE, use = "pairwise.complete.obs")
+cor(seq_along(ordSigT$sigmaT),ordSigT$logPTratio, use = "pairwise.complete.obs")
+cor(seq_along(ordSigP$sigmaP),ordSigP$sigmaT, use = "pairwise.complete.obs")
+cor(seq_along(ordSigP$sigmaP),ordSigP$sigmaE, use = "pairwise.complete.obs")
+cor(seq_along(ordSigP$sigmaP),ordSigP$logPTratio, use = "pairwise.complete.obs")
 
 
 # take all zero sigmaT
-zeroSigT <- head(ordSigT,112790)
-gg <- melt(zeroSigT[c("sigmaP","sigmaE")])
+zeroSigP <- head(ordSigP,112790)
+gg <- melt(zeroSigP[c("sigmaT","sigmaE")])
 ggplot(gg, aes(x=value, fill=variable)) +
   geom_histogram(binwidth=0.05)+
   facet_grid(variable~.)
-zeroSigTraw <- FullAnnotation[as.numeric(row.names(zeroSigT)),]
-zeroSigTraw2 <- site(as.numeric(row.names(zeroSigT)))
+zeroSigPraw <- FullAnnotation[as.numeric(row.names(zeroSigP)),]
+zeroSigPraw2 <- site(as.numeric(row.names(zeroSigP)))
 
 
 # find sites with unique names
@@ -216,18 +212,15 @@ HLABind <- grep('HLA-B', geneNames)[(grep('HLA-B', geneNames, value=TRUE)=="HLA-
 
 # plot histogram of PT ratio
 df <- data.frame(inf2NA(logPTratio))
-ggplot(df, aes(x=logPTratio)) + geom_histogram(bins = 100) + ggtitle("APC locations") + xlim(c(-15,15)) + annotate("text", x=logPTratio[APCind], y = rep(c(20000,25000,30000,35000,40000),11), label="V")
-mean(logPTratio[APCind], na.rm=TRUE)
-ggplot(df, aes(x=logPTratio)) + geom_histogram(bins = 100) + ggtitle("TP53 locations") + xlim(c(-15,15)) + annotate("text", x=logPTratio[TP53ind], y = rep(c(20000,25000,30000,35000,40000),3), label="V")
-mean(logPTratio[TP53ind], na.rm=TRUE)
-ggplot(df, aes(x=logPTratio)) + geom_histogram(bins = 100) + ggtitle("TTN locations") + xlim(c(-15,15)) + annotate("text", x=logPTratio[TTNind], y = rep(c(20000,25000,30000,35000,40000),7), label="V")
-mean(logPTratio[TTNind], na.rm=TRUE)
-ggplot(df, aes(x=logPTratio)) + geom_histogram(bins = 100) + ggtitle("B2M locations") + xlim(c(-15,15)) + annotate("text", x=logPTratio[B2Mind], y = rep(c(20000,25000,30000,35000,40000),5)[-1], label="V")
-mean(logPTratio[B2Mind], na.rm=TRUE)
-ggplot(df, aes(x=logPTratio)) + geom_histogram(bins = 100) + ggtitle("HLA-A locations") + xlim(c(-15,15)) + annotate("text", x=logPTratio[HLAAind], y = rep(c(20000,25000,30000,35000,40000),7)[-1], label="V")
-mean(logPTratio[HLAAind], na.rm=TRUE)
-ggplot(df, aes(x=logPTratio)) + geom_histogram(bins = 100) + ggtitle("HLA-B locations") + xlim(c(-15,15)) + annotate("text", x=logPTratio[HLABind], y = rep(c(20000,25000,30000,35000,40000),9)[-1:-2], label="V")
-mean(logPTratio[HLABind], na.rm=TRUE)
+ggplot(df, aes(x=logPTratio)) + geom_histogram(bins = 100) + ggtitle("APC locations") + xlim(c(-15,15)) + annotate("text", x=logPTratio[APCind], y = rep(c(20000,25000,30000,35000,40000),11), label="V") + annotate("text", x=8, y= 60000, label=(paste("APC mean: ",mean(logPTratio[APCind], na.rm=TRUE))))
+ggplot(df, aes(x=logPTratio)) + geom_histogram(bins = 100) + ggtitle("TP53 locations") + xlim(c(-15,15)) + annotate("text", x=logPTratio[TP53ind], y = rep(c(20000,25000,30000,35000,40000),3), label="V") + annotate("text", x=8, y= 60000, label=(paste("TP53 mean: ",mean(logPTratio[TP53ind], na.rm=TRUE))))
+ggplot(df, aes(x=logPTratio)) + geom_histogram(bins = 100) + ggtitle("TTN locations") + xlim(c(-15,15)) + annotate("text", x=logPTratio[TTNind], y = rep(c(20000,25000,30000,35000,40000),7), label="V") + annotate("text", x=8, y= 60000, label=(paste("TTN mean: ",mean(logPTratio[TTNind], na.rm=TRUE))))
+ggplot(df, aes(x=logPTratio)) + geom_histogram(bins = 100) + ggtitle("B2M locations") + xlim(c(-15,15)) + annotate("text", x=logPTratio[B2Mind], y = rep(c(20000,25000,30000,35000,40000),5)[-1], label="V") + annotate("text", x=8, y= 60000, label=(paste("B2M mean: ",mean(logPTratio[B2Mind], na.rm=TRUE))))
+ggplot(df, aes(x=logPTratio)) + geom_histogram(bins = 100) + ggtitle("HLA-A locations") + xlim(c(-15,15)) + annotate("text", x=logPTratio[HLAAind], y = rep(c(20000,25000,30000,35000,40000),7)[-1], label="V") + annotate("text", x=8, y= 60000, label=(paste("HLA-A mean: ",mean(logPTratio[HLAAind], na.rm=TRUE))))
+ggplot(df, aes(x=logPTratio)) + geom_histogram(bins = 100) + ggtitle("HLA-B locations") + xlim(c(-15,15)) + annotate("text", x=logPTratio[HLABind], y = rep(c(20000,25000,30000,35000,40000),9)[-1:-2], label="V") + annotate("text", x=8, y= 60000, label=(paste("HLA-B mean: ",mean(logPTratio[HLABind], na.rm=TRUE))))
+
+
+
 
 # Variances analysis by functional regions (figure 2)
 

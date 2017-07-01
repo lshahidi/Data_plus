@@ -23,6 +23,19 @@ setwd("D:/DataPlus2017/Data")
 load("myFA.Rdata")
 
 
+load("betaT.RData")
+load("betaT2.RData")
+load("mu.RData")
+load("mu2.RData")
+load("sigma_t.RData")
+load("sigma_t2.RData")
+load("sigma_p.RData")
+load("sigma_p1.RData")
+load("sigma_pt2.RData")
+load("sigma_e.RData")
+load("sigma_e2.RData")
+
+
 # Function used to read in data from each site
 
 site <- function (site_no) {
@@ -248,25 +261,25 @@ for (i in indice) {
   
   betaT[count,1] <- summary(stan)$summary[33,1]
   betaT[count,2] <- getmode(posterior[1:1000,1:4,33])
-  betaT[count,3:7] <- summary(stan)$summary[33,3:7]
+  betaT[count,3:7] <- summary(stan)$summary[33,4:8]
   
   mu[count,1] <- summary(stan)$summary[34,1]
   mu[count,2] <- getmode(posterior[1:1000,1:4,34])
-  mu[count,3:7] <- summary(stan)$summary[34,3:7]
+  mu[count,3:7] <- summary(stan)$summary[34,4:8]
   
   sigma_e[count,1] <- summary(stan)$summary[35,1]
   sigma_e[count,2] <- getmode(posterior[1:1000,1:4,35])
-  sigma_e[count,3:7] <- summary(stan)$summary[35,3:7]
+  sigma_e[count,3:7] <- summary(stan)$summary[35,4:8]
   
   
   sigma_p[count,1] <- summary(stan)$summary[36,1]
   sigma_p[count,2] <- getmode(posterior1[1:1000,1:4,36])
-  sigma_p[count,3:7] <- summary(stan)$summary[36,3:7]
+  sigma_p[count,3:7] <- summary(stan)$summary[36,4:8]
   
   
   sigma_t[count,1] <- summary(stan)$summary[37,1]
   sigma_t[count,2] <- getmode(posterior1[1:1000,1:4,37])
-  sigma_t[count,3:7] <- summary(stan)$summary[37,3:7]
+  sigma_t[count,3:7] <- summary(stan)$summary[37,4:8]
   
   count <- count + 1
 }
@@ -308,30 +321,30 @@ for (i in indice) {
   stan <- stanfit3(data)
   posterior <- as.array(stan)
   
-  betaT2[count,1] <- summary(stan)$summary[33,1]
-  betaT2[count,2] <- getmode(posterior[1:1000,1:4,33])
-  betaT2[count,3:7] <- summary(stan)$summary[33,3:7]
+  betaT2[count,1] <- summary(stan)$summary[71,1]
+  betaT2[count,2] <- getmode(posterior[1:1000,1:4,71])
+  betaT2[count,3:7] <- summary(stan)$summary[71,4:8]
   
-  mu2[count,1] <- summary(stan)$summary[34,1]
-  mu2[count,2] <- getmode(posterior[1:1000,1:4,34])
-  mu2[count,3:7] <- summary(stan)$summary[34,3:7]
+  mu2[count,1] <- summary(stan)$summary[72,1]
+  mu2[count,2] <- getmode(posterior[1:1000,1:4,72])
+  mu2[count,3:7] <- summary(stan)$summary[72,4:8]
   
-  sigma_e2[count,1] <- summary(stan)$summary[35,1]
-  sigma_e2[count,2] <- getmode(posterior[1:1000,1:4,35])
-  sigma_e2[count,3:7] <- summary(stan)$summary[35,3:7]
+  sigma_e2[count,1] <- summary(stan)$summary[73,1]
+  sigma_e2[count,2] <- getmode(posterior[1:1000,1:4,73])
+  sigma_e2[count,3:7] <- summary(stan)$summary[73,4:8]
   
   
-  sigma_p2[count,1] <- summary(stan)$summary[36,1]
-  sigma_p2[count,2] <- getmode(posterior1[1:1000,1:4,36])
-  sigma_p2[count,3:7] <- summary(stan)$summary[36,3:7]
+  sigma_p2[count,1] <- summary(stan)$summary[74,1]
+  sigma_p2[count,2] <- getmode(posterior[1:1000,1:4,74])
+  sigma_p2[count,3:7] <- summary(stan)$summary[74,4:8]
   
-  sigma_pt2[count,1] <- summary(stan)$summary[37,1]
-  sigma_pt2[count,2] <- getmode(posterior1[1:1000,1:4,37])
-  sigma_pt2[count,3:7] <- summary(stan)$summary[37,3:7]
+  sigma_pt2[count,1] <- summary(stan)$summary[75,1]
+  sigma_pt2[count,2] <- getmode(posterior[1:1000,1:4,75])
+  sigma_pt2[count,3:7] <- summary(stan)$summary[75,4:8]
   
-  sigma_t2[count,1] <- summary(stan)$summary[38,1]
-  sigma_t2[count,2] <- getmode(posterior1[1:1000,1:4,38])
-  sigma_t2[count,3:7] <- summary(stan)$summary[38,3:7]
+  sigma_t2[count,1] <- summary(stan)$summary[76,1]
+  sigma_t2[count,2] <- getmode(posterior[1:1000,1:4,76])
+  sigma_t2[count,3:7] <- summary(stan)$summary[76,4:8]
   
   count <- count + 1
 }
@@ -384,4 +397,84 @@ hist(sigma_e$mean, main="Distribution of sigmaE",
      breaks = 100,xlim=c(0,1.5),col=grey.colors(1,alpha=0.1))
 hist(sigma_e2$mean,breaks=100,col="black",add=TRUE)
 legend("topright",c("New","Old"),fill=c(grey.colors(1,alpha=0.1),"black"))
+
+
+
+
+
+####### Compare Complex and Simple Stan Models Using 5K Sites #########
+
+set.seed(555)
+indice <- sample(1:dim(FullAnnotation)[1],5000,replace=FALSE)
+indice <- sort(indice)
+nsites <- 5000
+
+
+getmode <- function(v) {
+  uniqv <- unique(v)
+  uniqv[which.max(tabulate(match(v, uniqv)))]
+}
+
+
+betaT_C <- data.frame(mean=numeric(nsites),mode=numeric(nsites),p2.5=numeric(nsites),
+                     p25=numeric(nsites),p50=numeric(nsites),p75=numeric(nsites),
+                     p97.5=numeric(nsites))
+
+mu_C <- data.frame(mean=numeric(nsites),mode=numeric(nsites),p2.5=numeric(nsites),
+                  p25=numeric(nsites),p50=numeric(nsites),p75=numeric(nsites),
+                  p97.5=numeric(nsites))
+
+sigmaE_C <- data.frame(mean=numeric(nsites),mode=numeric(nsites),p2.5=numeric(nsites),
+                       p25=numeric(nsites),p50=numeric(nsites),p75=numeric(nsites),
+                       p97.5=numeric(nsites))
+
+
+sigmaP_C <- data.frame(mean=numeric(nsites),mode=numeric(nsites),p2.5=numeric(nsites),
+                       p25=numeric(nsites),p50=numeric(nsites),p75=numeric(nsites),
+                       p97.5=numeric(nsites))
+
+
+sigmaT_C <- data.frame(mean=numeric(nsites),mode=numeric(nsites),p2.5=numeric(nsites),
+                       p25=numeric(nsites),p50=numeric(nsites),p75=numeric(nsites),
+                       p97.5=numeric(nsites))
+
+
+sigmaPT_C <- data.frame(mean=numeric(nsites),mode=numeric(nsites),p2.5=numeric(nsites),
+                        p25=numeric(nsites),p50=numeric(nsites),p75=numeric(nsites),
+                        p97.5=numeric(nsites))
+
+count <- 1
+
+for (i in indice) {
+  data <- site(i)
+  stan <- stanfit3(data)
+  posterior <- as.array(stan)
+  
+  betaT_C[count,1] <- summary(stan)$summary[71,1]
+  betaT_C[count,2] <- getmode(posterior[1:1000,1:4,71])
+  betaT_C[count,3:7] <- summary(stan)$summary[71,4:8]
+  
+  mu_C[count,1] <- summary(stan)$summary[72,1]
+  mu_C[count,2] <- getmode(posterior[1:1000,1:4,72])
+  mu_C[count,3:7] <- summary(stan)$summary[72,4:8]
+  
+  sigmaE_C[count,1] <- summary(stan)$summary[73,1]
+  sigmaE_C[count,2] <- getmode(posterior[1:1000,1:4,73])
+  sigmaE_C[count,3:7] <- summary(stan)$summary[73,4:8]
+  
+  
+  sigmaP_C[count,1] <- summary(stan)$summary[74,1]
+  sigmaP_C[count,2] <- getmode(posterior[1:1000,1:4,74])
+  sigmaP_C[count,3:7] <- summary(stan)$summary[74,4:8]
+  
+  sigmaPT_C[count,1] <- summary(stan)$summary[75,1]
+  sigmaPT_C[count,2] <- getmode(posterior[1:1000,1:4,75])
+  sigmaPT_C[count,3:7] <- summary(stan)$summary[75,4:8]
+  
+  sigmaT_C[count,1] <- summary(stan)$summary[76,1]
+  sigmaT_C[count,2] <- getmode(posterior[1:1000,1:4,76])
+  sigmaT_C[count,3:7] <- summary(stan)$summary[76,4:8]
+  
+  count <- count + 1
+}
 

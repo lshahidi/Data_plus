@@ -478,3 +478,54 @@ for (i in indice) {
   count <- count + 1
 }
 
+
+
+# Partial Results
+load("mu_C.RData")
+load("mu_S.RData")
+load("betaT_C.RData")
+load("sigmaE_C.RData")
+load("sigmaE_S.RData")
+load("sigmaP_C.RData")
+load("sigmaP_S.RData")
+load("sigmaT_C.RData")
+load("sigmaT_S.RData")
+load("sigmaPT_C.RData")
+
+hist(mu_C[1:621,1],main="mu",xlab="mu",
+     breaks=300,col=grey.colors(1,alpha=0.1))
+hist(mu_S[1:621,1],breaks=300,col="coral",add=TRUE)
+legend("topright",c("Complex","Simple"),fill=c(grey.colors(1,alpha=0.1),"coral"))
+
+hist(betaT_C[1:621,1],main="betaT (Only for Complex Model)",xlab="betaT",
+     breaks=300,col=grey.colors(1,alpha=0.1))
+
+hist(sigmaP_C[1:621,1],main="sigmaP",xlab="sigmaP",
+     breaks=300,col=grey.colors(1,alpha=0.1))
+hist(sigmaP_S[1:621,1],breaks=300,col="coral",add=TRUE)
+legend("topright",c("Complex","Simple"),fill=c(grey.colors(1,alpha=0.1),"coral"))
+
+hist(sigmaPT_C[1:621,1],main="sigmaPT (Only for Complex Model)",xlab="sigmaPT",
+     breaks=300,col=grey.colors(1,alpha=0.1))
+
+hist(sigmaT_C[1:621,1],main="sigmaT",xlab="sigmaT",
+     breaks=300,col=grey.colors(1,alpha=0.1))
+hist(sigmaT_S[1:621,1],breaks=300,col="coral",add=TRUE)
+legend("topright",c("Complex","Simple"),fill=c(grey.colors(1,alpha=0.1),"coral"))
+
+
+hist(sigmaE_C[1:621,1],main="sigmaE",xlab="sigmaE",
+     breaks=300,col=grey.colors(1,alpha=0.1))
+hist(sigmaE_S[1:621,1],breaks=300,col=adjustcolor("coral",0.5),
+     add=TRUE)
+legend("topright",c("Complex","Simple"),fill=c(grey.colors(1,alpha=0.1),adjustcolor("coral",0.5)))
+
+
+
+hist((log((sigmaP_C$mean/sigmaT_C$mean)))[1:621],main="logPTratio",
+     xlab="log sigmaP/sigmaT", xlim=c(-2.5,3.5), ylim=c(0,20),
+     breaks=300, col=grey.colors(1,alpha=0.1))
+hist((log((sigmaP_S$mean/sigmaT_S$mean)))[1:621],breaks=300,
+     col=adjustcolor("black",0.5),add=TRUE)
+legend("topright",c("Complex","Simple"),fill=c(grey.colors(1,alpha=0.1),"black"))
+

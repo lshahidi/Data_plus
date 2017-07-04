@@ -83,6 +83,7 @@ fit1 <- lmer(X1 ~ tInd + (tInd|patient), Data1)
 # plot variances
 sigmaLMER2 <- sigmaLMER[,c("sigmaP","sigmaT","sigmaE")]
 sigmaLMER2[sigmaLMER2>2] <- NA
+sigmaLMER2[sigmaLMER2==0] <- NA
 gg <- melt(sigmaLMER2)
 ggplot(gg, aes(x=value, fill=variable)) +
   geom_histogram(binwidth=0.05)+
@@ -100,7 +101,8 @@ PTratio[PTratio>100] <- NA
 hist(PTratio,100)
 
 logPTratio <- log(sigmaLMER$sigmaP/sigmaLMER$sigmaT)
-logPTratio[logPTratio<(-30)] <- NA
+logPTratio[logPTratio<(-50)] <- NA
+logPTratio[logPTratio>50] <- NA
 hist(logPTratio,100)
 
 # layout boxplot is at the bottom 
@@ -212,12 +214,12 @@ HLABind <- grep('HLA-B', geneNames)[(grep('HLA-B', geneNames, value=TRUE)=="HLA-
 
 # plot histogram of PT ratio
 df <- data.frame(inf2NA(logPTratio))
-ggplot(df, aes(x=logPTratio)) + geom_histogram(bins = 100) + ggtitle("APC locations") + xlim(c(-15,15)) + annotate("text", x=logPTratio[APCind], y = rep(c(20000,25000,30000,35000,40000),11), label="V") + annotate("text", x=8, y= 60000, label=(paste("APC mean: ",mean(logPTratio[APCind], na.rm=TRUE))))
-ggplot(df, aes(x=logPTratio)) + geom_histogram(bins = 100) + ggtitle("TP53 locations") + xlim(c(-15,15)) + annotate("text", x=logPTratio[TP53ind], y = rep(c(20000,25000,30000,35000,40000),3), label="V") + annotate("text", x=8, y= 60000, label=(paste("TP53 mean: ",mean(logPTratio[TP53ind], na.rm=TRUE))))
-ggplot(df, aes(x=logPTratio)) + geom_histogram(bins = 100) + ggtitle("TTN locations") + xlim(c(-15,15)) + annotate("text", x=logPTratio[TTNind], y = rep(c(20000,25000,30000,35000,40000),7), label="V") + annotate("text", x=8, y= 60000, label=(paste("TTN mean: ",mean(logPTratio[TTNind], na.rm=TRUE))))
-ggplot(df, aes(x=logPTratio)) + geom_histogram(bins = 100) + ggtitle("B2M locations") + xlim(c(-15,15)) + annotate("text", x=logPTratio[B2Mind], y = rep(c(20000,25000,30000,35000,40000),5)[-1], label="V") + annotate("text", x=8, y= 60000, label=(paste("B2M mean: ",mean(logPTratio[B2Mind], na.rm=TRUE))))
-ggplot(df, aes(x=logPTratio)) + geom_histogram(bins = 100) + ggtitle("HLA-A locations") + xlim(c(-15,15)) + annotate("text", x=logPTratio[HLAAind], y = rep(c(20000,25000,30000,35000,40000),7)[-1], label="V") + annotate("text", x=8, y= 60000, label=(paste("HLA-A mean: ",mean(logPTratio[HLAAind], na.rm=TRUE))))
-ggplot(df, aes(x=logPTratio)) + geom_histogram(bins = 100) + ggtitle("HLA-B locations") + xlim(c(-15,15)) + annotate("text", x=logPTratio[HLABind], y = rep(c(20000,25000,30000,35000,40000),9)[-1:-2], label="V") + annotate("text", x=8, y= 60000, label=(paste("HLA-B mean: ",mean(logPTratio[HLABind], na.rm=TRUE))))
+ggplot(df, aes(x=logPTratio)) + geom_histogram(bins = 100) + ggtitle("APC locations") + xlim(c(-30,30)) + annotate("text", x=logPTratio[APCind], y = rep(c(20000,25000,30000,35000,40000),11), label="V") + annotate("text", x=8, y= 60000, label=(paste("APC mean: ",mean(logPTratio[APCind], na.rm=TRUE))))
+ggplot(df, aes(x=logPTratio)) + geom_histogram(bins = 100) + ggtitle("TP53 locations") + xlim(c(-30,30)) + annotate("text", x=logPTratio[TP53ind], y = rep(c(20000,25000,30000,35000,40000),3), label="V") + annotate("text", x=8, y= 60000, label=(paste("TP53 mean: ",mean(logPTratio[TP53ind], na.rm=TRUE))))
+ggplot(df, aes(x=logPTratio)) + geom_histogram(bins = 100) + ggtitle("TTN locations") + xlim(c(-30,30)) + annotate("text", x=logPTratio[TTNind], y = rep(c(20000,25000,30000,35000,40000),7), label="V") + annotate("text", x=8, y= 60000, label=(paste("TTN mean: ",mean(logPTratio[TTNind], na.rm=TRUE))))
+ggplot(df, aes(x=logPTratio)) + geom_histogram(bins = 100) + ggtitle("B2M locations") + xlim(c(-30,30)) + annotate("text", x=logPTratio[B2Mind], y = rep(c(20000,25000,30000,35000,40000),5)[-1], label="V") + annotate("text", x=8, y= 60000, label=(paste("B2M mean: ",mean(logPTratio[B2Mind], na.rm=TRUE))))
+ggplot(df, aes(x=logPTratio)) + geom_histogram(bins = 100) + ggtitle("HLA-A locations") + xlim(c(-30,30)) + annotate("text", x=logPTratio[HLAAind], y = rep(c(20000,25000,30000,35000,40000),7)[-1], label="V") + annotate("text", x=8, y= 60000, label=(paste("HLA-A mean: ",mean(logPTratio[HLAAind], na.rm=TRUE))))
+ggplot(df, aes(x=logPTratio)) + geom_histogram(bins = 100) + ggtitle("HLA-B locations") + xlim(c(-30,30)) + annotate("text", x=logPTratio[HLABind], y = rep(c(20000,25000,30000,35000,40000),9)[-1:-2], label="V") + annotate("text", x=8, y= 60000, label=(paste("HLA-B mean: ",mean(logPTratio[HLABind], na.rm=TRUE))))
 
 
 

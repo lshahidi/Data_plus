@@ -125,3 +125,32 @@ sigmaT <- as.data.frame(VarCorr(fit))$sdcor[2]
 sigmaE <- as.data.frame(VarCorr(fit))$sdcor[4]
 DataEst$estBeta <- mu + betaT*DataEst$tInd + bi + bTi*DataEst$tInd
 ggplot() + geom_point(data=DataI, aes(x = tInd, y=logitbeta, color=patient, group=patient)) + geom_line(data=DataEst, aes(x = tInd, y=estBeta, color=patient, group=patient)) + labs(title=paste("Site ",as.integer(siteNum))) + annotate("text", x=c(0.25, 0.75, 0.5), y = yHeights, label=c(paste("sigmaP: ",sigmaP),paste("sigmaT: ",sigmaT),paste("sigmaE: ",sigmaE)))
+
+
+
+
+# New model
+Data1 <- site(1)
+fit1 <- lmer(X1 ~ tInd + (tInd|patient), Data1)
+summary(fit1)
+
+# Random effect model matrix
+getME(fit1,"Z")[1:10,1:8]
+
+# Fixed effect model matrix
+getME(fit1,"X")
+
+# Set missing values on patients without normal tissue
+
+pat <- c("C","D","E","F","H","J","K","K*","M","O","P","S","T","U","W","X")
+
+for (i in pat) {
+  if (sum(Data1$patient==i)!=3) {
+    Data1 <- rbind(Data1,c(NA,i,"N","N",0))
+  }
+}
+
+Data1$X1 <- as.numeric(Data1$X1)
+
+fit2 <- lmer(X1 ~ tInd + (1|patient) + (tInd|patient), Data1)
+summary(fit2)

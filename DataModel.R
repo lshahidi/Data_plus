@@ -667,7 +667,6 @@ for (i in 1:10) {
 
 
 
-
 # Comparing lmer and stan results, based on random 200 sites
 
 # Randomly choose 200 sites

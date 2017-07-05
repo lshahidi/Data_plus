@@ -189,3 +189,24 @@ ggplot(df, aes(x=logPTratioC1K)) + geom_histogram(bins = 100) + ggtitle("HLA-A l
 ggplot(df, aes(x=logPTratioS1K)) + geom_histogram(bins = 100) + ggtitle("HLA-B locations") + xlim(c(-3,3)) + annotate("text", x=dfS$logPTratio[HLABind], y = rep(c(200,250,300,350,400),9)[-1:-2], label="V") + annotate("text", x=0, y= 600, label=(paste("HLA-B mean: ",mean(dfS$logPTratio[HLABind], na.rm=TRUE))))
 ggplot(df, aes(x=logPTratioC1K)) + geom_histogram(bins = 100) + ggtitle("HLA-B locations") + xlim(c(-3,3)) + annotate("text", x=dfC$logPTratio[HLABind], y = rep(c(50,100,150,200,250),9)[-1:-2], label="V") + annotate("text", x=0, y= 400, label=(paste("HLA-B mean: ",mean(dfC$logPTratio[HLABind], na.rm=TRUE))))
 
+
+
+
+# find sites with unique names
+regionNames <- list(866836)
+for (i in 1:866836) {
+  regionNames[[i]] <- unique(unlist(strsplit(FullAnnotation$UCSC_RefGene_Group[i],split=";")))
+}
+regionNames[[regionNames=="5URT"]] <- "5'UTR"
+# return indices of sites specifically group "TSS200", and so on
+TSS200ind <- grep('TSS200', regionNames)[(grep('TSS200', regionNames, value=TRUE)=="TSS200")]
+TSS1500ind <- grep('TSS1500', regionNames)[(grep('TSS1500', regionNames, value=TRUE)=="TSS1500")]
+UTR3ind <- grep('3UTR', regionNames)[(grep('3UTR', regionNames, value=TRUE)=="3UTR")]
+UTR5ind <- grep('5URT', regionNames)[(grep('5URT', regionNames, value=TRUE)=="5URT")]
+Bodyind <- grep('Body', regionNames)[(grep('Body', regionNames, value=TRUE)=="Body")]
+
+# plot for APC
+df$mu <- mu_C[,1]
+APCind2 <- intersect(APCind,Bodyind)
+ggplot(df, aes(x=mu)) + geom_histogram(bins = 100) + ggtitle("APC Body locations") + xlim(c(-5,5)) + annotate("text", x=dfC$mu[APCind2], y = rep(30,17), label="V") + annotate("text", x=0, y= 40, label=(paste("APC Body mean: ",mean(dfC$mu[APCind2], na.rm=TRUE))))
+

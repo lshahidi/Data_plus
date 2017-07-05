@@ -159,13 +159,33 @@ for (i in HLABind){
   dfC$logPTratio[i] <- log(dfC$sigmaP[i]/dfC$sigmaT[i])
 }
 
+# save data for later
+save(dfS,dfC,file="myDFs.Rdata")
+load("myDFs.Rdata")
+
 
 inf2NA <- function(x) { x[is.infinite(x)] <- NA; x }
-# plot histogram of PT ratio
-df <- data.frame(inf2NA(logPTratio))
-ggplot(df, aes(x=logPTratio)) + geom_histogram(bins = 100) + ggtitle("APC locations") + xlim(c(-30,30)) + annotate("text", x=logPTratio[APCind], y = rep(c(20000,25000,30000,35000,40000),11), label="V") + annotate("text", x=8, y= 60000, label=(paste("APC mean: ",mean(logPTratio[APCind], na.rm=TRUE))))
-ggplot(df, aes(x=logPTratio)) + geom_histogram(bins = 100) + ggtitle("TP53 locations") + xlim(c(-30,30)) + annotate("text", x=logPTratio[TP53ind], y = rep(c(20000,25000,30000,35000,40000),3), label="V") + annotate("text", x=8, y= 60000, label=(paste("TP53 mean: ",mean(logPTratio[TP53ind], na.rm=TRUE))))
-ggplot(df, aes(x=logPTratio)) + geom_histogram(bins = 100) + ggtitle("TTN locations") + xlim(c(-30,30)) + annotate("text", x=logPTratio[TTNind], y = rep(c(20000,25000,30000,35000,40000),7), label="V") + annotate("text", x=8, y= 60000, label=(paste("TTN mean: ",mean(logPTratio[TTNind], na.rm=TRUE))))
-ggplot(df, aes(x=logPTratio)) + geom_histogram(bins = 100) + ggtitle("B2M locations") + xlim(c(-30,30)) + annotate("text", x=logPTratio[B2Mind], y = rep(c(20000,25000,30000,35000,40000),5)[-1], label="V") + annotate("text", x=8, y= 60000, label=(paste("B2M mean: ",mean(logPTratio[B2Mind], na.rm=TRUE))))
-ggplot(df, aes(x=logPTratio)) + geom_histogram(bins = 100) + ggtitle("HLA-A locations") + xlim(c(-30,30)) + annotate("text", x=logPTratio[HLAAind], y = rep(c(20000,25000,30000,35000,40000),7)[-1], label="V") + annotate("text", x=8, y= 60000, label=(paste("HLA-A mean: ",mean(logPTratio[HLAAind], na.rm=TRUE))))
-ggplot(df, aes(x=logPTratio)) + geom_histogram(bins = 100) + ggtitle("HLA-B locations") + xlim(c(-30,30)) + annotate("text", x=logPTratio[HLABind], y = rep(c(20000,25000,30000,35000,40000),9)[-1:-2], label="V") + annotate("text", x=8, y= 60000, label=(paste("HLA-B mean: ",mean(logPTratio[HLABind], na.rm=TRUE))))
+# plot histogram of PT ratio, simple and complex model
+# first simple model, then complex, for each gene
+df <- data.frame(logPTratioS1K = numeric(1000), logPTratioC1K = numeric(1000))
+df$logPTratioS1K <- inf2NA(as.matrix(log(sigmaP_S[,1]/sigmaT_S[,1])))
+df$logPTratioC1K <- inf2NA(as.matrix(log(sigmaP_C[,1]/sigmaT_C[,1])))
+# APC
+ggplot(df, aes(x=logPTratioS1K)) + geom_histogram(bins = 100) + ggtitle("APC locations") + xlim(c(-3,3)) + annotate("text", x=dfS$logPTratio[APCind], y = rep(c(200,250,300,350,400),11), label="V") + annotate("text", x=0, y= 600, label=(paste("APC mean: ",mean(dfS$logPTratio[APCind], na.rm=TRUE))))
+ggplot(df, aes(x=logPTratioC1K)) + geom_histogram(bins = 100) + ggtitle("APC locations") + xlim(c(-3,3)) + annotate("text", x=dfC$logPTratio[APCind], y = rep(c(50,100,150,200,250),11), label="V") + annotate("text", x=0, y= 400, label=(paste("APC mean: ",mean(dfC$logPTratio[APCind], na.rm=TRUE))))
+# TP53
+ggplot(df, aes(x=logPTratioS1K)) + geom_histogram(bins = 100) + ggtitle("TP53 locations") + xlim(c(-3,3)) + annotate("text", x=dfS$logPTratio[TP53ind], y = rep(c(200,250,300,350,400),3), label="V") + annotate("text", x=0, y= 600, label=(paste("TP53 mean: ",mean(dfS$logPTratio[TP53ind], na.rm=TRUE))))
+ggplot(df, aes(x=logPTratioC1K)) + geom_histogram(bins = 100) + ggtitle("TP53 locations") + xlim(c(-3,3)) + annotate("text", x=dfC$logPTratio[TP53ind], y = rep(c(50,100,150,200,250),3), label="V") + annotate("text", x=0, y= 400, label=(paste("TP53 mean: ",mean(dfC$logPTratio[TP53ind], na.rm=TRUE))))
+# TTN
+ggplot(df, aes(x=logPTratioS1K)) + geom_histogram(bins = 100) + ggtitle("TTN locations") + xlim(c(-3,3)) + annotate("text", x=dfS$logPTratio[TTNind], y = rep(c(200,250,300,350,400),7), label="V") + annotate("text", x=0, y= 600, label=(paste("TTN mean: ",mean(dfS$logPTratio[TTNind], na.rm=TRUE))))
+ggplot(df, aes(x=logPTratioC1K)) + geom_histogram(bins = 100) + ggtitle("TTN locations") + xlim(c(-3,3)) + annotate("text", x=dfC$logPTratio[TTNind], y = rep(c(50,100,150,200,250),7), label="V") + annotate("text", x=0, y= 400, label=(paste("TTN mean: ",mean(dfC$logPTratio[TTNind], na.rm=TRUE))))
+# B2M
+ggplot(df, aes(x=logPTratioS1K)) + geom_histogram(bins = 100) + ggtitle("B2M locations") + xlim(c(-3,3)) + annotate("text", x=dfS$logPTratio[B2Mind], y = rep(c(200,250,300,350,400),5)[-1], label="V") + annotate("text", x=0, y= 600, label=(paste("B2M mean: ",mean(dfS$logPTratio[B2Mind], na.rm=TRUE))))
+ggplot(df, aes(x=logPTratioC1K)) + geom_histogram(bins = 100) + ggtitle("B2M locations") + xlim(c(-3,3)) + annotate("text", x=dfC$logPTratio[B2Mind], y = rep(c(50,100,150,200,250),5)[-1], label="V") + annotate("text", x=0, y= 400, label=(paste("B2M mean: ",mean(dfC$logPTratio[B2Mind], na.rm=TRUE))))
+# HLA-A
+ggplot(df, aes(x=logPTratioS1K)) + geom_histogram(bins = 100) + ggtitle("HLA-A locations") + xlim(c(-3,3)) + annotate("text", x=dfS$logPTratio[HLAAind], y = rep(c(200,250,300,350,400),7)[-1], label="V") + annotate("text", x=0, y= 600, label=(paste("HLA-A mean: ",mean(dfS$logPTratio[HLAAind], na.rm=TRUE))))
+ggplot(df, aes(x=logPTratioC1K)) + geom_histogram(bins = 100) + ggtitle("HLA-A locations") + xlim(c(-3,3)) + annotate("text", x=dfC$logPTratio[HLAAind], y = rep(c(50,100,150,200,250),7)[-1], label="V") + annotate("text", x=0, y= 400, label=(paste("HLA-A mean: ",mean(dfC$logPTratio[HLAAind], na.rm=TRUE))))
+# HLA-B
+ggplot(df, aes(x=logPTratioS1K)) + geom_histogram(bins = 100) + ggtitle("HLA-B locations") + xlim(c(-3,3)) + annotate("text", x=dfS$logPTratio[HLABind], y = rep(c(200,250,300,350,400),9)[-1:-2], label="V") + annotate("text", x=0, y= 600, label=(paste("HLA-B mean: ",mean(dfS$logPTratio[HLABind], na.rm=TRUE))))
+ggplot(df, aes(x=logPTratioC1K)) + geom_histogram(bins = 100) + ggtitle("HLA-B locations") + xlim(c(-3,3)) + annotate("text", x=dfC$logPTratio[HLABind], y = rep(c(50,100,150,200,250),9)[-1:-2], label="V") + annotate("text", x=0, y= 400, label=(paste("HLA-B mean: ",mean(dfC$logPTratio[HLABind], na.rm=TRUE))))
+

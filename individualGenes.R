@@ -14,15 +14,12 @@ setwd("/Users/kevinmurgas/Documents/Data+ project/EPIC data")
 # Yanlin's working directory
 setwd("D:/DataPlus2017/Data")
 
+load("StanCRuns/StanCResults_1.Rdata")
 
 # need stan results first for histogram
 
 load("myFA.Rdata")
 # load(stan results at 1000 sites)
-load("mu_S.Rdata")
-load("sigmaE_S.Rdata")
-load("sigmaP_S.Rdata")
-load("sigmaE_S.Rdata")
 load("betaT_C.Rdata")
 load("mu_C.Rdata")
 load("sigmaE_C.Rdata")
@@ -95,99 +92,93 @@ HLAAind <- grep('HLA-A', geneNames)[(grep('HLA-A', geneNames, value=TRUE)=="HLA-
 HLABind <- grep('HLA-B', geneNames)[(grep('HLA-B', geneNames, value=TRUE)=="HLA-B")]
 
 
-# run the indices in stan, store results in logPTratio
-dfS <- data.frame(mu = numeric(866836), sigmaE = numeric(866836), sigmaP = numeric(866836), sigmaT = numeric(866836), logPTratio = numeric(866836))
-dfC <- data.frame(betaT = numeric(866836), mu = numeric(866836), sigmaE = numeric(866836), sigmaP = numeric(866836), sigmaPT = numeric(866836), sigmaT = numeric(866836), logPTratio = numeric(866836))
-
-for (i in APCind){
-  data <- site(i)
-  stanS <- stanfit4(data)
-  dfS[i,c("mu","sigmaE","sigmaP","sigmaT")] <- summary(stanS)$summary[49:52,1]
-  dfS$logPTratio[i] <- log(dfS$sigmaP[i]/dfS$sigmaT[i])
-  stanC <- stanfit3(data)
-  dfC[i,c("betaT","mu","sigmaE","sigmaP","sigmaPT","sigmaT")] <- summary(stanC)$summary[71:76,1]
-  dfC$logPTratio[i] <- log(dfC$sigmaP[i]/dfC$sigmaT[i])
-}
-
-for (i in TP53ind){
-  data <- site(i)
-  stanS <- stanfit4(data)
-  dfS[i,c("mu","sigmaE","sigmaP","sigmaT")] <- summary(stanS)$summary[49:52,1]
-  dfS$logPTratio[i] <- log(dfS$sigmaP[i]/dfS$sigmaT[i])
-  stanC <- stanfit3(data)
-  dfC[i,c("betaT","mu","sigmaE","sigmaP","sigmaPT","sigmaT")] <- summary(stanC)$summary[71:76,1]
-  dfC$logPTratio[i] <- log(dfC$sigmaP[i]/dfC$sigmaT[i])
-}
-
-for (i in TTNind){
-  data <- site(i)
-  stanS <- stanfit4(data)
-  dfS[i,c("mu","sigmaE","sigmaP","sigmaT")] <- summary(stanS)$summary[49:52,1]
-  dfS$logPTratio[i] <- log(dfS$sigmaP[i]/dfS$sigmaT[i])
-  stanC <- stanfit3(data)
-  dfC[i,c("betaT","mu","sigmaE","sigmaP","sigmaPT","sigmaT")] <- summary(stanC)$summary[71:76,1]
-  dfC$logPTratio[i] <- log(dfC$sigmaP[i]/dfC$sigmaT[i])
-}
-
-for (i in B2Mind){
-  data <- site(i)
-  stanS <- stanfit4(data)
-  dfS[i,c("mu","sigmaE","sigmaP","sigmaT")] <- summary(stanS)$summary[49:52,1]
-  dfS$logPTratio[i] <- log(dfS$sigmaP[i]/dfS$sigmaT[i])
-  stanC <- stanfit3(data)
-  dfC[i,c("betaT","mu","sigmaE","sigmaP","sigmaPT","sigmaT")] <- summary(stanC)$summary[71:76,1]
-  dfC$logPTratio[i] <- log(dfC$sigmaP[i]/dfC$sigmaT[i])
-}
-
-for (i in HLAAind){
-  data <- site(i)
-  stanS <- stanfit4(data)
-  dfS[i,c("mu","sigmaE","sigmaP","sigmaT")] <- summary(stanS)$summary[49:52,1]
-  dfS$logPTratio[i] <- log(dfS$sigmaP[i]/dfS$sigmaT[i])
-  stanC <- stanfit3(data)
-  dfC[i,c("betaT","mu","sigmaE","sigmaP","sigmaPT","sigmaT")] <- summary(stanC)$summary[71:76,1]
-  dfC$logPTratio[i] <- log(dfC$sigmaP[i]/dfC$sigmaT[i])
-}
-
-for (i in HLABind){
-  data <- site(i)
-  stanS <- stanfit4(data)
-  dfS[i,c("mu","sigmaE","sigmaP","sigmaT")] <- summary(stanS)$summary[49:52,1]
-  dfS$logPTratio[i] <- log(dfS$sigmaP[i]/dfS$sigmaT[i])
-  stanC <- stanfit3(data)
-  dfC[i,c("betaT","mu","sigmaE","sigmaP","sigmaPT","sigmaT")] <- summary(stanC)$summary[71:76,1]
-  dfC$logPTratio[i] <- log(dfC$sigmaP[i]/dfC$sigmaT[i])
-}
+## run the indices in stan, store results in logPTratio
+# dfC <- data.frame(betaT = numeric(866836), mu = numeric(866836), sigmaE = numeric(866836), sigmaP = numeric(866836), sigmaPT = numeric(866836), sigmaT = numeric(866836), logPTratio = numeric(866836))
+# 
+# for (i in APCind){
+#   data <- site(i)
+#   stanC <- stanfit3(data)
+#   dfC[i,c("betaT","mu","sigmaE","sigmaP","sigmaPT","sigmaT")] <- summary(stanC)$summary[71:76,1]
+#   dfC$logPTratio[i] <- log(dfC$sigmaP[i]/dfC$sigmaT[i])
+# }
+# 
+# for (i in TP53ind){
+#   data <- site(i)
+#   stanC <- stanfit3(data)
+#   dfC[i,c("betaT","mu","sigmaE","sigmaP","sigmaPT","sigmaT")] <- summary(stanC)$summary[71:76,1]
+#   dfC$logPTratio[i] <- log(dfC$sigmaP[i]/dfC$sigmaT[i])
+# }
+# 
+# for (i in TTNind){
+#   data <- site(i)
+#   stanC <- stanfit3(data)
+#   dfC[i,c("betaT","mu","sigmaE","sigmaP","sigmaPT","sigmaT")] <- summary(stanC)$summary[71:76,1]
+#   dfC$logPTratio[i] <- log(dfC$sigmaP[i]/dfC$sigmaT[i])
+# }
+# 
+# for (i in B2Mind){
+#   data <- site(i)
+#   stanC <- stanfit3(data)
+#   dfC[i,c("betaT","mu","sigmaE","sigmaP","sigmaPT","sigmaT")] <- summary(stanC)$summary[71:76,1]
+#   dfC$logPTratio[i] <- log(dfC$sigmaP[i]/dfC$sigmaT[i])
+# }
+# 
+# for (i in HLAAind){
+#   data <- site(i)
+#   stanC <- stanfit3(data)
+#   dfC[i,c("betaT","mu","sigmaE","sigmaP","sigmaPT","sigmaT")] <- summary(stanC)$summary[71:76,1]
+#   dfC$logPTratio[i] <- log(dfC$sigmaP[i]/dfC$sigmaT[i])
+# }
+# 
+# for (i in HLABind){
+#   data <- site(i)
+#   stanC <- stanfit3(data)
+#   dfC[i,c("betaT","mu","sigmaE","sigmaP","sigmaPT","sigmaT")] <- summary(stanC)$summary[71:76,1]
+#   dfC$logPTratio[i] <- log(dfC$sigmaP[i]/dfC$sigmaT[i])
+# }
 
 # save data for later
 save(dfS,dfC,file="myDFs.Rdata")
 load("myDFs.Rdata")
+dfC$logPTTratio <- log(dfC$sigmaPT/dfC$sigmaT)
+dfC$logPPTratio <- log(dfC$sigmaP/dfC$sigmaPT)
 
 
 inf2NA <- function(x) { x[is.infinite(x)] <- NA; x }
 # plot histogram of PT ratio, simple and complex model
 # first simple model, then complex, for each gene
-df <- data.frame(logPTratioS1K = numeric(1000), logPTratioC1K = numeric(1000))
-df$logPTratioS1K <- inf2NA(as.matrix(log(sigmaP_S[,1]/sigmaT_S[,1])))
-df$logPTratioC1K <- inf2NA(as.matrix(log(sigmaP_C[,1]/sigmaT_C[,1])))
+df <- data.frame(logPTratio = numeric(1000),logPTTratio = numeric(1000),logPPTratio = numeric(1000))
+df$logPTratio <- inf2NA(as.matrix(log(sigmaP_C[,1]/sigmaT_C[,1])))
+df$logPTTratio <- inf2NA(as.matrix(log(sigmaPT_C[,1]/sigmaT_C[,1])))
+df$logPPTratio <- inf2NA(as.matrix(log(sigmaP_C[,1]/sigmaPT_C[,1])))
+
 # APC
-ggplot(df, aes(x=logPTratioS1K)) + geom_histogram(bins = 100) + ggtitle("APC locations") + xlim(c(-3,3)) + annotate("text", x=dfS$logPTratio[APCind], y = rep(c(200,250,300,350,400),11), label="V") + annotate("text", x=0, y= 600, label=(paste("APC mean: ",mean(dfS$logPTratio[APCind], na.rm=TRUE))))
-ggplot(df, aes(x=logPTratioC1K)) + geom_histogram(bins = 100) + ggtitle("APC locations") + xlim(c(-3,3)) + annotate("text", x=dfC$logPTratio[APCind], y = rep(c(50,100,150,200,250),11), label="V") + annotate("text", x=0, y= 400, label=(paste("APC mean: ",mean(dfC$logPTratio[APCind], na.rm=TRUE))))
+ggplot(df, aes(x=logPTratio)) + geom_histogram(bins = 100) + ggtitle("APC locations on P/T ratio") + xlim(c(-3,3)) + annotate("text", x=dfC$logPTratio[APCind], y = rep(c(50,100,150,200,250),11), label="V") + annotate("text", x=0, y= 400, label=(paste("APC mean: ",mean(dfC$logPTratio[APCind], na.rm=TRUE))))
+ggplot(df, aes(x=logPTTratio)) + geom_histogram(bins = 100) + ggtitle("APC locations on PT/T ratio") + xlim(c(-3,3)) + annotate("text", x=dfC$logPTTratio[APCind], y = rep(c(50,100,150,200,250),11), label="V") + annotate("text", x=0, y= 400, label=(paste("APC mean: ",mean(dfC$logPTTratio[APCind], na.rm=TRUE))))
+ggplot(df, aes(x=logPPTratio)) + geom_histogram(bins = 100) + ggtitle("APC locations on P/PT ratio") + xlim(c(-3,3)) + annotate("text", x=dfC$logPPTratio[APCind], y = rep(c(50,100,150,200,250),11), label="V") + annotate("text", x=0, y= 400, label=(paste("APC mean: ",mean(dfC$logPPTratio[APCind], na.rm=TRUE))))
 # TP53
-ggplot(df, aes(x=logPTratioS1K)) + geom_histogram(bins = 100) + ggtitle("TP53 locations") + xlim(c(-3,3)) + annotate("text", x=dfS$logPTratio[TP53ind], y = rep(c(200,250,300,350,400),3), label="V") + annotate("text", x=0, y= 600, label=(paste("TP53 mean: ",mean(dfS$logPTratio[TP53ind], na.rm=TRUE))))
-ggplot(df, aes(x=logPTratioC1K)) + geom_histogram(bins = 100) + ggtitle("TP53 locations") + xlim(c(-3,3)) + annotate("text", x=dfC$logPTratio[TP53ind], y = rep(c(50,100,150,200,250),3), label="V") + annotate("text", x=0, y= 400, label=(paste("TP53 mean: ",mean(dfC$logPTratio[TP53ind], na.rm=TRUE))))
+ggplot(df, aes(x=logPTratio)) + geom_histogram(bins = 100) + ggtitle("TP53 locations on P/T ratio") + xlim(c(-3,3)) + annotate("text", x=dfC$logPTratio[TP53ind], y = rep(c(50,100,150,200,250),3), label="V") + annotate("text", x=0, y= 400, label=(paste("TP53 mean: ",mean(dfC$logPTratio[TP53ind], na.rm=TRUE))))
+ggplot(df, aes(x=logPTTratio)) + geom_histogram(bins = 100) + ggtitle("TP53 locations on PT/T ratio") + xlim(c(-3,3)) + annotate("text", x=dfC$logPTTratio[TP53ind], y = rep(c(50,100,150,200,250),3), label="V") + annotate("text", x=0, y= 400, label=(paste("TP53 mean: ",mean(dfC$logPTTratio[TP53ind], na.rm=TRUE))))
+ggplot(df, aes(x=logPPTratio)) + geom_histogram(bins = 100) + ggtitle("TP53 locations on P/PT ratio") + xlim(c(-3,3)) + annotate("text", x=dfC$logPPTratio[TP53ind], y = rep(c(50,100,150,200,250),3), label="V") + annotate("text", x=0, y= 400, label=(paste("TP53 mean: ",mean(dfC$logPPTratio[TP53ind], na.rm=TRUE))))
 # TTN
-ggplot(df, aes(x=logPTratioS1K)) + geom_histogram(bins = 100) + ggtitle("TTN locations") + xlim(c(-3,3)) + annotate("text", x=dfS$logPTratio[TTNind], y = rep(c(200,250,300,350,400),7), label="V") + annotate("text", x=0, y= 600, label=(paste("TTN mean: ",mean(dfS$logPTratio[TTNind], na.rm=TRUE))))
-ggplot(df, aes(x=logPTratioC1K)) + geom_histogram(bins = 100) + ggtitle("TTN locations") + xlim(c(-3,3)) + annotate("text", x=dfC$logPTratio[TTNind], y = rep(c(50,100,150,200,250),7), label="V") + annotate("text", x=0, y= 400, label=(paste("TTN mean: ",mean(dfC$logPTratio[TTNind], na.rm=TRUE))))
+ggplot(df, aes(x=logPTratio)) + geom_histogram(bins = 100) + ggtitle("TTN locations on P/T ratio") + xlim(c(-3,3)) + annotate("text", x=dfC$logPTratio[TTNind], y = rep(c(50,100,150,200,250),7), label="V") + annotate("text", x=0, y= 400, label=(paste("TTN mean: ",mean(dfC$logPTratio[TTNind], na.rm=TRUE))))
+ggplot(df, aes(x=logPTTratio)) + geom_histogram(bins = 100) + ggtitle("TTN locations on PT/T ratio") + xlim(c(-3,3)) + annotate("text", x=dfC$logPTTratio[TTNind], y = rep(c(50,100,150,200,250),7), label="V") + annotate("text", x=0, y= 400, label=(paste("TTN mean: ",mean(dfC$logPTTratio[TTNind], na.rm=TRUE))))
+ggplot(df, aes(x=logPPTratio)) + geom_histogram(bins = 100) + ggtitle("TTN locations on P/PT ratio") + xlim(c(-3,3)) + annotate("text", x=dfC$logPPTratio[TTNind], y = rep(c(50,100,150,200,250),7), label="V") + annotate("text", x=0, y= 400, label=(paste("TTN mean: ",mean(dfC$logPPTratio[TTNind], na.rm=TRUE))))
 # B2M
-ggplot(df, aes(x=logPTratioS1K)) + geom_histogram(bins = 100) + ggtitle("B2M locations") + xlim(c(-3,3)) + annotate("text", x=dfS$logPTratio[B2Mind], y = rep(c(200,250,300,350,400),5)[-1], label="V") + annotate("text", x=0, y= 600, label=(paste("B2M mean: ",mean(dfS$logPTratio[B2Mind], na.rm=TRUE))))
-ggplot(df, aes(x=logPTratioC1K)) + geom_histogram(bins = 100) + ggtitle("B2M locations") + xlim(c(-3,3)) + annotate("text", x=dfC$logPTratio[B2Mind], y = rep(c(50,100,150,200,250),5)[-1], label="V") + annotate("text", x=0, y= 400, label=(paste("B2M mean: ",mean(dfC$logPTratio[B2Mind], na.rm=TRUE))))
+ggplot(df, aes(x=logPTratio)) + geom_histogram(bins = 100) + ggtitle("B2M locations on P/T ratio") + xlim(c(-3,3)) + annotate("text", x=dfC$logPTratio[B2Mind], y = rep(c(50,100,150,200,250),5)[-1], label="V") + annotate("text", x=0, y= 400, label=(paste("B2M mean: ",mean(dfC$logPTratio[B2Mind], na.rm=TRUE))))
+ggplot(df, aes(x=logPTTratio)) + geom_histogram(bins = 100) + ggtitle("B2M locations on PT/T ratio") + xlim(c(-3,3)) + annotate("text", x=dfC$logPTTratio[B2Mind], y = rep(c(50,100,150,200,250),5)[-1], label="V") + annotate("text", x=0, y= 400, label=(paste("B2M mean: ",mean(dfC$logPTTratio[B2Mind], na.rm=TRUE))))
+ggplot(df, aes(x=logPPTratio)) + geom_histogram(bins = 100) + ggtitle("B2M locations on P/PT ratio") + xlim(c(-3,3)) + annotate("text", x=dfC$logPPTratio[B2Mind], y = rep(c(50,100,150,200,250),5)[-1], label="V") + annotate("text", x=0, y= 400, label=(paste("B2M mean: ",mean(dfC$logPPTratio[B2Mind], na.rm=TRUE))))
 # HLA-A
-ggplot(df, aes(x=logPTratioS1K)) + geom_histogram(bins = 100) + ggtitle("HLA-A locations") + xlim(c(-3,3)) + annotate("text", x=dfS$logPTratio[HLAAind], y = rep(c(200,250,300,350,400),7)[-1], label="V") + annotate("text", x=0, y= 600, label=(paste("HLA-A mean: ",mean(dfS$logPTratio[HLAAind], na.rm=TRUE))))
-ggplot(df, aes(x=logPTratioC1K)) + geom_histogram(bins = 100) + ggtitle("HLA-A locations") + xlim(c(-3,3)) + annotate("text", x=dfC$logPTratio[HLAAind], y = rep(c(50,100,150,200,250),7)[-1], label="V") + annotate("text", x=0, y= 400, label=(paste("HLA-A mean: ",mean(dfC$logPTratio[HLAAind], na.rm=TRUE))))
+ggplot(df, aes(x=logPTratio)) + geom_histogram(bins = 100) + ggtitle("HLA-A locations on P/T ratio") + xlim(c(-3,3)) + annotate("text", x=dfC$logPTratio[HLAAind], y = rep(c(50,100,150,200,250),7)[-1], label="V") + annotate("text", x=0, y= 400, label=(paste("HLA-A mean: ",mean(dfC$logPTratio[HLAAind], na.rm=TRUE))))
+ggplot(df, aes(x=logPTTratio)) + geom_histogram(bins = 100) + ggtitle("HLA-A locations on PT/T ratio") + xlim(c(-3,3)) + annotate("text", x=dfC$logPTTratio[HLAAind], y = rep(c(50,100,150,200,250),7)[-1], label="V") + annotate("text", x=0, y= 400, label=(paste("HLA-A mean: ",mean(dfC$logPTTratio[HLAAind], na.rm=TRUE))))
+ggplot(df, aes(x=logPPTratio)) + geom_histogram(bins = 100) + ggtitle("HLA-A locations on P/PT ratio") + xlim(c(-3,3)) + annotate("text", x=dfC$logPPTratio[HLAAind], y = rep(c(50,100,150,200,250),7)[-1], label="V") + annotate("text", x=0, y= 400, label=(paste("HLA-A mean: ",mean(dfC$logPPTratio[HLAAind], na.rm=TRUE))))
 # HLA-B
-ggplot(df, aes(x=logPTratioS1K)) + geom_histogram(bins = 100) + ggtitle("HLA-B locations") + xlim(c(-3,3)) + annotate("text", x=dfS$logPTratio[HLABind], y = rep(c(200,250,300,350,400),9)[-1:-2], label="V") + annotate("text", x=0, y= 600, label=(paste("HLA-B mean: ",mean(dfS$logPTratio[HLABind], na.rm=TRUE))))
-ggplot(df, aes(x=logPTratioC1K)) + geom_histogram(bins = 100) + ggtitle("HLA-B locations") + xlim(c(-3,3)) + annotate("text", x=dfC$logPTratio[HLABind], y = rep(c(50,100,150,200,250),9)[-1:-2], label="V") + annotate("text", x=0, y= 400, label=(paste("HLA-B mean: ",mean(dfC$logPTratio[HLABind], na.rm=TRUE))))
+ggplot(df, aes(x=logPTratio)) + geom_histogram(bins = 100) + ggtitle("HLA-B locations on P/T ratio") + xlim(c(-3,3)) + annotate("text", x=dfC$logPTratio[HLABind], y = rep(c(50,100,150,200,250),9)[-1:-2], label="V") + annotate("text", x=0, y= 400, label=(paste("HLA-B mean: ",mean(dfC$logPTratio[HLABind], na.rm=TRUE))))
+ggplot(df, aes(x=logPTTratio)) + geom_histogram(bins = 100) + ggtitle("HLA-B locations on PT/T ratio") + xlim(c(-3,3)) + annotate("text", x=dfC$logPTTratio[HLABind], y = rep(c(50,100,150,200,250),9)[-1:-2], label="V") + annotate("text", x=0, y= 400, label=(paste("HLA-B mean: ",mean(dfC$logPTTratio[HLABind], na.rm=TRUE))))
+ggplot(df, aes(x=logPPTratio)) + geom_histogram(bins = 100) + ggtitle("HLA-B locations on P/PT ratio") + xlim(c(-3,3)) + annotate("text", x=dfC$logPPTratio[HLABind], y = rep(c(50,100,150,200,250),9)[-1:-2], label="V") + annotate("text", x=0, y= 400, label=(paste("HLA-B mean: ",mean(dfC$logPPTratio[HLABind], na.rm=TRUE))))
+
+
+
 
 
 

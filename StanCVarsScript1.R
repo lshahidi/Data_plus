@@ -8,7 +8,9 @@ library(gtools)
 # load data
 load("myFA.Rdata")
 
-
+args <- commandArgs(trailingOnly = TRUE)
+N <- as.numeric(args[1])
+out.file <- paste("Results_", args[1], ".Rdata", sep="")
 
 # Function used to read in data from each site
 
@@ -59,13 +61,11 @@ getmode <- function(v) {
 }
 
 
-# Choose 5k sites
+# Choose 1k sites by N
 
-set.seed(555)
-indice <- sample(1:dim(FullAnnotation)[1],5000,replace=FALSE)
-indice <- sort(indice)
-indice_1 <- indice[1:500]
-nsites <- length(indice_1)
+siteInds <- ((N*1000-999):(N*1000))
+if (N>866) { siteInds <- ((N*1000-999):866836) }
+nsites <- length(siteInds)
 
 
 
@@ -134,4 +134,4 @@ for (i in indice_1) {
 
 # save data
 save(mu_C,betaT_C,sigmaP_C,sigmaT_C,
-     sigmaPT_C,sigmaE_C,file="STANC1.RData")
+     sigmaPT_C,sigmaE_C,file=out.file)

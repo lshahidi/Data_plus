@@ -93,13 +93,62 @@ stanfit3 <- function (dataset) {
 }
 
 
+stanfit4 <- function (dataset) {
+  
+  data <- dataset[dataset[,3]=="T",]
+  
+  stanDat <- list(pID = as.integer(factor(data$patient)),
+                  N = nrow(data),
+                  P = nlevels(data$patient),
+                  y = data[,1])
+  
+  
+  stanFit4 <- stan(file="model4.stan", data=stanDat, control = list(adapt_delta = 0.999))
+  
+  return(stanFit4=stanFit4)
+}
+
+stanfit_rep <- function (dataset) {
+  
+  stanDat <- list(pID = as.integer(factor(dataset$patient)),
+                  tInd = dataset$tInd,
+                  N = nrow(dataset),
+                  P = nlevels(dataset$patient),
+                  y = dataset[,1])
+  
+  
+  # Using reparameterized model
+  
+  stanFit_rep <- stan(file="model_rep.stan", data=stanDat, control=list(adapt_delta=0.999))
+  
+  return(stanFit=stanFit_rep)
+}
+
+
 
 Data1 <- site(1)
 Data2 <- site(2)
 Data3 <- site(3)
 Data4 <- site(4)
 
+stan1 <- stanfit3(Data1)
+stan1_rep <- stanfit_rep(Data1)
 
+test <- Data2
+
+temp <- data.frame(X2=c(-1.44,2,1.24,-0.994,-0.83,0.66,1.24,-0.994,-0.8,1.02,-0.98,0.66),
+                   patient=c("A","A","A","B","B","B","R","R","R","Y","Y","Y"),
+                   tissue=c("T","T","N","T","T","N","T","T","N","T","T","N"),
+                   side=c("A","B","N","A","B","N","A","B","N","A","B","N"),
+                   tInd=c(1,1,0,1,1,0,1,1,0,1,1,0))
+test <- rbind(test,temp)
+
+fit <- stanfit3(test)
+
+vstan1 <- stanfit3(Data1)
+stan2 <- stanfit3(Data2)
+stan3 <- stanfit4(Data3)
+stan4 <- stanfit4(Data4)
 
 stan1 <- stanfit2(Data1)
 stan1t <- stanfit3(Data1)
@@ -529,3 +578,45 @@ hist((log((sigmaP_S$mean/sigmaT_S$mean)))[1:621],breaks=300,
      col=adjustcolor("black",0.5),add=TRUE)
 legend("topright",c("Complex","Simple"),fill=c(grey.colors(1,alpha=0.1),"black"))
 
+
+
+######### Compare original model with reparameterized model (random 200 sites) ############
+
+set.seed(123)
+indice <- sample(1:dim(FullAnnotation)[1],200,replace=FALSE)
+indice <- sort(indice)
+nsites <- 200
+
+
+
+est <- data.frame(betaT=numeric(nsites),mu=numeric(nsites),sigma_e=numeric(nsites),
+                    sigma_p=numeric(nsites),sigma_pt=numeric(nsites),sigma_t=numeric(nsites))
+
+
+count <- 1
+
+for (i in indice) {
+  data <- site(i)
+  stan <- stanfit3(data)
+  
+  est[count,] <- summary(stan)$summary[71:76,1]
+
+  count <- count + 1
+}
+
+
+
+est_rep <- data.frame(betaT=numeric(nsites),mu=numeric(nsites),sigma_e=numeric(nsites),
+                  sigma_p=numeric(nsites),sigma_pt=numeric(nsites),sigma_t=numeric(nsites))
+
+
+count <- 1
+
+for (i in indice) {
+  data <- site(i)
+  stan <- stanfit_rep(data)
+  
+  est_rep[count,] <- summary(stan)$summary[147:152,1]
+  
+  count <- count + 1
+}

@@ -8,8 +8,10 @@ library(gtools)
 
 rstan_options(auto_write = TRUE)
 #options(mc.cores = parallel::detectCores())
-print(paste("Cores: ",parallel::detectCores()))
+print(paste("Cores: ", parallel::detectCores()))
 
+# Kevin's working directory
+setwd("/Users/kevinmurgas/Documents/Data+ project/EPIC data")
 # load data
 load("myFA.Rdata")
 
@@ -24,7 +26,7 @@ print(paste("Task #: ", N))
 # Function used to read in data from each site
 site <- function (site_no) {
   # extract CpG site xx to start
-  temp <- FullAnnotation[site_no, ]
+  temp <- FullAnnotation[site_no,]
   
   # here we use all patient samples, excluding glands
   indices <- c(9:13, 15:39, 46, 47, 57, 58, 72:75)
@@ -32,7 +34,8 @@ site <- function (site_no) {
   patientLabel[10:12] <- "K*"
   sideLabel <- substr(colnames(temp[indices]), 2, 2)
   tissueLabel <- sideLabel
-  tissueLabel[tissueLabel %in% c("A", "B")] <- "T"   #replace A and B with T
+  tissueLabel[tissueLabel %in% c("A", "B")] <-
+    "T"   #replace A and B with T
   tumorIndicator <- 1 * (tissueLabel == "T")
   
   work <-
@@ -144,20 +147,19 @@ sigmaPT_C <-
     p97.5 = numeric(nsites)
   )
 
-comb <- function(x,...) {
-  mapply(rbind,x,..., SIMPLIFY = FALSE)
+comb <- function(x, ...) {
+  mapply(rbind, x, ..., SIMPLIFY = FALSE)
 }
 
 # parallel via doParallel
-mInd <- c(1,4:8)
+mInd <- c(1, 4:8)
 #options(mc.cores = 1)
 registerDoParallel(detectCores())
 getDoParWorkers()
 ptm <- proc.time()
-parData <- foreach(i = (1:nsites), .combine='comb', .multicombine=TRUE) %dopar% {
+parData <- foreach(i = (1:nsites), .combine = 'comb', .multicombine = TRUE) %dopar% {
+  print(paste("site: ", i))
 
-  print(paste("site: ",i))
-  
   data <- site(siteInds[i])
   stanFit <- stanfit3(data)
 
@@ -168,37 +170,36 @@ parData <- foreach(i = (1:nsites), .combine='comb', .multicombine=TRUE) %dopar% 
   # sigmaP_C[i,] <- fitSumm$summary[74, mInd]
   # sigmaPT_C[i,] <- fitSumm$summary[75, mInd]
   # sigmaT_C[i,] <- fitSumm$summary[76, mInd]
-  
+
   fitSumm <- summary(stanFit)$summary[71:76, mInd]
   split(fitSumm, row(fitSumm))
 }
 proc.time() - ptm
 
-columns <- c("mean","p2.5","p25","p50","p75","p97.5")
 betaT_C[,] <- parData$'1'
-mu_C <- parData$'2'
-sigmaE <- parData$'3'
-sigmaP <- parData$'4'
-sigmaPT <- parData$'5'
-sigmaT <- parData$'6'
+mu_C[,] <- parData$'2'
+sigmaE[,] <- parData$'3'
+sigmaP[,] <- parData$'4'
+sigmaPT[,] <- parData$'5'
+sigmaT[,] <- parData$'6'
 
 # # parallel via Rstan
 # options(mc.cores = parallel::detectCores())
 # ptm <- proc.time()
 # for (i in (1:nsites)) {
 #   print(paste("site: ",i))
-#   
+#
 #   data <- site(siteInds[i])
 #   stanFit <- stanfit3(data)
 #   fitSumm <- summary(stanFit)
-#   
+#
 #   betaT_C[i,] <- fitSumm$summary[71, mInd]
 #   mu_C[i,] <- fitSumm$summary[72, mInd]
 #   sigmaE_C[i,] <- fitSumm$summary[73, mInd]
 #   sigmaP_C[i,] <- fitSumm$summary[74, mInd]
 #   sigmaPT_C[i,] <- fitSumm$summary[75, mInd]
 #   sigmaT_C[i,] <- fitSumm$summary[76, mInd]
-#   
+#
 # }
 # proc.time() - ptm
 

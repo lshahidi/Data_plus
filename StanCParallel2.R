@@ -29,7 +29,7 @@ print(paste("Task #: ", N))
 # }
 # nsites <- length(siteInds)
 
-siteInds <- (1:10) + (N - 1) * 10
+siteInds <- (1:100) + (N - 1) * 100
 nsites <- length(siteInds)
 print(paste("Making chunk of nsites =", nsites))
 chunk <- FullAnnotation[siteInds,]

@@ -1,5 +1,5 @@
 # script for extracting variance from Stan complex model (model3)
-# input taskID corresponding to 1000 site chunks up to  N*1000  sites
+# input taskID corresponding to 10000 site chunks starting at site (N-1)*10000+1
 # Now incorporating parallel processing with parallel package
 
 library(doParallel)
@@ -19,15 +19,16 @@ N <- as.numeric(args[1])
 print(paste("Task #: ", N))
 out.file <- args[2]
 
-# Choose 1000  sites by N, and select chunk within FullAnnotation
-siteInds <- (1:1000) + (N - 1) * 1000
-if (N > 866) {
-  siteInds <- siteInds[1:836]
+# Choose 10000 sites by N, and select chunk within FullAnnotation
+siteInds <- (1:10000) + (N - 1) * 10000
+if (N > 86) {
+  siteInds <- siteInds[1:6836]
 }
 nsites <- length(siteInds)
 
 print(paste("Making chunk of nsites =", nsites))
 chunk <- FullAnnotation[siteInds,]
+
 
 ### FXNS ###
 # Function used to read in data from each site

@@ -32,8 +32,7 @@ site <- function (site_no) {
   patientLabel[10:12] <- "K*"
   sideLabel <- substr(colnames(temp[indices]), 2, 2)
   tissueLabel <- sideLabel
-  tissueLabel[tissueLabel %in% c("A", "B")] <-
-    "T"   #replace A and B with T
+  tissueLabel[tissueLabel %in% c("A", "B")] <- "T"   #replace A and B with T
   tumorIndicator <- 1 * (tissueLabel == "T")
   
   work <-
@@ -58,7 +57,6 @@ stanfit3 <- function (dataset) {
     y = dataset[, 1]
   )
   
-  
   # Using Model 3: add intra-tumoral variances
   stanFit3 <-
     stan(
@@ -81,7 +79,6 @@ stanfit3 <- function (dataset) {
 # nsites <- length(siteInds)
 
 siteInds <- (1:10) + (N - 1) * 10
-siteInds <- 1:7
 nsites <- length(siteInds)
 
 print(paste("nsites: ", nsites))
@@ -151,9 +148,9 @@ comb <- function(x,...) {
   mapply(rbind,x,..., SIMPLIFY = FALSE)
 }
 
-mInd <- c(1,4:8)
 # parallel via doParallel
-options(mc.cores = 1)
+mInd <- c(1,4:8)
+#options(mc.cores = 1)
 registerDoParallel(detectCores())
 getDoParWorkers()
 ptm <- proc.time()
@@ -177,25 +174,33 @@ parData <- foreach(i = (1:nsites), .combine='comb', .multicombine=TRUE) %dopar% 
 }
 proc.time() - ptm
 
-# parallel via Rstan
-options(mc.cores = parallel::detectCores())
-ptm <- proc.time()
-for (i in (1:nsites)) {
-  print(paste("site: ",i))
-  
-  data <- site(siteInds[i])
-  stanFit <- stanfit3(data)
-  fitSumm <- summary(stanFit)
-  
-  betaT_C[i,] <- fitSumm$summary[71, mInd]
-  mu_C[i,] <- fitSumm$summary[72, mInd]
-  sigmaE_C[i,] <- fitSumm$summary[73, mInd]
-  sigmaP_C[i,] <- fitSumm$summary[74, mInd]
-  sigmaPT_C[i,] <- fitSumm$summary[75, mInd]
-  sigmaT_C[i,] <- fitSumm$summary[76, mInd]
-  
-}
-proc.time() - ptm
+columns <- c("mean","p2.5","p25","p50","p75","p97.5")
+betaT_C[,] <- parData$'1'
+mu_C <- parData$'2'
+sigmaE <- parData$'3'
+sigmaP <- parData$'4'
+sigmaPT <- parData$'5'
+sigmaT <- parData$'6'
+
+# # parallel via Rstan
+# options(mc.cores = parallel::detectCores())
+# ptm <- proc.time()
+# for (i in (1:nsites)) {
+#   print(paste("site: ",i))
+#   
+#   data <- site(siteInds[i])
+#   stanFit <- stanfit3(data)
+#   fitSumm <- summary(stanFit)
+#   
+#   betaT_C[i,] <- fitSumm$summary[71, mInd]
+#   mu_C[i,] <- fitSumm$summary[72, mInd]
+#   sigmaE_C[i,] <- fitSumm$summary[73, mInd]
+#   sigmaP_C[i,] <- fitSumm$summary[74, mInd]
+#   sigmaPT_C[i,] <- fitSumm$summary[75, mInd]
+#   sigmaT_C[i,] <- fitSumm$summary[76, mInd]
+#   
+# }
+# proc.time() - ptm
 
 
 print(paste("Completed run, now saving"))

@@ -8,6 +8,7 @@ library(gtools)
 
 rstan_options(auto_write = TRUE)
 options(mc.cores = parallel::detectCores())
+print(paste("Cores: ",parallel::detectCores()))
 
 # load data
 load("myFA.Rdata")

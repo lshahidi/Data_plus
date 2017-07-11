@@ -2,12 +2,13 @@
 # input taskID corresponding to 1000 site chunks up to  N*1000  sites
 # Now incorporating parallel processing with parallel package
 
-#library(doParallel)
+library(doParallel)
 library(rstan)
 library(gtools)
 
 rstan_options(auto_write = TRUE)
-options(mc.cores = parallel::detectCores())
+#options(mc.cores = parallel::detectCores())
+print(paste("Cores: ",parallel::detectCores()))
 
 # load data
 load("myFA.Rdata")
@@ -80,6 +81,7 @@ stanfit3 <- function (dataset) {
 # nsites <- length(siteInds)
 
 siteInds <- (1:10) + (N - 1) * 10
+siteInds <- 1:7
 nsites <- length(siteInds)
 
 print(paste("nsites: ", nsites))
@@ -145,11 +147,38 @@ sigmaPT_C <-
     p97.5 = numeric(nsites)
   )
 
+comb <- function(x,...) {
+  mapply(rbind,x,..., SIMPLIFY = FALSE)
+}
 
-#registerDoParallel(detectCores())
-#getDoParWorkers()
-#parData <- foreach(i = (1:nsites), .packages = c("rstan")) %dopar% {
 mInd <- c(1,4:8)
+# parallel via doParallel
+options(mc.cores = 1)
+registerDoParallel(detectCores())
+getDoParWorkers()
+ptm <- proc.time()
+parData <- foreach(i = (1:nsites), .combine='comb', .multicombine=TRUE) %dopar% {
+
+  print(paste("site: ",i))
+  
+  data <- site(siteInds[i])
+  stanFit <- stanfit3(data)
+
+  # fitSumm <- summary(stanFit)
+  # betaT_C[i,] <- fitSumm$summary[71, mInd]
+  # mu_C[i,] <- fitSumm$summary[72, mInd]
+  # sigmaE_C[i,] <- fitSumm$summary[73, mInd]
+  # sigmaP_C[i,] <- fitSumm$summary[74, mInd]
+  # sigmaPT_C[i,] <- fitSumm$summary[75, mInd]
+  # sigmaT_C[i,] <- fitSumm$summary[76, mInd]
+  
+  fitSumm <- summary(stanFit)$summary[71:76, mInd]
+  split(fitSumm, row(fitSumm))
+}
+proc.time() - ptm
+
+# parallel via Rstan
+options(mc.cores = parallel::detectCores())
 ptm <- proc.time()
 for (i in (1:nsites)) {
   print(paste("site: ",i))
@@ -167,6 +196,7 @@ for (i in (1:nsites)) {
   
 }
 proc.time() - ptm
+
 
 print(paste("Completed run, now saving"))
 # save data

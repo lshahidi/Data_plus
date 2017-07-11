@@ -12,11 +12,12 @@ options(mc.cores = parallel::detectCores())
 # load data
 load("myFA.Rdata")
 
-args <- commandArgs(trailingOnly = TRUE)
-print(args)
-N <- as.numeric(args[1])
+N <- 1
+#args <- commandArgs(trailingOnly = TRUE)
+#print(args)
+#N <- as.numeric(args[1])
 print(paste("Task #: ", N))
-out.file <- args[2]
+#out.file <- args[2]
 
 ### FXNS ###
 # Function used to read in data from each site
@@ -55,6 +56,8 @@ stanfit3 <- function (dataset) {
     P = nlevels(dataset$patient),
     y = dataset[, 1]
   )
+  
+  
   # Using Model 3: add intra-tumoral variances
   stanFit3 <-
     stan(
@@ -63,16 +66,20 @@ stanfit3 <- function (dataset) {
       control = list(adapt_delta = 0.999),
       refresh = 0
     )
+  
   return(stanFit3 = stanFit3)
 }
 
 ### CODE ###
 # Choose 1000  sites by N
 
-siteInds <- (1:1000) + (N - 1) * 1000
-if (N > 866) {
-  siteInds <- siteInds[1:836]
-}
+# siteInds <- (1:1000) + (N - 1) * 1000
+# if (N > 866) {
+#   siteInds <- siteInds[1:836]
+# }
+# nsites <- length(siteInds)
+
+siteInds <- (1:10) + (N - 1) * 10
 nsites <- length(siteInds)
 
 print(paste("nsites: ", nsites))
@@ -137,6 +144,7 @@ sigmaPT_C <-
     p75 = numeric(nsites),
     p97.5 = numeric(nsites)
   )
+
 
 #registerDoParallel(detectCores())
 #getDoParWorkers()

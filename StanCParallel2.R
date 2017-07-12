@@ -8,8 +8,10 @@ library(gtools)
 
 rstan_options(auto_write = TRUE)
 #options(mc.cores = parallel::detectCores())
-print(paste("Cores: ",parallel::detectCores()))
+print(paste("Cores: ", parallel::detectCores()))
 
+# Kevin's working directory
+setwd("/Users/kevinmurgas/Documents/Data+ project/EPIC data")
 # load data
 load("myFA.Rdata")
 
@@ -20,11 +22,25 @@ N <- 1
 print(paste("Task #: ", N))
 #out.file <- args[2]
 
+# Choose 1000  sites by N, and select chunk within FullAnnotation
+# siteInds <- (1:1000) + (N - 1) * 1000
+# if (N > 866) {
+#   siteInds <- siteInds[1:836]
+# }
+# nsites <- length(siteInds)
+
+siteInds <- (1:100) + (N - 1) * 100
+nsites <- length(siteInds)
+print(paste("Making chunk of nsites =", nsites))
+chunk <- FullAnnotation[siteInds,]
+
 ### FXNS ###
 # Function used to read in data from each site
-site <- function (site_no) {
+# changed to now use a "chunk" instead of FullAnnotation, for speed and memory
+# requires index 1-1000 instead of siteIndex
+site <- function (ind) {
   # extract CpG site xx to start
-  temp <- FullAnnotation[site_no, ]
+  temp <- chunk[ind,]
   
   # here we use all patient samples, excluding glands
   indices <- c(9:13, 15:39, 46, 47, 57, 58, 72:75)
@@ -58,7 +74,6 @@ stanfit3 <- function (dataset) {
     y = dataset[, 1]
   )
   
-  
   # Using Model 3: add intra-tumoral variances
   stanFit3 <-
     stan(
@@ -71,20 +86,14 @@ stanfit3 <- function (dataset) {
   return(stanFit3 = stanFit3)
 }
 
+# Function for combining parallel runs of each fixef/sigma
+comb <- function(x, ...) {
+  mapply(rbind, x, ..., SIMPLIFY = FALSE)
+}
+
+
 ### CODE ###
-# Choose 1000  sites by N
 
-# siteInds <- (1:1000) + (N - 1) * 1000
-# if (N > 866) {
-#   siteInds <- siteInds[1:836]
-# }
-# nsites <- length(siteInds)
-
-siteInds <- (1:10) + (N - 1) * 10
-siteInds <- 1:7
-nsites <- length(siteInds)
-
-print(paste("nsites: ", nsites))
 print("Generating data.frames")
 
 betaT_C <-
@@ -147,21 +156,18 @@ sigmaPT_C <-
     p97.5 = numeric(nsites)
   )
 
-comb <- function(x,...) {
-  mapply(rbind,x,..., SIMPLIFY = FALSE)
-}
-
-mInd <- c(1,4:8)
 # parallel via doParallel
-options(mc.cores = 1)
+mInd <- c(1, 4:8)
+#options(mc.cores = 1)
+#registerDoMC(detectCores())
 registerDoParallel(detectCores())
-getDoParWorkers()
+print(paste("Cores registered:",getDoParWorkers()))
+print("Starting foreach loop")
 ptm <- proc.time()
-parData <- foreach(i = (1:nsites), .combine='comb', .multicombine=TRUE) %dopar% {
+parData <- foreach(i = (1:nsites), .combine = 'comb', .multicombine = TRUE) %dopar% {
+  print(paste("site:", i))
 
-  print(paste("site: ",i))
-  
-  data <- site(siteInds[i])
+  data <- site(i)
   stanFit <- stanfit3(data)
 
   # fitSumm <- summary(stanFit)
@@ -171,32 +177,38 @@ parData <- foreach(i = (1:nsites), .combine='comb', .multicombine=TRUE) %dopar% 
   # sigmaP_C[i,] <- fitSumm$summary[74, mInd]
   # sigmaPT_C[i,] <- fitSumm$summary[75, mInd]
   # sigmaT_C[i,] <- fitSumm$summary[76, mInd]
-  
+
   fitSumm <- summary(stanFit)$summary[71:76, mInd]
   split(fitSumm, row(fitSumm))
 }
 proc.time() - ptm
 
-# parallel via Rstan
-options(mc.cores = parallel::detectCores())
-ptm <- proc.time()
-for (i in (1:nsites)) {
-  print(paste("site: ",i))
-  
-  data <- site(siteInds[i])
-  stanFit <- stanfit3(data)
-  fitSumm <- summary(stanFit)
-  
-  betaT_C[i,] <- fitSumm$summary[71, mInd]
-  mu_C[i,] <- fitSumm$summary[72, mInd]
-  sigmaE_C[i,] <- fitSumm$summary[73, mInd]
-  sigmaP_C[i,] <- fitSumm$summary[74, mInd]
-  sigmaPT_C[i,] <- fitSumm$summary[75, mInd]
-  sigmaT_C[i,] <- fitSumm$summary[76, mInd]
-  
-}
-proc.time() - ptm
+betaT_C[,] <- parData$'1'
+mu_C[,] <- parData$'2'
+sigmaE_C[,] <- parData$'3'
+sigmaP_C[,] <- parData$'4'
+sigmaPT_C[,] <- parData$'5'
+sigmaT_C[,] <- parData$'6'
 
+# # parallel via Rstan
+# options(mc.cores = parallel::detectCores())
+# ptm <- proc.time()
+# for (i in (1:nsites)) {
+#   print(paste("site: ",i))
+#
+#   data <- site(siteInds[i])
+#   stanFit <- stanfit3(data)
+#   fitSumm <- summary(stanFit)
+#
+#   betaT_C[i,] <- fitSumm$summary[71, mInd]
+#   mu_C[i,] <- fitSumm$summary[72, mInd]
+#   sigmaE_C[i,] <- fitSumm$summary[73, mInd]
+#   sigmaP_C[i,] <- fitSumm$summary[74, mInd]
+#   sigmaPT_C[i,] <- fitSumm$summary[75, mInd]
+#   sigmaT_C[i,] <- fitSumm$summary[76, mInd]
+#
+# }
+# proc.time() - ptm
 
 print(paste("Completed run, now saving"))
 # save data

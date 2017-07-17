@@ -1,14 +1,13 @@
 # script for extracting variance from Stan complex model (model3)
 # input taskID corresponding to 10000 site chunks starting at site (N-1)*10000+1
-# Now incorporating parallel processing with parallel package
+# Now incorporating parallel processing by RStan methods
 
 library(doParallel)
 library(rstan)
 library(gtools)
 
-rstan_options(auto_write = TRUE)
-#options(mc.cores = parallel::detectCores())
-print(paste("Cores: ", parallel::detectCores()))
+rstan_options(auto_write = FALSE)
+print(paste("Cores: ", detectCores()))
 
 # load data
 load("myFA.Rdata")
@@ -18,8 +17,10 @@ print(args)
 N <- as.numeric(args[1])
 print(paste("Task #: ", N))
 out.file <- args[2]
+log.file <- paste("logTask",N,".txt",sep="")
+writeLines(c(""), log.file)
 
-# Choose 10000 sites by N, and select chunk within FullAnnotation
+# Choose 10000 sites by N, and select chunk within FullAnnotation, then remove FA
 siteInds <- (1:10000) + (N - 1) * 10000
 if (N > 86) {
   siteInds <- siteInds[1:6836]
@@ -28,12 +29,17 @@ nsites <- length(siteInds)
 
 print(paste("Making chunk of nsites =", nsites))
 chunk <- FullAnnotation[siteInds,]
+rm(FullAnnotation)
+gc()
+
+# must add to prevent crash
+checkFile <- "model3.rds"
 
 
 ### FXNS ###
 # Function used to read in data from each site
 # changed to now use a "chunk" instead of FullAnnotation, for speed and memory
-# requires index 1-1000 instead of siteIndex
+# requires index 1-10000 instead of siteIndex
 site <- function (ind) {
   # extract CpG site xx to start
   temp <- chunk[ind,]
@@ -71,9 +77,15 @@ stanfit3 <- function (dataset) {
   )
   
   # Using Model 3: add intra-tumoral variances
+  # have to check for model3.rds - crashes Stan
+  if (file.exists(checkFile)) {
+    file.remove(checkFile)
+    print("caught one!") 
+  }
   stanFit3 <-
     stan(
-      file = "model3.stan",
+      #file = "model3.stan",
+      fit = emptyFit,
       data = stanDat,
       control = list(adapt_delta = 0.999),
       refresh = 0
@@ -152,21 +164,42 @@ sigmaPT_C <-
     p97.5 = numeric(nsites)
   )
 
-# parallel via doParallel
+# inds for extracting data
 mInd <- c(1, 4:8)
-registerDoParallel(detectCores())
+
+# create empty fit to use same model compilation throughout
+data1<-site(1)
+stanDat1 <- list(
+  pID = as.integer(factor(data1$patient)),
+  tInd = data1$tInd,
+  N = nrow(data1),
+  P = nlevels(data1$patient),
+  y = data1[, 1]
+)
+emptyFit <- stan(file="model3.stan", data = stanDat1, chains = 0)
+
+# run in parallel via doParallel
+cl <- makeCluster(detectCores())
+registerDoParallel(cl)
 print(paste("Cores registered:",getDoParWorkers()))
+print(paste("Backend type:",getDoParName()))
 print("Starting foreach loop")
 ptm <- proc.time()
-parData <- foreach(i = (1:nsites), .combine = 'comb', .multicombine = TRUE) %dopar% {
-  print(paste("site:", i))
-  
+parData <- foreach(i = iter(1:nsites), .combine = 'comb', .multicombine = TRUE, .packages=c("gtools","rstan")) %dopar% {
+  sink(log.file, append=TRUE)
+  print(paste("site:", i,"/",nsites))
+  sink()
+
   data <- site(i)
   stanFit <- stanfit3(data)
   fitSumm <- summary(stanFit)$summary[71:76, mInd]
+  rm(data,stanFit)
+  gc()
+  
   split(fitSumm, row(fitSumm))
 }
 proc.time() - ptm
+stopCluster(cl)
 
 betaT_C[,] <- parData$'1'
 mu_C[,] <- parData$'2'
@@ -174,6 +207,31 @@ sigmaE_C[,] <- parData$'3'
 sigmaP_C[,] <- parData$'4'
 sigmaPT_C[,] <- parData$'5'
 sigmaT_C[,] <- parData$'6'
+rm(parData)
+gc()
+
+# # parallel via Rstan
+# options(mc.cores = detectCores())
+# ptm <- proc.time()
+# for (i in (1:nsites)) {
+#   sink(log.file, append=TRUE)
+#   print(paste("site:", i))
+#   sink()
+#   
+#   data <- site(siteInds[i])
+#   stanFit <- stanfit3(data)
+#   fitSumm <- summary(stanFit)$summary[71:76,mInd]
+#   rm(data,stanFit)
+#   gc()
+#   
+#   betaT_C[i,] <- fitSumm[1,]
+#   mu_C[i,] <- fitSumm[2,]
+#   sigmaE_C[i,] <- fitSumm[3,]
+#   sigmaP_C[i,] <- fitSumm[4,]
+#   sigmaPT_C[i,] <- fitSumm[5,]
+#   sigmaT_C[i,] <- fitSumm[6,]
+# }
+# proc.time() - ptm
 
 print(paste("Completed run, now saving"))
 # save data

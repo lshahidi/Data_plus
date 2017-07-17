@@ -134,6 +134,10 @@ Data4 <- site(4)
 stan1 <- stanfit3(Data1)
 stan1_rep <- stanfit_rep(Data1)
 
+
+stan2 <- stanfit3(Data2)
+stan2_rep <- stanfit_rep(Data2)
+
 test <- Data2
 
 temp <- data.frame(X2=c(-1.44,2,1.24,-0.994,-0.83,0.66,1.24,-0.994,-0.8,1.02,-0.98,0.66),
@@ -609,7 +613,6 @@ for (i in indice) {
 est_rep <- data.frame(betaT=numeric(nsites),mu=numeric(nsites),sigma_e=numeric(nsites),
                   sigma_p=numeric(nsites),sigma_pt=numeric(nsites),sigma_t=numeric(nsites))
 
-
 count <- 1
 
 for (i in indice) {
@@ -620,3 +623,40 @@ for (i in indice) {
   
   count <- count + 1
 }
+
+load("rep.RData")
+load("norep.RData")
+
+DIFF <- est - est_rep
+
+plot(DIFF$mu, main="Difference of mu", 
+     ylab="Original Model - Reparameterized Model",ylim=c(-15,15))
+abline(h=0,col="red")
+text(175,10,labels=paste("Mean = ",round(mean(DIFF$mu),4)))
+
+plot(DIFF$betaT, main="Difference of betaT", 
+     ylab="Original Model - Reparameterized Model", ylim=c(-15,15))
+abline(h=0,col="red")
+text(175,10,labels=paste("Mean = ",round(mean(DIFF$betaT),4)))
+
+plot(DIFF$sigma_p, main="Difference of sigmaP", 
+     ylab="Original Model - Reparameterized Model")
+abline(h=0,col="red")
+text(175,-15,labels=paste("Mean = ",round(mean(DIFF$sigma_p),4)))
+
+
+plot(DIFF$sigma_pt, main="Difference of sigmaPT", 
+     ylab="Original Model - Reparameterized Model")
+abline(h=0,col="red")
+text(175,-15,labels=paste("Mean = ",round(mean(DIFF$sigma_pt),4)))
+
+
+plot(DIFF$sigma_t, main="Difference of sigmaT", 
+     ylab="Original Model - Reparameterized Model")
+abline(h=0,col="red")
+text(175,-0.5,labels=paste("Mean = ",round(mean(DIFF$sigma_t),4)))
+
+plot(DIFF$sigma_e, main="Difference of sigmaE", 
+     ylab="Original Model - Reparameterized Model", ylim=c(-1.2,1))
+abline(h=0,col="red")
+text(175,0.5,labels=paste("Mean = ",round(mean(DIFF$sigma_e),4)))

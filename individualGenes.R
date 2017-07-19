@@ -37,6 +37,7 @@ for (i in 1:866836) {
   if (length(worklist)==0) { worklist <- "blank"}
   geneRegions[[i]] <- worklist
 }
+uniqueGenes <- unique(unlist(geneNames))
 regionTypes <- unique(unlist(geneRegions))
 
 # make dataframes for median and mean values of each parameter
@@ -105,8 +106,14 @@ plotLogRatiosByRegions("GAPDH")
 # score gene
 scoreGene <- function(geneStr) {
   gInd <- geneInd(geneStr)
-  
+  score <- logRatioMeans*0
+  for (i in colnames(logRatios)){
+    score[i] <- sum(logRatios[gInd,i]-logRatioMeans[i]) / sd(logRatios[gInd,i])
+  }
+  return(score)
 }
+
+# score gene by function region
 
 
 ### PLOTS
@@ -144,25 +151,10 @@ scoreGene("HLA-A")
 plotLogRatiosByRegions("HLA-B")
 scoreGene("HLA-B")
 
-
-
-
-
-# find sites with unique names
-regionNames <- list(866836)
-for (i in 1:866836) {
-  regionNames[[i]] <- unique(unlist(strsplit(FullAnnotation$UCSC_RefGene_Group[i],split=";")))
+# score all genes
+numGenes <- length(uniqueGenes)
+geneScores <- data.frame(PTscore=numeric(numGenes), PPTscore=numeric(numGenes), PTTscore=numeric(numGenes))
+for (g in 1:numGenes) { # do not run, too slow
+  if (!(g %% 1000)) { print(paste("Scoring:",g,"/",numGenes)) }
+  geneScores[g,] <- scoreGene(uniqueGenes[g])
 }
-regionNames[[regionNames=="5URT"]] <- "5'UTR"
-# return indices of sites specifically group "TSS200", and so on
-TSS200ind <- grep('TSS200', regionNames)[(grep('TSS200', regionNames, value=TRUE)=="TSS200")]
-TSS1500ind <- grep('TSS1500', regionNames)[(grep('TSS1500', regionNames, value=TRUE)=="TSS1500")]
-UTR3ind <- grep('3UTR', regionNames)[(grep('3UTR', regionNames, value=TRUE)=="3UTR")]
-UTR5ind <- grep('5URT', regionNames)[(grep('5URT', regionNames, value=TRUE)=="5URT")]
-Bodyind <- grep('Body', regionNames)[(grep('Body', regionNames, value=TRUE)=="Body")]
-
-# plot for APC
-df$mu <- mu_C[,1]
-APCind2 <- intersect(APCind,Bodyind)
-ggplot(df, aes(x=mu)) + geom_histogram(bins = 100) + ggtitle("APC Body locations") + xlim(c(-5,5)) + annotate("text", x=dfC$mu[APCind2], y = rep(30,17), label="V") + annotate("text", x=0, y= 40, label=(paste("APC Body mean: ",mean(dfC$mu[APCind2], na.rm=TRUE))))
-

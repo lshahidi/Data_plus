@@ -10,17 +10,32 @@ library(doParallel)
 
 print(paste("Cores: ", detectCores()))
 
-args <- commandArgs(trailingOnly = TRUE)
-print(args)
-N <- as.numeric(args[1])
+# Kevin's working directory
+setwd("/Users/kevinmurgas/Documents/Data+ project/EPIC data")
+N <- 1
+#args <- commandArgs(trailingOnly = TRUE)
+#print(args)
+#N <- as.numeric(args[1])
 print(paste("Task #: ", N))
-out.file <- args[2]
+#out.file <- args[2]
 log.file <- paste("logTask",N,".txt",sep="")
 writeLines(c(""), log.file)
 
+# args <- commandArgs(trailingOnly = TRUE)
+# print(args)
+# N <- as.numeric(args[1])
+# print(paste("Task #: ", N))
+# out.file <- args[2]
+# log.file <- paste("logTask",N,".txt",sep="")
+# writeLines(c(""), log.file)
+
 # load data: Stan parameters, geneNames and geneRegions lists
 load("StanCfullResults.Rdata")
+load("GeneInfo.Rdata")
 
+# make vector of unique genes and regions
+uniqueGenes <- unique(unlist(geneNames))
+regionTypes <- unique(unlist(geneRegions))
 
 # make dataframes for median values of each parameter
 dfMedians <- cbind.data.frame(mu_Cfull$p50, betaT_Cfull$p50, sigmaE_Cfull$p50, sigmaP_Cfull$p50, sigmaPT_Cfull$p50, sigmaT_Cfull$p50)
@@ -32,17 +47,16 @@ colnames(logRatios) <- c("logP/T","logP/PT","logPT/T")
 logRatioMeans <- colMeans(logRatios)
 # insert means by region
 
-# Choose 1000 sites by N, and select chunk within datasets
-siteInds <- (1:1000) + (N - 1) * 1000
+# Choose 1000 genes from uniqueGenes by N, and select geneChunk within gene list
+geneIDs <- (1:1000) + (N - 1) * 1000
 if (N > 27) {
-  siteInds <- siteInds[1:383]
+  geneIDs <- geneIDs[1:383]
 }
-nsites <- length(siteInds)
+numGenes <- length(geneIDs)
 
-print(paste("Making chunk of nsites =", nsites))
-chunk <- FullAnnotation[siteInds,]
-rm(FullAnnotation)
-gc()
+print(paste("Making chunk of numGenes =", numGenes))
+geneChunk <- uniqueGenes[geneIDs]
+
 
 ### Functions
 
@@ -64,13 +78,36 @@ scoreGene <- function(geneStr) {
 
 ### Code
 
+print("remaking chunk")
+geneIDs <- 1:3
+geneChunk <- uniqueGenes[geneIDs]
+numGenes <- length(geneChunk)
 
 # score all genes
-numGenes <- length(uniqueGenes)
+print("Generating data.frame")
 geneScores <- data.frame(PTscore=numeric(numGenes), PPTscore=numeric(numGenes), PTTscore=numeric(numGenes))
-for (g in 1:numGenes) { # do not run, too slow
-  if (!(g %% 1000)) { print(paste("Scoring:",g,"/",numGenes)) }
-  geneScores[g,] <- scoreGene(uniqueGenes[g])
+
+# run in parallel via doParallel
+cl <- makeCluster(detectCores()-2)
+registerDoParallel(cl)
+print(paste("Cores registered:",getDoParWorkers()))
+print(paste("Backend type:",getDoParName()))
+print("Starting foreach loop")
+ptm <- proc.time()
+parData <- foreach(g=iter(geneIDs), .combine=rbind) %dopar% {
+  sink(log.file, append=TRUE)
+  print(paste("Gene:", g,"/",numGenes))
+  sink()
+  scoreGene(geneChunk[g])
 }
+proc.time() - ptm
+stopCluster(cl)
 
+geneScores <- parData
+rownames(geneScores) <- uniqueGenes[gInd]
+rm(parData)
+gc()
 
+print(paste("Completed run, now saving"))
+# save data
+save(geneScores, file = out.file)

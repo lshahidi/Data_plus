@@ -23,20 +23,24 @@ load("StanCfullResults.Rdata")
 ### INITIALIZE
 
 # create list of unique gene names and gene regions at each site
-geneNames <- list(866836)
-geneRegions <- list(866836)
-for (i in 1:866836) {
-  if (!(i %% 86684)) {
-    print(paste(i/8668.4,"% complete"))
-  }
-  geneNames[[i]] <- unique(unlist(strsplit(FullAnnotation$UCSC_RefGene_Name[i],split=";")))
-  worklist <- unique(unlist(strsplit(FullAnnotation$UCSC_RefGene_Group[i],split=";")))
-  worklist[worklist=="3'UTR"] <- "3UTR"
-  worklist[worklist=="5'UTR"] <- "5UTR"
-  worklist[worklist=="5URT"] <- "5UTR"
-  if (length(worklist)==0) { worklist <- "blank"}
-  geneRegions[[i]] <- worklist
-}
+# geneNames <- list(866836)
+# geneRegions <- list(866836)
+# for (i in 1:866836) {
+#   if (!(i %% 86684)) {
+#     print(paste(i/8668.4,"% complete"))
+#   }
+#   geneNames[[i]] <- unique(unlist(strsplit(FullAnnotation$UCSC_RefGene_Name[i],split=";")))
+#   worklist <- unique(unlist(strsplit(FullAnnotation$UCSC_RefGene_Group[i],split=";")))
+#   worklist[worklist=="3'UTR"] <- "3UTR"
+#   worklist[worklist=="5'UTR"] <- "5UTR"
+#   worklist[worklist=="5URT"] <- "5UTR"
+#   if (length(worklist)==0) { worklist <- "blank"}
+#   geneRegions[[i]] <- worklist
+# }
+# save(geneNames, geneRegions, file = "GeneInfo.Rdata")
+load("GeneInfo.Rdata")
+
+# make vector of unique genes and regions
 uniqueGenes <- unique(unlist(geneNames))
 regionTypes <- unique(unlist(geneRegions))
 
@@ -94,9 +98,9 @@ plotLogRatiosByRegions <- function (geneStr) {
         }
       }
       col1 <- c("red","orange","gold","green","blue","tomato","sienna","darkviolet")[j]
-      p1 <- p1 + annotate("text", x=logRatios[rInd,i], y = rep(j*3000,length(rInd)), label="x", colour=col1) + annotate("text", x=-2, y=j*3000+1000, label=(paste(regionTypes[j],"mean:",format(mean(logRatios[rInd,i]),digits=5))),colour=col1)
+      p1 <- p1 + annotate("text", x=logRatios[rInd,i], y = rep(j*3000,length(rInd)), label="x", colour=col1) + annotate("text", x=-2, y=j*3000+1000, label=(paste(regionTypes[j],"mean:",format(mean(logRatios[rInd,i]),digits=5))),colour=col1) + annotate("text", x=2.6, y=j*3000+1000, label=(length(rInd)),colour=col1)
     }
-    p1 <- p1 + annotate("text", x=logRatios[gInd,i], y = rep(27000,length(gInd)), label=".") + annotate("text", x=0, y=28000, label=(paste(geneStr,"mean:",format(mean(logRatios[gInd,i]),digits=5))))
+    p1 <- p1 + annotate("text", x=logRatios[gInd,i], y = rep(27000,length(gInd)), label=".") + annotate("text", x=0, y=28000, label=(paste(geneStr,"mean:",format(mean(logRatios[gInd,i]),digits=5)))) + annotate("text", x=2, y=29500, label=(paste("Total sites:",length(gInd))))
 
     print(p1)
   }
@@ -114,9 +118,14 @@ scoreGene <- function(geneStr) {
 }
 
 # score gene by function region
+scoreGeneByRegion <- function(geneStr) {
+  
+}
 
 
-### PLOTS
+### CODE
+
+## Plots
 
 # plot sigmas: E, P, PT, T
 df1 <- dfMedians[c("sigmaE","sigmaP","sigmaPT","sigmaT")]
@@ -131,6 +140,8 @@ ggplot(gg, aes(x=value, fill=variable)) +
   geom_histogram(binwidth=0.05)+
   facet_grid(variable~.)
 
+
+## Check individual genes with known conservation
 
 # APC
 plotLogRatiosByRegions("APC")
@@ -151,10 +162,10 @@ scoreGene("HLA-A")
 plotLogRatiosByRegions("HLA-B")
 scoreGene("HLA-B")
 
-# score all genes
-numGenes <- length(uniqueGenes)
-geneScores <- data.frame(PTscore=numeric(numGenes), PPTscore=numeric(numGenes), PTTscore=numeric(numGenes))
-for (g in 1:numGenes) { # do not run, too slow
-  if (!(g %% 1000)) { print(paste("Scoring:",g,"/",numGenes)) }
-  geneScores[g,] <- scoreGene(uniqueGenes[g])
-}
+# # score all genes - do not run, too slow
+# numGenes <- length(uniqueGenes)
+# geneScores <- data.frame(PTscore=numeric(numGenes), PPTscore=numeric(numGenes), PTTscore=numeric(numGenes))
+# for (g in 1:numGenes) {
+#   if (!(g %% 1000)) { print(paste("Scoring:",g,"/",numGenes)) }
+#   geneScores[g,] <- scoreGene(uniqueGenes[g])
+# }

@@ -126,17 +126,106 @@ stanfit_rep <- function (dataset) {
 
 
 
+
+stanfit_rep2 <- function (dataset) {
+  
+  stanDat <- list(pID = as.integer(factor(dataset$patient)),
+                  tInd = dataset$tInd,
+                  N = nrow(dataset),
+                  P = nlevels(dataset$patient),
+                  y = dataset[,1])
+  
+  
+  # Using reparameterized model
+  
+  stanFit_rep2 <- stan(file="model_rep2.stan", data=stanDat, control=list(adapt_delta=0.999))
+  
+  return(stanFit=stanFit_rep2)
+}
+
+
+stanfit_try <- function (dataset) {
+  
+  stanDat <- list(pID = as.integer(factor(dataset$patient)),
+                  tInd = dataset$tInd,
+                  N = nrow(dataset),
+                  P = nlevels(dataset$patient),
+                  y = dataset[,1])
+  
+  
+  # Using reparameterized model
+  
+  stanFit_try <- stan(file="model_try2.stan", data=stanDat, control=list(adapt_delta=0.999))
+  
+  return(stanFit=stanFit_try)
+}
+
+
+
 Data1 <- site(1)
 Data2 <- site(2)
 Data3 <- site(3)
 Data4 <- site(4)
+Data5 <- site(5)
+Data6 <- site(6)
+Data7 <- site(7)
+Data8 <- site(8)
+Data9 <- site(9)
+Data10 <- site(10)
+
+
+
 
 stan1 <- stanfit3(Data1)
 stan1_rep <- stanfit_rep(Data1)
+stan1_rep2 <- stanfit_rep2(Data1)
+stan1_try <- stanfit_try(Data1)
 
 
 stan2 <- stanfit3(Data2)
 stan2_rep <- stanfit_rep(Data2)
+stan2_rep2 <- stanfit_rep2(Data2)
+stan2_try <- stanfit_try(Data2)
+
+
+
+stan3 <- stanfit3(Data3)
+stan3_rep <- stanfit_rep(Data3)
+stan3_rep2 <- stanfit_rep2(Data3)
+stan3_try <- stanfit_try(Data3)
+
+
+stan4 <- stanfit3(Data4)
+stan4_rep <- stanfit_rep(Data4)
+stan4_rep2 <- stanfit_rep2(Data4)
+stan4_try <- stanfit_try(Data4)
+
+
+
+
+stan5 <- stanfit3(Data5)
+stan5_rep <- stanfit_rep(Data5)
+stan5_rep2 <- stanfit_rep2(Data5)
+stan5_try <- stanfit_try(Data5)
+
+
+
+stan6 <- stanfit3(Data6)
+stan6_rep <- stanfit_rep(Data6)
+stan6_rep2 <- stanfit_rep2(Data6)
+stan6_try <- stanfit_try(Data6)
+
+
+stan7 <- stanfit3(Data7)
+stan7_rep <- stanfit_rep(Data7)
+stan7_rep2 <- stanfit_rep2(Data7)
+stan7_try <- stanfit_try(Data7)
+
+
+
+Data39490 <- site(39490)
+stan39490_rep <- stanfit_rep(Data39490)
+
 
 test <- Data2
 

@@ -713,6 +713,10 @@ indice <- sample(1:dim(FullAnnotation)[1],200,replace=FALSE)
 indice <- sort(indice)
 nsites <- 200
 
+# save(indice,file="indice.RData")
+
+load("indice.RData")
+
 
 
 est <- data.frame(betaT=numeric(nsites),mu=numeric(nsites),sigma_e=numeric(nsites),

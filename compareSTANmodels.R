@@ -59,6 +59,14 @@ site <- function (site_no) {
 
 
 # Function to build stan model for each site
+
+# We have full results from model 3
+# To solve all the warnings, tried model_rep, model_rep2, model_try, model_try2
+# Only model_rep return no divergence warnings
+
+
+# Using Model 2: wide range uniform prior on sd and flat normal on fixed effects
+
 stanfit2 <- function (dataset) {
   
   stanDat <- list(pID = as.integer(factor(dataset$patient)),
@@ -68,7 +76,7 @@ stanfit2 <- function (dataset) {
                   y = dataset[,1])
   
   
-  # Using Model 2: wide range uniform prior on sd and flat normal on fixed effects
+  
   stanFit2 <- stan(file="model2.stan", data=stanDat, control = list(adapt_delta = 0.999))
   
   
@@ -76,6 +84,7 @@ stanfit2 <- function (dataset) {
 }
 
 
+# Using Model 3: add intra-tumoral variance
 
 stanfit3 <- function (dataset) {
   
@@ -86,12 +95,14 @@ stanfit3 <- function (dataset) {
                   y = dataset[,1])
   
   
-  # Using Model 3: add intra-tumoral variances
+  
   stanFit3 <- stan(file="model3.stan", data=stanDat, control = list(adapt_delta = 0.999))
   
   return(stanFit3=stanFit3)
 }
 
+
+# Using Model 4: Simple Model - only use tumor samples
 
 stanfit4 <- function (dataset) {
   
@@ -107,6 +118,9 @@ stanfit4 <- function (dataset) {
   
   return(stanFit4=stanFit4)
 }
+
+
+# Using Reparameterized Model (Fully reparameterized)
 
 stanfit_rep <- function (dataset) {
   
@@ -125,7 +139,7 @@ stanfit_rep <- function (dataset) {
 }
 
 
-
+# Using reparameterized model (reparameterization only on b_pat, c_patT, d_T)
 
 stanfit_rep2 <- function (dataset) {
   
@@ -136,13 +150,14 @@ stanfit_rep2 <- function (dataset) {
                   y = dataset[,1])
   
   
-  # Using reparameterized model
   
   stanFit_rep2 <- stan(file="model_rep2.stan", data=stanDat, control=list(adapt_delta=0.999))
   
   return(stanFit=stanFit_rep2)
 }
 
+
+# Try: gamma(2,2) prior on sigma, partially reparameterized
 
 stanfit_try <- function (dataset) {
   
@@ -153,12 +168,30 @@ stanfit_try <- function (dataset) {
                   y = dataset[,1])
   
   
-  # Using reparameterized model
   
-  stanFit_try <- stan(file="model_try2.stan", data=stanDat, control=list(adapt_delta=0.999))
+  stanFit_try <- stan(file="model_try.stan", data=stanDat, control=list(adapt_delta=0.999))
   
   return(stanFit=stanFit_try)
 }
+
+
+# Try2: gamma(2,2) prior on sigma, fully reparameterized
+
+stanfit_try2 <- function (dataset) {
+  
+  stanDat <- list(pID = as.integer(factor(dataset$patient)),
+                  tInd = dataset$tInd,
+                  N = nrow(dataset),
+                  P = nlevels(dataset$patient),
+                  y = dataset[,1])
+  
+  
+  
+  stanFit_try2 <- stan(file="model_try2.stan", data=stanDat, control=list(adapt_delta=0.999))
+  
+  return(stanFit=stanFit_try2)
+}
+
 
 
 
@@ -699,8 +732,10 @@ for (i in indice) {
 
 
 
-est_rep <- data.frame(betaT=numeric(nsites),mu=numeric(nsites),sigma_e=numeric(nsites),
+est_rep2 <- data.frame(betaT=numeric(nsites),mu=numeric(nsites),sigma_e=numeric(nsites),
                   sigma_p=numeric(nsites),sigma_pt=numeric(nsites),sigma_t=numeric(nsites))
+
+rownames(est_rep2) <- paste("site",indice)
 
 count <- 1
 
@@ -708,7 +743,7 @@ for (i in indice) {
   data <- site(i)
   stan <- stanfit_rep(data)
   
-  est_rep[count,] <- summary(stan)$summary[147:152,1]
+  est_rep2[count,] <- summary(stan)$summary[147:152,1]
   
   count <- count + 1
 }
@@ -749,3 +784,16 @@ plot(DIFF$sigma_e, main="Difference of sigmaE",
      ylab="Original Model - Reparameterized Model", ylim=c(-1.2,1))
 abline(h=0,col="red")
 text(175,0.5,labels=paste("Mean = ",round(mean(DIFF$sigma_e),4)))
+
+
+
+#### Check the Variablity of Estimates from Reparameterized Model 
+
+load("rep.RData")
+load("rep2.RData")
+load("rep3.RData")
+
+
+DIFF12 <- est_rep - est_rep2
+DIFF13 <- est_rep - est_rep3
+DIFF23 <- est_rep2 - est_rep3

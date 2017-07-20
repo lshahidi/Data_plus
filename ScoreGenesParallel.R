@@ -2,7 +2,7 @@
 # using full-scale results from Stan complex model (model3)
 # input taskID (1-28) corresponding to 1000 gene chunks starting at site (N-1)*1000+1
 # incorporating parallel processing to run through all genes faster
-# just need "StanCfullResults.Rdata" in same folder
+# just need "StanCfullResults.Rdata" and "GeneInfo" in working directory
 
 library(doParallel)
 
@@ -10,24 +10,13 @@ library(doParallel)
 
 print(paste("Cores: ", detectCores()))
 
-# Kevin's working directory
-setwd("/Users/kevinmurgas/Documents/Data+ project/EPIC data")
-N <- 1
-#args <- commandArgs(trailingOnly = TRUE)
-#print(args)
-#N <- as.numeric(args[1])
+args <- commandArgs(trailingOnly = TRUE)
+print(args)
+N <- as.numeric(args[1])
 print(paste("Task #: ", N))
-#out.file <- args[2]
+out.file <- args[2]
 log.file <- paste("logTask",N,".txt",sep="")
 writeLines(c(""), log.file)
-
-# args <- commandArgs(trailingOnly = TRUE)
-# print(args)
-# N <- as.numeric(args[1])
-# print(paste("Task #: ", N))
-# out.file <- args[2]
-# log.file <- paste("logTask",N,".txt",sep="")
-# writeLines(c(""), log.file)
 
 # load data: Stan parameters, geneNames and geneRegions lists
 load("StanCfullResults.Rdata")
@@ -62,7 +51,9 @@ geneChunk <- uniqueGenes[geneIDs]
 
 # find indices corresponding to geneString in the list geneNames
 geneInd <- function (geneStr) {
-  return(grep(geneStr, geneNames)[(grep(geneStr, geneNames, value=TRUE)==geneStr)])
+  work <- grep(geneStr, geneNames)
+  work2 <- sapply(work, function(i) { geneStr %in% geneNames[[i]] } )
+  return(work[work2])
 }
 
 # score gene
@@ -78,15 +69,7 @@ scoreGene <- function(geneStr) {
 
 ### Code
 
-print("remaking chunk")
-geneIDs <- 1:3
-geneChunk <- uniqueGenes[geneIDs]
-numGenes <- length(geneChunk)
-
-# score all genes
-print("Generating data.frame")
-geneScores <- data.frame(PTscore=numeric(numGenes), PPTscore=numeric(numGenes), PTTscore=numeric(numGenes))
-
+## score all genes
 # run in parallel via doParallel
 cl <- makeCluster(detectCores()-2)
 registerDoParallel(cl)
@@ -94,7 +77,7 @@ print(paste("Cores registered:",getDoParWorkers()))
 print(paste("Backend type:",getDoParName()))
 print("Starting foreach loop")
 ptm <- proc.time()
-parData <- foreach(g=iter(geneIDs), .combine=rbind) %dopar% {
+parData <- foreach(g=iter(1:numGenes), .combine=rbind) %dopar% {
   sink(log.file, append=TRUE)
   print(paste("Gene:", g,"/",numGenes))
   sink()
@@ -104,7 +87,7 @@ proc.time() - ptm
 stopCluster(cl)
 
 geneScores <- parData
-rownames(geneScores) <- uniqueGenes[gInd]
+rownames(geneScores) <- geneChunk
 rm(parData)
 gc()
 

@@ -7,6 +7,8 @@
 library(ggplot2)
 library(reshape2)
 
+### LOADING FOR STAN MODEL RESULTS
+
 # Set working directory to normal data wd then folder ResultsC
 setwd("/Users/kevinmurgas/Documents/Data+ project/EPIC data/ResultsC")
 
@@ -48,28 +50,26 @@ for (i in filesPresent) {
 save(mu_Cfull, betaT_Cfull, sigmaP_Cfull, sigmaT_Cfull,
      sigmaPT_Cfull, sigmaE_Cfull, file = "StanCfullResults.Rdata")
 
+### LOADING FOR GENE SCORING RESULTS
 
-# plot variances
-sigmaLMER2 <-
-  data.frame(
-    sigmaE = sigmaE_Cfull$p50[allInds],
-    sigmaP = sigmaP_Cfull$p50[allInds],
-    sigmaPT = sigmaPT_Cfull$p50[allInds],
-    sigmaT = sigmaT_Cfull$p50[allInds]
-  )
-gg <- melt(sigmaLMER2)
-ggplot(gg, aes(x = value, fill = variable)) +
-  geom_histogram(binwidth = 0.05) +
-  facet_grid(variable ~ .) +ggtitle("Medians of sigmas (6000 sites)") +xlim(0,2)
+# Set working directory to normal data wd then folder ResultsC
+setwd("/Users/kevinmurgas/Documents/Data+ project/EPIC data/GeneScores")
 
-sigmaLMER2 <-
-  data.frame(
-    sigmaE = sigmaE_Cfull$mean[allInds],
-    sigmaP = sigmaP_Cfull$mean[allInds],
-    sigmaPT = sigmaPT_Cfull$mean[allInds],
-    sigmaT = sigmaT_Cfull$mean[allInds]
-  )
-gg <- melt(sigmaLMER2)
-ggplot(gg, aes(x = value, fill = variable)) +
-  geom_histogram(binwidth = 0.05) +
-  facet_grid(variable ~ .) +ggtitle("Means of sigmas (6000 sites)") +xlim(0,2)
+geneScoresFull <- data.frame(a=numeric(27383), b=numeric(27383), c=numeric(27383))
+colnames(geneScoresFull) <- c("logP/T","logP/PT","logPT/T")
+
+nGenes <- 1000
+filesPresent <- (1:28)
+fileNames <- dir(pattern = "ScoreResults_*")
+allInds <- numeric()
+for (i in filesPresent) {
+  print(paste("Chunk:",i))
+  load(fileNames[fileNames == paste("ScoreResults_",i,".Rdata", sep="")])
+  inds <- (1:nGenes) + (i - 1) * nGenes
+  if (i==28) {
+    inds <- inds[1:383]
+  }
+  allInds <- append(allInds, inds)
+  geneScoresFull[inds,] <- geneScores
+}
+save(geneScoresFull, file = "ScoresFull.Rdata")

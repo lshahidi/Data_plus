@@ -15,9 +15,10 @@ setwd("/Users/kevinmurgas/Documents/Data+ project/EPIC data")
 # Yanlin's working directory
 setwd("D:/DataPlus2017/Data")
 
-# load annotation and Stan results
+# load annotation, Stan results, and gene scores
 load("myFA.Rdata")
 load("StanCfullResults.Rdata")
+load("ScoresFull.Rdata")
 
 
 ### INITIALIZE
@@ -68,7 +69,7 @@ inf2NA <- function(x) { x[is.infinite(x)] <- NA; x }
 
 # find indices corresponding to geneString in the list geneNames
 geneInd <- function (geneStr) {
-  return(grep(geneStr, geneNames)[(grep(geneStr, geneNames, value=TRUE)==geneStr)])
+  return(grep(paste("^",geneStr,"$",sep=""), geneNames))
 }
 
 # plot each site along all three log ratio plots
@@ -143,29 +144,10 @@ ggplot(gg, aes(x=value, fill=variable)) +
 
 ## Check individual genes with known conservation
 
-# APC
 plotLogRatiosByRegions("APC")
-scoreGene("APC")
-# TP53
 plotLogRatiosByRegions("TP53")
-scoreGene("TP53")
-# TTN
 plotLogRatiosByRegions("TTN")
-scoreGene("TTN")
-# B2M
 plotLogRatiosByRegions("B2M")
-scoreGene("B2M")
-# HLA-A
 plotLogRatiosByRegions("HLA-A")
-scoreGene("HLA-A")
-# HLA-B
 plotLogRatiosByRegions("HLA-B")
-scoreGene("HLA-B")
 
-# # score all genes - do not run, too slow
-# numGenes <- length(uniqueGenes)
-# geneScores <- data.frame(PTscore=numeric(numGenes), PPTscore=numeric(numGenes), PTTscore=numeric(numGenes))
-# for (g in 1:numGenes) {
-#   if (!(g %% 1000)) { print(paste("Scoring:",g,"/",numGenes)) }
-#   geneScores[g,] <- scoreGene(uniqueGenes[g])
-# }

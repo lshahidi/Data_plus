@@ -23,7 +23,7 @@ load("ScoresFull.Rdata")
 
 ### INITIALIZE
 
-# create list of unique gene names and gene regions at each site
+# # create list of unique gene names and gene regions at each site
 # geneNames <- list(866836)
 # geneRegions <- list(866836)
 # for (i in 1:866836) {
@@ -69,7 +69,12 @@ inf2NA <- function(x) { x[is.infinite(x)] <- NA; x }
 
 # find indices corresponding to geneString in the list geneNames
 geneInd <- function (geneStr) {
-  return(grep(paste("^",geneStr,"$",sep=""), geneNames))
+  work <- grep(geneStr, geneNames)
+  work2 <- sapply(work, function(i) { geneStr %in% geneNames[[i]] } )
+  return(work[work2])
+}
+geneInd <- function (geneStr) {
+  return(grep(paste("\\b",geneStr,"\\b",sep=""), geneNames))
 }
 
 # plot each site along all three log ratio plots
@@ -151,3 +156,11 @@ plotLogRatiosByRegions("B2M")
 plotLogRatiosByRegions("HLA-A")
 plotLogRatiosByRegions("HLA-B")
 
+geneCount <- data.frame(table(unlist(geneNames)))
+singleGenes <- geneCount$Var1[which(geneCount$Freq == 1)]
+
+# analyze scores with PCA
+print(paste("Sites NA:",sum(is.na(geneScoresFull[,1]))))
+geneScoresClear <- geneScoresFull[!is.na(geneScoresFull[,1]),]
+PCAscore <- prcomp(geneScoresClear)
+plot(PCAscore$x[,1],PCAscore$x[,2]) # make a scatterplot

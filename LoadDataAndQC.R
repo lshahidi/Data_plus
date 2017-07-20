@@ -430,10 +430,7 @@ all_noob <- combineArrays(all_noob,noob_1350,noob_1357,noob_1360,noob_1378,noob_
 # here we select, from the EPIC characterizing data, the columns for:
 # ILmnID, CHR, MAPINFO(geneposition), UCSC_RefGene_Name, USCS_RefGene_Group, CpG Island name, Phantom 4, Phantom5
 selectedCols <- c("character", rep("NULL", 10), "character", "integer", rep("NULL", 2), "character", "NULL", rep("character", 2), "NULL", rep("character", 2), rep("NULL", 25))
-EPICchar <- read.csv("EPIC MANIFEST AND SUPPORTING INFORMATION/MethylationEPIC_v-1-0_B1.csv", as.is=TRUE, colClasses = selectedCols)
-
-# only choose rows with cpg sites in preprocessed data
-DataChar <- EPICchar[EPICchar$IlmnID %in% row.names(noob_1337),]
+EPICchar <- read.csv("EPIC MANIFEST AND SUPPORTING INFORMATION/MethylationEPIC_v-1-0_B2.csv", as.is=TRUE, colClasses = selectedCols)
 
 ## then add each sample
 # data from noob preprocessed data
@@ -443,6 +440,9 @@ sampleNames <- unlist(list(pat_1337$Sample_No, pat_1345$SAMPLE.ID, pat_1350$SAMP
 colnames(SampleData) <- sampleNames[-7]
 # reorder sample data by cpg site (row name)
 SampleData <- SampleData[order(row.names(SampleData)), ]
+
+# only choose rows with cpg sites in preprocessed data
+DataChar <- EPICchar[EPICchar$IlmnID %in% row.names(SampleData),]
 
 # save/load to save time
 save(DataChar,file="myDC.Rdata")

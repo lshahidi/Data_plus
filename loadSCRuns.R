@@ -71,5 +71,6 @@ for (i in filesPresent) {
   }
   allInds <- append(allInds, inds)
   geneScoresFull[inds,] <- geneScores
+  rownames(geneScoresFull)[inds] <- rownames(geneScores)
 }
 save(geneScoresFull, file = "ScoresFull.Rdata")

@@ -56,12 +56,25 @@ geneInd <- function (geneStr) {
   return(work[work2])
 }
 
-# score gene
-scoreGene <- function(geneStr) {
+# score gene by functional region, including overall score
+scoreGeneByRegion <- function(geneStr) {
   gInd <- geneInd(geneStr)
-  score <- logRatioMeans*0
-  for (i in colnames(logRatios)){
-    score[i] <- sum(logRatios[gInd,i]-logRatioMeans[i]) / sd(logRatios[gInd,i])
+  score <- numeric(27)
+  for (i in 1:3){
+    score[i] <- (mean(logRatios[gInd,i])-logRatioMeans[i]) / sd(logRatios[gInd,i])
+  }
+  for (j in 1:length(regionTypes)) { # go through each of the region types
+    # collect indices of region j
+    rInd <- integer(0)
+    for (k in 1:length(gInd)) { # check for region j at each gInd index k
+      if (regionTypes[j] %in% geneRegions[[gInd[k]]]) {
+        rInd <- append(rInd,gInd[k])
+      }
+    }
+    # go through each of 3 logratios for region j
+    for (i in 1:3){
+      score[i+j*3] <- (mean(logRatios[rInd,i])-logRatioMeans[i]) / sd(logRatios[rInd,i])
+    }
   }
   return(score)
 }
@@ -81,15 +94,14 @@ parData <- foreach(g=iter(1:numGenes), .combine=rbind) %dopar% {
   sink(log.file, append=TRUE)
   print(paste("Gene:", g,"/",numGenes))
   sink()
-  scoreGene(geneChunk[g])
+  scoreGeneByRegion(geneChunk[g])
 }
 proc.time() - ptm
 stopCluster(cl)
 
 geneScores <- parData
 rownames(geneScores) <- geneChunk
-rm(parData)
-gc()
+colnames(geneScores) <- paste(rep(c("P/T","P/PT","PT/T"),8),c(rep("all",3),rep(regionTypes[1],3),rep(regionTypes[2],3),rep(regionTypes[3],3),rep(regionTypes[4],3),rep(regionTypes[5],3),rep(regionTypes[6],3),rep(regionTypes[7],3),rep(regionTypes[8],3)))
 
 print(paste("Completed run, now saving"))
 # save data

@@ -208,13 +208,36 @@ plotLogRatiosByRegions("MDM2") #slight shift right
 geneCount <- data.frame(table(unlist(geneNames)))
 singleGenes <- geneCount$Var1[which(geneCount$Freq == 1)]
 
-# analyze scores with PCA
-print(paste("Sites NA:",sum(is.na(geneScoresFull[,1]))))
-geneScoresClear <- geneScoresFull[!is.na(geneScoresFull[,1]),]
-PCAscore <- prcomp(geneScoresClear)
-plot(PCAscore$x[,1],PCAscore$x[,2]) # make a scatterplot
+# take mean of all 3 scores, then order and remove NAs for a ranked list
+geneScoresMean <- data.frame(meanscore=rowMeans(geneScores3))
+rownames(geneScoresMean) <- rownames(geneScores3)
+genesRanked <- geneScoresMean[order(geneScoresMean,decreasing=TRUE,na.last=FALSE),,drop=FALSE]
+genesRanked2 <- genesRanked[-(1:907),,drop=FALSE]
+genesRanked2$Freq <- geneCount$Freq[match(rownames(genesRanked2),geneCount$Var1)]
+match(c("APC","TP53","TTN","B2M","HLA-A","HLA-B"), rownames(genesRanked2))
 
-hist(geneScoresFull$`logP/T`,100)
-sum(geneScoresFull$`logPT/T` < 0, na.rm = TRUE)/length(geneScoresFull$`logPT/T`)
-hist(geneScoresFull$`logP/PT`,100)
-hist(geneScoresFull$`logPT/T`,100)
+
+# analyze scores with PCA
+# first 3 space (overall genes)
+print(paste("Sites NA:",sum(is.na(geneScores3[,1]))))
+geneScoresClear <- geneScores3[!is.na(geneScores3[,1]),]
+PCAscores3 <- prcomp(geneScoresClear)
+plot(PCAscores3$x[,1],PCAscores3$x[,2], xlim=c(-10,10), ylim=c(-10,10)) # make a scatterplot
+chooseRows <- (rownames(geneScoresClear) %in% c("APC","TP53","TTN","B2M","HLA-A","HLA-B"))
+text(PCAscores3$x[chooseRows,1],PCAscores3$x[chooseRows,2], rownames(geneScoresClear)[chooseRows], cex=0.7, pos=4, col="red") # add labels
+
+# now 24 space (by functional region)
+print(paste("Sites NA:",sum(is.na(geneScores24[,]))))
+geneScoresClear <- geneScoresFull[!is.na(geneScores24[,1]),]
+PCAscores24 <- prcomp(geneScores24)
+geneScores24 <- replace(geneScores24, is.na(geneScores24), NA)
+C <- cov(geneScores24,use="all.obs")
+plot(PCAscores24$x[,1],PCAscores24$x[,2]) # make a scatterplot
+
+
+hist(geneScoresFull$`logP/T`,500, xlim = c(-100,100))
+sum(geneScoresFull$`logP/T` > 0, na.rm = TRUE)/length(geneScoresFull$`logP/T`)
+hist(geneScoresFull$`logP/PT`,500, xlim = c(-100,100))
+sum(geneScoresFull$`logP/PT` > 0, na.rm = TRUE)/length(geneScoresFull$`logP/PT`)
+hist(geneScoresFull$`logPT/T`,500, xlim = c(-100,100))
+sum(geneScoresFull$`logPT/T` > 0, na.rm = TRUE)/length(geneScoresFull$`logPT/T`)

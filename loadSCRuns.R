@@ -50,13 +50,16 @@ for (i in filesPresent) {
 save(mu_Cfull, betaT_Cfull, sigmaP_Cfull, sigmaT_Cfull,
      sigmaPT_Cfull, sigmaE_Cfull, file = "StanCfullResults.Rdata")
 
+
 ### LOADING FOR GENE SCORING RESULTS
+# now for 3- and 24-space
 
 # Set working directory to normal data wd then folder ResultsC
 setwd("/Users/kevinmurgas/Documents/Data+ project/EPIC data/GeneScores")
 
-geneScoresFull <- data.frame(a=numeric(27383), b=numeric(27383), c=numeric(27383))
-colnames(geneScoresFull) <- c("logP/T","logP/PT","logPT/T")
+geneScores27 <- as.data.frame(matrix(ncol = 27, nrow = 27383))
+colnames(geneScores27) <- paste(rep(c("P/T","P/PT","PT/T"),8),c(rep("all",3),rep(regionTypes[1],3),rep(regionTypes[2],3),rep(regionTypes[3],3),rep(regionTypes[4],3),rep(regionTypes[5],3),rep(regionTypes[6],3),rep(regionTypes[7],3),rep(regionTypes[8],3)))
+#colnames(geneScores3) <- c("logP/T","logP/PT","logPT/T")
 
 nGenes <- 1000
 filesPresent <- (1:28)
@@ -70,7 +73,11 @@ for (i in filesPresent) {
     inds <- inds[1:383]
   }
   allInds <- append(allInds, inds)
-  geneScoresFull[inds,] <- geneScores
-  rownames(geneScoresFull)[inds] <- rownames(geneScores)
+  geneScores27[inds,] <- geneScores
+  rownames(geneScores27)[inds] <- rownames(geneScores)
 }
-save(geneScoresFull, file = "ScoresFull.Rdata")
+
+geneScores3 <- geneScores27[,1:3]
+geneScores24 <- geneScores27[,4:27]
+
+save(geneScores3, geneScores24, file = "ScoresFull27.Rdata")

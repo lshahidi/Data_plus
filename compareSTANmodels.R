@@ -736,10 +736,10 @@ for (i in indice) {
 
 
 
-est_rep2 <- data.frame(betaT=numeric(nsites),mu=numeric(nsites),sigma_e=numeric(nsites),
+est_rep3 <- data.frame(betaT=numeric(nsites),mu=numeric(nsites),sigma_e=numeric(nsites),
                   sigma_p=numeric(nsites),sigma_pt=numeric(nsites),sigma_t=numeric(nsites))
 
-rownames(est_rep2) <- paste("site",indice)
+rownames(est_rep3) <- paste("site",indice)
 
 count <- 1
 
@@ -747,7 +747,7 @@ for (i in indice) {
   data <- site(i)
   stan <- stanfit_rep(data)
   
-  est_rep2[count,] <- summary(stan)$summary[147:152,1]
+  est_rep3[count,] <- summary(stan)$summary[147:152,1]
   
   count <- count + 1
 }
@@ -801,3 +801,59 @@ load("rep3.RData")
 DIFF12 <- est_rep - est_rep2
 DIFF13 <- est_rep - est_rep3
 DIFF23 <- est_rep2 - est_rep3
+
+var12 <- DIFF12/est_rep2
+var13 <- DIFF13/est_rep3
+var23 <- DIFF23/est_rep3
+
+plot(var12$mu,main="Variablity of mu",ylab="Change of mu")
+text(25,-200,labels=paste("Mean = ",round(mean(var12$mu),2)))
+plot(var12$mu,main="Variablity of mu",ylab="Change of mu",ylim=c(-10,15))
+abline(h=c(-0.2,0.2),col="red")
+text(25,13,labels=paste(">20% = ", sum(abs(var12$mu)>0.2)))
+
+
+plot(var12$betaT,main="Variablity of betaT",ylab="Change of betaT")
+text(25,1000,labels=paste("Mean = ",round(mean(var12$betaT),2)))
+plot(var12$mu,main="Variablity of mu",ylab="Change of mu",ylim=c(-10,15))
+abline(h=c(-0.2,0.2),col="red")
+text(25,13,labels=paste(">20% = ", sum(abs(var12$betaT)>0.2)))
+
+
+plot(var12$sigma_p,main="Variablity of sigmaP",ylab="Change of sigmaP")
+text(100,35,labels=paste("Mean = ",round(mean(var12$sigma_p),2)))
+abline(h=c(-0.2,0.2),col="red")
+text(100,30,labels=paste(">20% = ", sum(abs(var12$sigma_p)>0.2)))
+
+
+plot(var12$sigma_pt,main="Variablity of sigmaPT",ylab="Change of sigmaPT")
+text(100,45,labels=paste("Mean = ",round(mean(var12$sigma_pt),2)))
+abline(h=c(-0.2,0.2),col="red")
+text(100,40,labels=paste(">20% = ", sum(abs(var12$sigma_pt)>0.2)))
+
+
+plot(var12$sigma_t,main="Variablity of sigmaT",ylab="Change of sigmaT")
+text(100,2.5,labels=paste("Mean = ",round(mean(var12$sigma_t),2)))
+abline(h=c(-0.2,0.2),col="red")
+text(100,2,labels=paste(">20% = ", sum(abs(var12$sigma_t)>0.2)))
+
+
+plot(var12$sigma_e,main="Variablity of sigmaE",ylab="Change of sigmaE")
+text(25,0.6,labels=paste("Mean = ",round(mean(var12$sigma_e),2)))
+abline(h=c(-0.2,0.2),col="red")
+text(25,0.5,labels=paste(">20% = ", sum(abs(var12$sigma_e)>0.2)))
+
+
+var12$varno <- apply(abs(var12)>0.2,1,sum)
+var12$flag <- ifelse(var12$varno>0,1,0)
+var23$varno <- apply(abs(var23)>0.2,1,sum)
+var23$flag <- ifelse(var23$varno>0,1,0)
+var13$varno <- apply(abs(var13)>0.2,1,sum)
+var13$flag <- ifelse(var13$varno>0,1,0)
+
+flag <- rep(NA,200)
+for (i in 1:200) {
+  if (var12$flag[i] == 1 | var23$flag[i] == 1 | var13$flag[i] == 1) {
+    flag[i] = 1
+  }
+}

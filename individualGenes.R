@@ -18,7 +18,7 @@ setwd("D:/DataPlus2017/Data")
 # load annotation, Stan results, and gene scores
 load("myFA.Rdata")
 load("StanCfullResults.Rdata")
-load("ScoresFull.Rdata")
+load("ScoresFull27.Rdata")
 
 
 ### INITIALIZE
@@ -222,11 +222,23 @@ match(c("APC","TP53","TTN","B2M","HLA-A","HLA-B"), rownames(genesRanked2))
 print(paste("Sites NA:",sum(is.na(geneScores3[,1]))))
 geneScoresClear <- geneScores3[!is.na(geneScores3[,1]),]
 PCAscores3 <- prcomp(geneScoresClear)
-plot(PCAscores3$x[,1],PCAscores3$x[,2], xlim=c(-10,10), ylim=c(-10,10)) # make a scatterplot
+plot(PCAscores3$x[,1],PCAscores3$x[,2]) # make a scatterplot
+plot(PCAscores3$x[,1],PCAscores3$x[,2], xlim=c(-4,4), ylim=c(-4,4)) # make a scatterplot
 chooseRows <- (rownames(geneScoresClear) %in% c("APC","TP53","TTN","B2M","HLA-A","HLA-B"))
 text(PCAscores3$x[chooseRows,1],PCAscores3$x[chooseRows,2], rownames(geneScoresClear)[chooseRows], cex=0.7, pos=4, col="red") # add labels
 
-# now 24 space (by functional region)
+# 3 space again with eliminating genes with <5 sites
+geneScoresClear <- geneScores3[!is.na(geneScores3[,1]),]
+geneScoresClear$Freq <- geneCount$Freq[match(rownames(geneScoresClear),geneCount$Var1)]
+geneScoresClear <- geneScoresClear[(geneScoresClear$Freq>5),1:3]
+PCAscores3 <- prcomp(geneScoresClear)
+plot(PCAscores3$x[,1],PCAscores3$x[,2]) # make a scatterplot
+plot(PCAscores3$x[,1],PCAscores3$x[,2], xlim=c(-4,4), ylim=c(-4,4)) # make a scatterplot
+chooseRows <- (rownames(geneScoresClear) %in% c("APC","TP53","TTN","B2M","HLA-A","HLA-B"))
+text(PCAscores3$x[chooseRows,1],PCAscores3$x[chooseRows,2], rownames(geneScoresClear)[chooseRows], cex=0.7, pos=4, col="red") # add labels
+
+
+# now 24 space (by functional region)      XXXX missing data probz
 print(paste("Sites NA:",sum(is.na(geneScores24[,]))))
 geneScoresClear <- geneScoresFull[!is.na(geneScores24[,1]),]
 PCAscores24 <- prcomp(geneScores24)
@@ -235,9 +247,9 @@ C <- cov(geneScores24,use="all.obs")
 plot(PCAscores24$x[,1],PCAscores24$x[,2]) # make a scatterplot
 
 
-hist(geneScoresFull$`logP/T`,500, xlim = c(-100,100))
-sum(geneScoresFull$`logP/T` > 0, na.rm = TRUE)/length(geneScoresFull$`logP/T`)
-hist(geneScoresFull$`logP/PT`,500, xlim = c(-100,100))
-sum(geneScoresFull$`logP/PT` > 0, na.rm = TRUE)/length(geneScoresFull$`logP/PT`)
-hist(geneScoresFull$`logPT/T`,500, xlim = c(-100,100))
-sum(geneScoresFull$`logPT/T` > 0, na.rm = TRUE)/length(geneScoresFull$`logPT/T`)
+hist(geneScores3$`P/T all`,3000, xlim = c(-5,5))
+sum(geneScores3$`P/T all` > 0, na.rm = TRUE)/length(geneScores3$`P/T all`)
+hist(geneScores3$`P/PT all`,5000, xlim = c(-5,5))
+sum(geneScores3$`P/PT all` > 0, na.rm = TRUE)/length(geneScores3$`P/PT all`)
+hist(geneScores3$`PT/T all`,8000, xlim = c(-5,5))
+sum(geneScores3$`PT/T all` > 0, na.rm = TRUE)/length(geneScores3$`PT/T all`)

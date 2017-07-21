@@ -76,7 +76,7 @@ for (i in filesPresent) {
   geneScores27[inds,] <- geneScores
   rownames(geneScores27)[inds] <- rownames(geneScores)
 }
-
+rownames(geneScores27) <- uniqueGenes
 geneScores3 <- geneScores27[,1:3]
 geneScores24 <- geneScores27[,4:27]
 

@@ -58,9 +58,9 @@ logRatioMeans <- colMeans(logRatios)
 # insert means by region
 
 # create histogram plots for each log ratio, to reference later
-pPT <- ggplot(logRatios, aes(x=`logP/T`)) + geom_histogram(bins = 100) + ggtitle("Histogram of logP/T") + xlim(c(-3,3)) + ylim(c(0,31000))
-pPPT <- ggplot(logRatios, aes(x=`logP/PT`)) + geom_histogram(bins = 100) + ggtitle("Histogram of logP/PT") + xlim(c(-3,3)) + ylim(c(0,31000))
-pPTT <- ggplot(logRatios, aes(x=`logPT/T`)) + geom_histogram(bins = 100) + ggtitle("Histogram of logPT/T") + xlim(c(-3,3)) + ylim(c(0,31000))
+pPT <- ggplot(logRatios, aes(x=`logP/T`)) + geom_histogram(bins = 100) + ggtitle("Histogram of logP/T") + xlim(c(-3,3)) + ylim(c(0,31000)) + geom_vline(xintercept=logRatioMeans[1], linetype="dotted")
+pPPT <- ggplot(logRatios, aes(x=`logP/PT`)) + geom_histogram(bins = 100) + ggtitle("Histogram of logP/PT") + xlim(c(-3,3)) + ylim(c(0,31000)) + geom_vline(xintercept=logRatioMeans[2], linetype="dotted")
+pPTT <- ggplot(logRatios, aes(x=`logPT/T`)) + geom_histogram(bins = 100) + ggtitle("Histogram of logPT/T") + xlim(c(-3,3)) + ylim(c(0,31000)) + geom_vline(xintercept=logRatioMeans[3], linetype="dotted")
 
 
 ### FUNCTIONS
@@ -123,9 +123,27 @@ scoreGene <- function(geneStr) {
   return(score)
 }
 
-# score gene by function region
+# score gene by functional region, including overall score
 scoreGeneByRegion <- function(geneStr) {
-  
+  gInd <- geneInd(geneStr)
+  score <- numeric(27)
+  for (i in 1:3){
+    score[i] <- (mean(logRatios[gInd,i])-logRatioMeans[i]) / sd(logRatios[gInd,i])
+  }
+  for (j in 1:length(regionTypes)) { # go through each of the region types
+    # collect indices of region j
+    rInd <- integer(0)
+    for (k in 1:length(gInd)) { # check for region j at each gInd index k
+      if (regionTypes[j] %in% geneRegions[[gInd[k]]]) {
+        rInd <- append(rInd,gInd[k])
+      }
+    }
+    # go through each of 3 logratios for region j
+    for (i in 1:3){
+      score[i+j*3] <- (mean(logRatios[rInd,i])-logRatioMeans[i]) / sd(logRatios[rInd,i])
+    }
+  }
+  return(score)
 }
 
 
@@ -156,6 +174,37 @@ plotLogRatiosByRegions("B2M")
 plotLogRatiosByRegions("HLA-A")
 plotLogRatiosByRegions("HLA-B")
 
+# new genes from literature
+plotLogRatiosByRegions("KRAS") # secondary mutation in CRC ***slight shift right
+plotLogRatiosByRegions("PIK3CA") # oncogene ***slight shift right
+plotLogRatiosByRegions("SMAD4") # colorectal tumor
+plotLogRatiosByRegions("ARID1A") # TSG, colorectal, clear-cell ovarian cancer
+plotLogRatiosByRegions("ATM") # TSG
+plotLogRatiosByRegions("SOX9") # also related
+plotLogRatiosByRegions("FAM123B") # also related ***large shift right
+plotLogRatiosByRegions("MLH1") # hypermutated, mismatch repair
+plotLogRatiosByRegions("MLH3") # hypermutated, mismatch repair
+plotLogRatiosByRegions("MSH2") # hypermutated, mismatch repair
+plotLogRatiosByRegions("MSH3") # hypermutated, mismatch repair
+plotLogRatiosByRegions("MSH6") # hypermutated, mismatch repair
+plotLogRatiosByRegions("PMS2") # hypermutated, mismatch repair ***slight shift right
+plotLogRatiosByRegions("POLE") # hypermutated, polymerase e
+plotLogRatiosByRegions("ERBB2") # recurrent copy number amplification
+plotLogRatiosByRegions("IGF2") # amplified ***slight shift left
+plotLogRatiosByRegions("IDH1") # oncogene ***slight shift right
+plotLogRatiosByRegions("IDH2") # oncogene
+plotLogRatiosByRegions("RB1") # TSG
+plotLogRatiosByRegions("VHL") # TSG ***slight shift right
+plotLogRatiosByRegions("NOTCH1") # oncogene/TSG ***slight shift right?
+plotLogRatiosByRegions("MLL2") # medulloblastoma, therefore not related to CRC
+plotLogRatiosByRegions("MLL3") # medulloblastoma, therefore not related to CRC
+plotLogRatiosByRegions("SF3B1") # mRNA splicing factors, general stress
+plotLogRatiosByRegions("U2AF1") # mRNA splicing factors, general stress ***slight right
+plotLogRatiosByRegions("ATRX") # ALT (telomere lengthening) factors ***definite shift right
+plotLogRatiosByRegions("DAXX") # ALT factors *** minimal shift right
+# COSMIC genes (46)
+plotLogRatiosByRegions("MDM2") #slight shift right
+
 geneCount <- data.frame(table(unlist(geneNames)))
 singleGenes <- geneCount$Var1[which(geneCount$Freq == 1)]
 
@@ -164,3 +213,8 @@ print(paste("Sites NA:",sum(is.na(geneScoresFull[,1]))))
 geneScoresClear <- geneScoresFull[!is.na(geneScoresFull[,1]),]
 PCAscore <- prcomp(geneScoresClear)
 plot(PCAscore$x[,1],PCAscore$x[,2]) # make a scatterplot
+
+hist(geneScoresFull$`logP/T`,100)
+sum(geneScoresFull$`logPT/T` < 0, na.rm = TRUE)/length(geneScoresFull$`logPT/T`)
+hist(geneScoresFull$`logP/PT`,100)
+hist(geneScoresFull$`logPT/T`,100)

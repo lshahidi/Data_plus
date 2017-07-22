@@ -37,11 +37,11 @@ ggplot(sigmaE_Cfull,aes(x=sigmaE_Cfull$p50)) + geom_histogram(binwidth = 0.05) +
 
 ### Log Ratios
 
-ggplot(sigma,aes(x=log(sigma$sigmaP_Cfull.p50/sigma$sigmaPT_Cfull.p50))) + geom_histogram(binwidth = 0.2) + labs(title="Log Ratio of sigmaP/sigmaPT",x="log(sigmaP/sigmaPT") + geom_vline(aes(xintercept=mean(log(sigma$sigmaP_Cfull.p50/sigma$sigmaPT_Cfull.p50))),col="blue",linetype="dashed")
+ggplot(sigma,aes(x=log(sigma$sigmaP_Cfull.p50/sigma$sigmaPT_Cfull.p50))) + geom_histogram(binwidth = 0.2) + labs(title="Log Ratio of sigmaP/sigmaPT",x="log(sigmaP/sigmaPT)") + geom_vline(aes(xintercept=mean(log(sigma$sigmaP_Cfull.p50/sigma$sigmaPT_Cfull.p50))),col="blue",linetype="dashed") + annotate(geom="text",-4,70000,label=paste("Mean = ", round(mean(log(sigma$sigmaP_Cfull.p50/sigma$sigmaPT_Cfull.p50)),2)))
 
-ggplot(sigma,aes(x=log(sigma$sigmaPT_Cfull.p50/sigma$sigmaT_Cfull.p50))) + geom_histogram(binwidth = 0.2) + labs(title="Log Ratio of sigmaPT/sigmaT",x="log(sigmaPT/sigmaT") + geom_vline(aes(xintercept=mean(log(sigma$sigmaPT_Cfull.p50/sigma$sigmaT_Cfull.p50))),col="blue",linetype="dashed")
+ggplot(sigma,aes(x=log(sigma$sigmaPT_Cfull.p50/sigma$sigmaT_Cfull.p50))) + geom_histogram(binwidth = 0.2) + labs(title="Log Ratio of sigmaPT/sigmaT",x="log(sigmaPT/sigmaT)") + geom_vline(aes(xintercept=mean(log(sigma$sigmaPT_Cfull.p50/sigma$sigmaT_Cfull.p50))),col="blue",linetype="dashed") + annotate(geom="text",-3,90000,label=paste("Mean = ", round(mean(log(sigma$sigmaPT_Cfull.p50/sigma$sigmaT_Cfull.p50)),2)))
 
-ggplot(sigma,aes(x=log(sigma$sigmaP_Cfull.p50/sigma$sigmaT_Cfull.p50))) + geom_histogram(binwidth = 0.2) + labs(title="Log Ratio of sigmaP/sigmaT",x="log(sigmaP/sigmaT") + geom_vline(aes(xintercept=mean(log(sigma$sigmaP_Cfull.p50/sigma$sigmaT_Cfull.p50))),col="blue",linetype="dashed")
+ggplot(sigma,aes(x=log(sigma$sigmaP_Cfull.p50/sigma$sigmaT_Cfull.p50))) + geom_histogram(binwidth = 0.2) + labs(title="Log Ratio of sigmaP/sigmaT",x="log(sigmaP/sigmaT)") + geom_vline(aes(xintercept=mean(log(sigma$sigmaP_Cfull.p50/sigma$sigmaT_Cfull.p50))),col="blue",linetype="dashed") + annotate(geom="text",-4,70000,label=paste("Mean = ", round(mean(log(sigma$sigmaP_Cfull.p50/sigma$sigmaT_Cfull.p50)),2)))
 
 
 ### Correlation plots
@@ -252,6 +252,31 @@ hist(PTRatio[fun$Blank==1],
 legend("topright",c("All Sites","Blank"),fill=c(grey.colors(1,alpha=0.1),"indianred1"))
 text(3,15000,labels=paste("Mean = ",round(mean(PTRatio[fun$Blank==1]),2)))
 
+
+
+# Presentation used (only three regions)
+hist(PTRatio,main="Distribution of Functional Regions",
+     xlab="log ratio of sigmaP/sigmaT",
+     breaks=200,
+     col=grey.colors(1,alpha=0.01))
+
+hist(PTRatio[Promoter200==1],
+     breaks=200,col=alpha("green",0.8), add=TRUE)
+
+hist(PTRatio[Body==1],
+     breaks=200,col=alpha("deeppink",0.5), add=TRUE)
+
+hist(PTRatio[fun$Blank==1],
+     breaks=200,col=alpha("yellow",0.3), add=TRUE)
+
+legend("topright",c("All Sites","TSS200(Promoter)","Gene Body","Blank"),
+       fill=c(grey.colors(1,alpha=0.1),alpha("green",0.8),alpha("deeppink",0.5),
+              alpha("yellow",0.3)))
+
+text(2.5,12500,labels=paste("Overall Mean = ",round(mean(PTRatio),2)))
+text(2.5,11500,labels=paste("TSS200 Mean = ",round(mean(PTRatio[Promoter200==1]),2)))
+text(2.5,10500,labels=paste("Body Mean = ",round(mean(PTRatio[Body==1]),2)))
+text(2.5,9500,labels=paste("Blank Mean = ",round(mean(PTRatio[fun$Blank==1]),2)))
 
 
 # Multiple Testing on Diff of Log Ratios for Functional Region Subgroups Within Gene

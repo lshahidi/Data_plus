@@ -271,7 +271,7 @@ test <- rbind(test,temp)
 
 fit <- stanfit3(test)
 
-vstan1 <- stanfit3(Data1)
+stan1 <- stanfit3(Data1)
 stan2 <- stanfit3(Data2)
 stan3 <- stanfit4(Data3)
 stan4 <- stanfit4(Data4)
@@ -308,10 +308,10 @@ posterior1 <- as.array(stan1)
 
 mcmc_areas(
   posterior1, 
-  pars = c("sigma_e", "sigma_p", "sigma_t"),
+  pars = c("sigma_p", "sigma_pt","sigma_t","sigma_e"),
   prob = 0.8, # 80% intervals
   prob_outer = 0.95, 
-  point_est = "mean"
+  point_est = "median"
 )
 
 posterior1t <- as.array(stan1t)

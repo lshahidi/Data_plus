@@ -106,7 +106,7 @@ plotLogRatiosByRegions <- function (geneStr) {
       col1 <- c("red","orange","gold","green","blue","tomato","sienna","darkviolet")[j]
       p1 <- p1 + annotate("text", x=logRatios[rInd,i], y = rep(j*3000,length(rInd)), label="x", colour=col1) + annotate("text", x=-2, y=j*3000+1000, label=(paste(regionTypes[j],"mean:",format(mean(logRatios[rInd,i]),digits=5))),colour=col1) + annotate("text", x=2.6, y=j*3000+1000, label=(length(rInd)),colour=col1)
     }
-    p1 <- p1 + annotate("text", x=logRatios[gInd,i], y = rep(27000,length(gInd)), label=".") + annotate("text", x=0, y=28000, label=(paste(geneStr,"mean:",format(mean(logRatios[gInd,i]),digits=5)))) + annotate("text", x=2, y=29500, label=(paste("Total sites:",length(gInd))))
+    p1 <- p1 + annotate("text", x=logRatios[gInd,i], y = rep(27000,length(gInd)), label=".") + annotate("text", x=mean(logRatios[gInd,i]), y=28000, label=(paste(geneStr,"mean:",format(mean(logRatios[gInd,i]),digits=5)))) + annotate("text", x=logRatioMeans[i], y=30000, label=(paste("Overall mean:",format(logRatioMeans[i],digits=5)))) + annotate("text", x=2, y=29000, label=(paste("Total sites:",length(gInd))))
 
     print(p1)
   }
@@ -216,6 +216,9 @@ genesRanked2 <- genesRanked[-(1:907),,drop=FALSE]
 genesRanked2$Freq <- geneCount$Freq[match(rownames(genesRanked2),geneCount$Var1)]
 match(c("APC","TP53","TTN","B2M","HLA-A","HLA-B"), rownames(genesRanked2))
 
+COSMICgenes <- c("AKT1","APC","AXIN1","AXIN2","B2M","BCL9L","BRAF","C2orf44","CTNNB1","CUX1","EIF3E","EP300","FBXW7","GRIN2A","HIF1A","KRAS","MAP2K1","MAP2K4","MDM2","MLH1","MSH2","MSH6","MUTYH","PIK3CA","PIK3R1","PMS1","PMS2","POLE","PTPRK","PTPRT","QKI","RAD21","RSPO2","RSPO3","SALL4","SFRP4","SMAD2","SMAD3","SMAD4","SRC","TBL1XR1","TCF7L2","TGFBR2","TP53","UBR5","VTI1A")
+rank <- match(COSMICgenes, rownames(genesRanked2))
+cbind(COSMICgenes,rank)
 
 # analyze scores with PCA
 # first 3 space (overall genes)

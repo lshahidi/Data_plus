@@ -18,7 +18,7 @@ setwd("D:/DataPlus2017/Data")
 # load annotation, Stan results, and gene scores
 load("myFA.Rdata")
 load("StanCfullResults.Rdata")
-load("ScoresFull27.Rdata")
+load("ScoresFull.Rdata")
 
 
 ### INITIALIZE
@@ -256,3 +256,27 @@ hist(geneScores3$`P/PT all`,5000, xlim = c(-5,5))
 sum(geneScores3$`P/PT all` > 0, na.rm = TRUE)/length(geneScores3$`P/PT all`)
 hist(geneScores3$`PT/T all`,8000, xlim = c(-5,5))
 sum(geneScores3$`PT/T all` > 0, na.rm = TRUE)/length(geneScores3$`PT/T all`)
+
+
+
+### Correlation Plots
+library(gdata)
+# Read in table 3 (containing genes and expressions)
+tcga <- read.xls("2011-11-14592C-Sup Table 3.xls")
+
+work <- data.frame(gene=tcga$gene,exp=tcga$median.RPKM,score=rep(NA,dim(tcga)[1]))
+
+for (i in dim(work)[1]) {
+  indice <- geneInd(work$gene[i])
+  work$score[i] <- mean(logRatios$`logP/T`[indice])
+}
+
+plot <- apply(is.na(work),1,sum)
+ggplot(work,aes(x=log(work[,2]),y=work[,3])) + geom_point(alpha = 0.5) + labs(x="Average Expression", y="Mean Log Ratio", title="Correlation Plot")
+
+temp <- data.frame(log(work$exp),work$score)
+
+temp <- temp[(temp[,1] != -Inf) & (!is.na(temp[,1])) & (!is.na(temp[,2])),]
+ggplot(temp,aes(x=temp[,1],y=temp[,2])) + geom_point(alpha = 0.5) + labs(x="Average Expression", y="Mean Log Ratio", title="Correlation Plot")
+
+cor(temp[,1],temp[,2])

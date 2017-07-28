@@ -388,6 +388,25 @@ mcmc_areas(
 
 
 
+# Posterior ratio and probability
+
+prob <- rep(NA,dim(FullAnnotation)[1])
+
+for (i in dim(FullAnnotation)[1]) {
+  
+  data <- site(i)
+  stan <- stanfit3(data)
+
+  posterior <- as.matrix(stan,pars=c("sigma_p","sigma_t"))
+
+  PTratio <- log(sigma[,1]/sigma[,2])
+
+  prob[i] <- sum(PTratio1 > 0)/length(PTratio)
+
+}
+
+
+
 
 
 
@@ -855,5 +874,96 @@ flag <- rep(NA,200)
 for (i in 1:200) {
   if (var12$flag[i] == 1 | var23$flag[i] == 1 | var13$flag[i] == 1) {
     flag[i] = 1
+  }
+}
+
+
+
+
+#### Check the Variablity of Estimates from Non-reparameterized Model 
+
+load("norep.RData")
+load("norep2.RData")
+load("norep3.RData")
+
+
+DIFF12 <- est - est2
+DIFF13 <- est - est3
+DIFF23 <- est2 - est3
+
+var12 <- DIFF12/est2
+var13 <- DIFF13/est3
+var23 <- DIFF23/est3
+
+
+plot(var12$mu,main="Variablity of mu",ylab="Change of mu")
+abline(h=c(-0.2,0.2),col="red")
+text(175,0.7,labels=paste(">20% = ", sum(abs(var12$mu)>0.2)))
+abline(h=c(-0.05,0.05),col="blue")
+text(175,0.6,labels=paste(">5% = ", sum(abs(var12$mu)>0.05)))
+legend(160,0.5,lty=c(1,1),col=c("red","blue"),legend=c("20%","5"),cex=0.8)
+
+
+plot(var12$betaT,main="Variablity of betaT",ylab="Change of betaT")
+plot(var12$betaT,main="Variablity of betaT",ylab="Change of betaT",ylim=c(-1.5,1))
+abline(h=c(-0.2,0.2),col="red")
+text(175,-0.6,labels=paste(">20% = ", sum(abs(var12$betaT)>0.2)))
+abline(h=c(-0.05,0.05),col="blue")
+text(175,-0.8,labels=paste(">5% = ", sum(abs(var12$betaT)>0.05)))
+legend(160,-1,lty=c(1,1),col=c("red","blue"),legend=c("20%","5"),cex=0.7)
+
+
+plot(var12$sigma_p,main="Variablity of sigmaP",ylab="Change of sigmaP")
+abline(h=c(-0.2,0.2),col="red")
+text(50,0.6,labels=paste(">20% = ", sum(abs(var12$sigma_p)>0.2)))
+abline(h=c(-0.05,0.05),col="blue")
+text(50,0.45,labels=paste(">5% = ", sum(abs(var12$sigma_p)>0.05)))
+legend(180,0.5,lty=c(1,1),col=c("red","blue"),legend=c("20%","5"),cex=0.7)
+
+
+
+plot(var12$sigma_pt,main="Variablity of sigmaPT",ylab="Change of sigmaPT",ylim=c(-0.3,0.3))
+abline(h=c(-0.2,0.2),col="red")
+text(25,0.28,labels=paste(">20% = ", sum(abs(var12$sigma_pt)>0.2)))
+abline(h=c(-0.05,0.05),col="blue")
+text(60,0.28,labels=paste(">5% = ", sum(abs(var12$sigma_pt)>0.05)))
+legend(180,0.3,lty=c(1,1),col=c("red","blue"),legend=c("20%","5"),cex=0.7)
+
+
+
+plot(var12$sigma_t,main="Variablity of sigmaT",ylab="Change of sigmaT")
+abline(h=c(-0.2,0.2),col="red")
+text(175,0.9,labels=paste(">20% = ", sum(abs(var12$sigma_t)>0.2)))
+abline(h=c(-0.05,0.05),col="blue")
+text(175,0.75,labels=paste(">5% = ", sum(abs(var12$sigma_t)>0.05)))
+legend(170,0.65,lty=c(1,1),col=c("red","blue"),legend=c("20%","5"),cex=0.7)
+
+
+
+
+
+plot(var12$sigma_e,main="Variablity of sigmaE",ylab="Change of sigmaE")
+abline(h=c(-0.2,0.2),col="red")
+text(25,0.65,labels=paste(">20% = ", sum(abs(var12$sigma_e)>0.2)))
+abline(h=c(-0.05,0.05),col="blue")
+text(25,0.5,labels=paste(">5% = ", sum(abs(var12$sigma_e)>0.05)))
+legend(180,0.65,lty=c(1,1),col=c("red","blue"),legend=c("20%","5"),cex=0.7)
+
+
+
+
+var12$varno <- apply(abs(var12)>0.2,1,sum)
+var12$flag <- ifelse(var12$varno>0,1,0)
+var23$varno <- apply(abs(var23)>0.2,1,sum)
+var23$flag <- ifelse(var23$varno>0,1,0)
+var13$varno <- apply(abs(var13)>0.2,1,sum)
+var13$flag <- ifelse(var13$varno>0,1,0)
+
+flag <- rep(NA,200)
+for (i in 1:200) {
+  if (var12$flag[i] == 1 | var23$flag[i] == 1 | var13$flag[i] == 1) {
+    flag[i] = 1
+  } else {
+    flag[i] = 0
   }
 }

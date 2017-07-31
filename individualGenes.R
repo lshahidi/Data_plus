@@ -92,7 +92,7 @@ plotLogRatios <- function (geneStr) {
 # returns the functional regions of each index given
 plotLogRatiosByRegions <- function (geneStr) {
   gInd <- geneInd(geneStr)
-  for (i in colnames(logRatios)){
+  for (i in "logP/T"){
     if (i=="logP/T") { p1<-pPT }
     if (i=="logP/PT") { p1<-pPPT }
     if (i=="logPT/T") { p1<-pPTT }
@@ -203,7 +203,19 @@ plotLogRatiosByRegions("U2AF1") # mRNA splicing factors, general stress ***sligh
 plotLogRatiosByRegions("ATRX") # ALT (telomere lengthening) factors ***definite shift right
 plotLogRatiosByRegions("DAXX") # ALT factors *** minimal shift right
 # COSMIC genes (46)
-plotLogRatiosByRegions("MDM2") #slight shift right
+plotLogRatiosByRegions("MDM2") # ubiquitin ligase that degrades p53, slight shift right
+
+#random genes
+plotLogRatiosByRegions("ADAM21") #
+plotLogRatiosByRegions("WBSCR16") #
+plotLogRatiosByRegions("TMEM213") #
+plotLogRatiosByRegions("RGS18") #
+plotLogRatiosByRegions("TAOK3") #
+plotLogRatiosByRegions("TSPAN17") #
+plotLogRatiosByRegions("COX16") #
+plotLogRatiosByRegions("PTGS2") # cox2
+
+plotLogRatiosByRegions("EN1") #
 
 geneCount <- data.frame(table(unlist(geneNames)))
 singleGenes <- geneCount$Var1[which(geneCount$Freq == 1)]

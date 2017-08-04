@@ -12,7 +12,7 @@ library(reshape2)
 # Set working directory to normal data wd then folder ResultsC
 setwd("/Users/kevinmurgas/Documents/Data+ project/EPIC data/NewResultsC")
 
-betaT_Cfull2 <-
+betaT_Cfull3 <-
   data.frame(
     mean = numeric(866836),
     p2.5 = numeric(866836),
@@ -22,12 +22,12 @@ betaT_Cfull2 <-
     p97.5 = numeric(866836)
   )
 
-mu_Cfull2 <- betaT_Cfull2
-sigmaE_Cfull2 <- betaT_Cfull2
-sigmaP_Cfull2 <- betaT_Cfull2
-sigmaPT_Cfull2 <- betaT_Cfull2
-sigmaT_Cfull2 <- betaT_Cfull2
-PTprob2 <- numeric(866836)
+mu_Cfull3 <- betaT_Cfull3
+sigmaE_Cfull3 <- betaT_Cfull3
+sigmaP_Cfull3 <- betaT_Cfull3
+sigmaPT_Cfull3 <- betaT_Cfull3
+sigmaT_Cfull3 <- betaT_Cfull3
+PTprob3 <- numeric(866836)
 
 nsites <- 10000
 filesPresent <- (1:87)
@@ -41,15 +41,16 @@ for (i in filesPresent) {
     inds <- inds[1:6836]
   }
   allInds <- append(allInds, inds)
-  betaT_Cfull2[inds, ] <- betaT_C
-  mu_Cfull2[inds, ] <- mu_C
-  sigmaE_Cfull2[inds, ] <- sigmaE_C
-  sigmaP_Cfull2[inds, ] <- sigmaP_C
-  sigmaPT_Cfull2[inds, ] <- sigmaPT_C
-  sigmaT_Cfull2[inds, ] <- sigmaT_C
+  betaT_Cfull3[inds, ] <- betaT_C
+  mu_Cfull3[inds, ] <- mu_C
+  sigmaE_Cfull3[inds, ] <- sigmaE_C
+  sigmaP_Cfull3[inds, ] <- sigmaP_C
+  sigmaPT_Cfull3[inds, ] <- sigmaPT_C
+  sigmaT_Cfull3[inds, ] <- sigmaT_C
+  PTprob3[inds] <- PTprob
 }
-save(mu_Cfull2, betaT_Cfull2, sigmaP_Cfull2, sigmaT_Cfull2,
-     sigmaPT_Cfull2, sigmaE_Cfull2, file = "StanCfullResults2.Rdata")
+save(mu_Cfull3, betaT_Cfull3, sigmaP_Cfull3, sigmaT_Cfull3,
+     sigmaPT_Cfull3, sigmaE_Cfull3, PTprob3, file = "StanCfullResults3.Rdata")
 
 
 ### LOADING FOR GENE SCORING RESULTS

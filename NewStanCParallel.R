@@ -119,7 +119,7 @@ sigmaE_C <- betaT_C
 sigmaP_C <- betaT_C
 sigmaT_C <- betaT_C
 sigmaPT_C <- betaT_C
-PTprob <- betaT_C
+PTprob <- numeric(nsites)
 
 # inds for extracting data
 mInd <- c(1, 4:8)
@@ -150,12 +150,12 @@ parData <- foreach(i = iter(1:nsites), .combine = 'comb', .multicombine = TRUE, 
   data <- site(i)
   stanFit <- stanfit3(data)
   fitSumm <- summary(stanFit)$summary[71:76, mInd]
-  
+
   posterior <- as.matrix(stanFit,pars=c("sigma_p","sigma_t"))
   PTratio <- log(posterior[,1]/posterior[,2])
   prob <- sum(PTratio > 0)/length(PTratio)
   fitSumm <- rbind(fitSumm,rep(prob,length(mInd)))
-  
+
   rm(data,stanFit)
   gc()
   
@@ -170,7 +170,7 @@ sigmaE_C[,] <- parData$'3'
 sigmaP_C[,] <- parData$'4'
 sigmaPT_C[,] <- parData$'5'
 sigmaT_C[,] <- parData$'6'
-PTprob[,] <- parData$'7'
+PTprob <- parData$'7'[,1]
 rm(parData)
 gc()
 

@@ -18,6 +18,8 @@ setwd("D:/DataPlus2017/Data")
 # load annotation, Stan results, and gene scores
 load("myFA.Rdata")
 load("StanCfullResults.Rdata")
+load("StanCfullResults2.Rdata")
+load("StanCfullResults3.Rdata")
 load("ScoresFull.Rdata")
 
 

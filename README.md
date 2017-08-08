@@ -2,35 +2,46 @@
 
 This repository contains code used to work with 850K EPIC methylation array data in order to develop a model for variation of methylation among multiple patients and normal/tumor tissues.
 
+README updated: 08/08/2017 KM
+
 ## Files Present
 
 Scripts: .R files used to run code
 
-* compareLMER_STANmodels.R - 
-* compareLMERmodels.R -
-* compareSTANmodels.R -
-* DataModel.R - 
-* individualGenes.R - 
-* lmerVarsScript1.R - 
-* LoadDataAndQC.R
+* compareLMER_STANmodels.R - compare between lmer and Stan results
+* compareLMERmodels.R - used to compare between two lmer models (correlating and non-correlating)
+* compareSTANmodels.R - outdated, used to compare between two different Stan models (model.stan and model2.stan)
+* DataModel.R - testing script, sort of bucket of code, contains lmer model to produce small quantities of data, for plotting results, defining gene information, scoring genes, comparing results
+* individualGenes.R - script for examining individual genes, including scoring and correlation plots
+* lmerVarsScript1.R - outdated, script to run lmer model on 1000 sites
+* LoadDataAndQC.R - load raw EPIC array data from 8 provided data sets, preprocess with noob, perform QC, and annotate. Saves as "myFA.Rdata"
+* loadSCRuns.R - loads and combines results from parallel runs
+* NewStanCParallel.R - similar to StanCParallel.R, runs Stan model using model3.stan code, including PTprob statistic (sum of posterior probability for: log(sigmaP/sigmaT) > 0 )
+* Score.R - testing code used to develop gene scoring methods
+* ScoreGenesParallel.R - script to score genes in parallel
+* StanCParallel.R - runs Stan model using model3.stan code, to extract at each site of 10000 sites chunk the following variables: mu, betaT, sigmaE, sigmaP, sigmaPT, sigmaT, then save  in a numbered result file
+* StanCParallel2.R - testing code for parallelization, only runs 3 sites, no save
+* StanCVarsScript1.R - outdated, used to run model3.stan on 5000 sites
 
 Markdown files: .Rmd files used to produce markdown documents with R code
 
-* Hat tip to anyone who's code was used
-* Inspiration
-* etc
+* lmer Model.Rmd - runs three unique lmer models on all data and presents results
+* Model.Rmd - runs one lmer model and presents results
+* QC_and_Annotation.Rmd - loads data and presents quality control results
+* stan_Model.Rmd - runs Stan model using model.stan (out of date)
 
-Scripts: .R files used to run code
+Stan Models: .stan files used to define Stan model equations
 
-* Hat tip to anyone who's code was used
-* Inspiration
-* etc
+* model.stan - original model, with parameters mu, betaT, b and bT
+* model2.stan - same as model.stan but now including priors for mu and betaT
+* model3.stan - complex model, includes normal/tumor indicator and three levels of variance (P, PT, T) with parameters mu, betaT, b, c, d, 
+* model4.stan - simplified model, without normal/tumor indicator, not in use
+* model_rep.stan - model3.stan reparameterized, never finalized
 
 Misc files:
 
-* Hat tip to anyone who's code was used
-* Inspiration
-* etc
+* Data+ 2017.Rproj - contains data for RStudio project
+* README.md - c'est moi
 
 ## Getting Started
 
@@ -62,7 +73,7 @@ Having the correct data, one can use the following workflow:
   * compareLMERmodels.R - used to compare between two lmer models (correlating and non-correlating)
   
 4. *Score Genes* - run these scripts to test gene scoring methods, given model results (StanC)
-  * Score.R - scores genes using [] methods
+  * Score.R - scores genes using 5 unique methods
   * ScoreGenesParallel.R - same script just modified to run in parallel on DukeComputerCluster, cuts time down to <10 minutes
 
 ### Prerequisites
@@ -79,9 +90,15 @@ install.packages("PACKAGENAME")
 * coda
 * doParallel
 * lme4
+* gdata
 * ggplot2
 * gtools
+* IlluminaHumanMethylationEPICmanifest
+* IlluminaHumanMethylationEPICanno.ilm10b2.hg19
+* minfi
+* minfiData
 * reshape2
+* RColorBrewer
 * rstan
 
 ## Authors

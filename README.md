@@ -19,7 +19,7 @@ Scripts: .R files used to run code
 * NewStanCParallel.R - similar to StanCParallel.R, runs Stan model using model3.stan code, including PTprob statistic (sum of posterior probability for: log(sigmaP/sigmaT) > 0 )
 * Score.R - testing code used to develop gene scoring methods
 * ScoreGenesParallel.R - script to score genes in parallel
-* StanCParallel.R - runs Stan model using model3.stan code, to extract at each site of 10000 sites chunk the following variables: mu, betaT, sigmaE, sigmaP, sigmaPT, sigmaT, then save  in a numbered result file
+* StanCParallel.R - runs Stan model using model3.stan code, to extract at each site of 10000 sites chunk the following variables: mu, betaT, sigmaE, sigmaP, sigmaPT, sigmaT, then save in a numbered result file
 * StanCParallel2.R - testing code for parallelization, only runs 3 sites, no save
 * StanCVarsScript1.R - outdated, used to run model3.stan on 5000 sites
 

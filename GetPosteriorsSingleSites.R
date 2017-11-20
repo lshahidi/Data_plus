@@ -174,9 +174,9 @@ for(i in 1:nsites) {
   pats <- as.integer(factor(data$patient))
   npats <- max(pats)
   patcoefs <- data.frame(pat = rep(1:npats), b = summary(stanFit)$summary[1:npats], c = summary(stanFit)$summary[(1:npats)+npats])
-  mu <- summary(stanFit)$summary[71,1]
-  mu <- summary(stanFit)$summary[71,1]
-  linedf <- data.frame(pat = rep(levels(data$patient)[1:npats],2), tInd = c(rep(0,npats),rep(1,npats)), est = c(patcoefs$b, (patcoefs$b + patcoefs$c)))
+  betaT <- summary(stanFit)$summary[71,1]
+  mu <- summary(stanFit)$summary[72,1]
+  linedf <- data.frame(pat = rep(levels(data$patient)[1:npats],2), tInd = c(rep(0,npats),rep(1,npats)), est = c(patcoefs$b+mu, (patcoefs$b+patcoefs$c+mu+betaT)))
   p1 <- p1 + geom_line(data=linedf, aes(x=tInd, y=est, colour=pat))
   
   # plot posteriors for this site

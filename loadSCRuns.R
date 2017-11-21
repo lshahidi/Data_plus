@@ -10,9 +10,9 @@ library(reshape2)
 ### LOADING FOR STAN MODEL RESULTS
 
 # Set working directory to normal data wd then folder ResultsC
-setwd("/Users/kevinmurgas/Documents/Data+ project/EPIC data/ResultsC")
+setwd("/Users/kevinmurgas/Documents/Data+ project/EPIC data/NewResultsC")
 
-betaT_Cfull <-
+betaT_Cfull3 <-
   data.frame(
     mean = numeric(866836),
     p2.5 = numeric(866836),
@@ -22,11 +22,12 @@ betaT_Cfull <-
     p97.5 = numeric(866836)
   )
 
-mu_Cfull <- betaT_Cfull
-sigmaE_Cfull <- betaT_Cfull
-sigmaP_Cfull <- betaT_Cfull
-sigmaPT_Cfull <- betaT_Cfull
-sigmaT_Cfull <- betaT_Cfull
+mu_Cfull3 <- betaT_Cfull3
+sigmaE_Cfull3 <- betaT_Cfull3
+sigmaP_Cfull3 <- betaT_Cfull3
+sigmaPT_Cfull3 <- betaT_Cfull3
+sigmaT_Cfull3 <- betaT_Cfull3
+PTprob3 <- numeric(866836)
 
 nsites <- 10000
 filesPresent <- (1:87)
@@ -40,15 +41,16 @@ for (i in filesPresent) {
     inds <- inds[1:6836]
   }
   allInds <- append(allInds, inds)
-  betaT_Cfull[inds, ] <- betaT_C
-  mu_Cfull[inds, ] <- mu_C
-  sigmaE_Cfull[inds, ] <- sigmaE_C
-  sigmaP_Cfull[inds, ] <- sigmaP_C
-  sigmaPT_Cfull[inds, ] <- sigmaPT_C
-  sigmaT_Cfull[inds, ] <- sigmaT_C
+  betaT_Cfull3[inds, ] <- betaT_C
+  mu_Cfull3[inds, ] <- mu_C
+  sigmaE_Cfull3[inds, ] <- sigmaE_C
+  sigmaP_Cfull3[inds, ] <- sigmaP_C
+  sigmaPT_Cfull3[inds, ] <- sigmaPT_C
+  sigmaT_Cfull3[inds, ] <- sigmaT_C
+  PTprob3[inds] <- PTprob
 }
-save(mu_Cfull, betaT_Cfull, sigmaP_Cfull, sigmaT_Cfull,
-     sigmaPT_Cfull, sigmaE_Cfull, file = "StanCfullResults.Rdata")
+save(mu_Cfull3, betaT_Cfull3, sigmaP_Cfull3, sigmaT_Cfull3,
+     sigmaPT_Cfull3, sigmaE_Cfull3, PTprob3, file = "StanCfullResults3.Rdata")
 
 
 ### LOADING FOR GENE SCORING RESULTS
@@ -81,3 +83,76 @@ geneScores3 <- geneScores27[,1:3]
 geneScores24 <- geneScores27[,4:27]
 
 save(geneScores3, geneScores24, file = "ScoresFull27.Rdata")
+
+
+
+
+### compare modelC runs 1 and 2
+# Kevin's working directory
+setwd("/Users/kevinmurgas/Documents/Data+ project/EPIC data")
+load("StanCfullResults.Rdata")
+load("StanCfullResults2.Rdata")
+
+mu1 <- mu_Cfull$p50
+mu2 <- mu_Cfull2$p50
+cor(mu1,mu2)
+mudiffs <- mu1-mu2
+muchange <- mudiffs/mu1
+summary(mudiffs)
+summary(muchange)
+hist(mudiffs,100)
+hist(muchange,100)
+
+betaT1 <- betaT_Cfull$p50
+betaT2 <- betaT_Cfull2$p50
+cor(betaT1,betaT2)
+betaTdiffs <- betaT1-betaT2
+betaTchange <- betaTdiffs/betaT1
+summary(betaTdiffs)
+summary(betaTchange)
+hist(betaTdiffs,100)
+hist(betaTchange,100)
+
+sigmaE1 <- sigmaE_Cfull$p50
+sigmaE2 <- sigmaE_Cfull2$p50
+cor(sigmaE1,sigmaE2)
+sigmaEdiffs <- sigmaE1-sigmaE2
+sigmaEchange <- sigmaEdiffs/sigmaE1
+summary(sigmaEdiffs)
+summary(sigmaEchange)
+hist(sigmaEdiffs,100)
+hist(sigmaEchange,100)
+
+sigmaP1 <- sigmaP_Cfull$p50
+sigmaP2 <- sigmaP_Cfull2$p50
+cor(sigmaP1,sigmaP2)
+sigmaPdiffs <- sigmaP1-sigmaP2
+sigmaPchange <- sigmaPdiffs/sigmaP1
+summary(sigmaPdiffs)
+summary(sigmaPchange)
+hist(sigmaPdiffs,100)
+hist(sigmaPchange,100)
+
+sigmaPT1 <- sigmaPT_Cfull$p50
+sigmaPT2 <- sigmaPT_Cfull2$p50
+cor(sigmaPT1,sigmaPT2)
+sigmaPTdiffs <- sigmaPT1-sigmaPT2
+sigmaPTchange <- sigmaPTdiffs/sigmaPT1
+summary(sigmaPTdiffs)
+summary(sigmaPTchange)
+hist(sigmaPTdiffs,100)
+hist(sigmaPTchange,100)
+
+sigmaT1 <- sigmaT_Cfull$p50
+sigmaT2 <- sigmaT_Cfull2$p50
+cor(sigmaT1,sigmaT2)
+sigmaTdiffs <- sigmaT1-sigmaT2
+sigmaTchange <- sigmaTdiffs/sigmaT1
+summary(sigmaTdiffs)
+quantile(sigmaTdiffs, c(0,0.05,0.25,0.5,0.75,0.95,1))
+summary(sigmaTchange)
+format(quantile(sigmaTchange, c(0,0.05,0.25,0.5,0.75,0.95,1)),digits=4)
+hist(sigmaTdiffs,100)
+hist(sigmaTchange,100)
+
+

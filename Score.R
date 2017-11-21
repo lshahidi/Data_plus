@@ -67,15 +67,15 @@ stanfit3 <- function (dataset) {
 
 prob <- rep(NA,dim(FullAnnotation)[1])
 
-for (i in dim(FullAnnotation)[1]) {
+for (i in 1:2) {
   
   data <- site(i)
   stan <- stanfit3(data)
   
   posterior <- as.matrix(stan,pars=c("sigma_p","sigma_t"))
   
-  PTratio <- log(sigma[,1]/sigma[,2])
+  PTratio <- log(posterior[,1]/posterior[,2])
   
-  prob[i] <- sum(PTratio1 > 0)/length(PTratio)
+  prob[i] <- sum(PTratio > 0)/length(PTratio)
   
 }

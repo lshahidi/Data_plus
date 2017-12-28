@@ -75,7 +75,8 @@ site <- function (ind) {
 }
 
 # Function to build stan model for each site
-stanfit3 <- function (dataset) {
+# chain 1 - default; 2000 warmup, 4000 total iter, 4 chains, thin 1
+stanfit3chain1 <- function (dataset) {
   stanDat <- list(
     pID = as.integer(factor(dataset$patient)),
     tInd = dataset$tInd,
@@ -106,6 +107,101 @@ stanfit3 <- function (dataset) {
   return(stanFit3 = stanFit3)
 }
 
+# chain 2 - long chain; 2000 warmup, 10000 total iter, 2 chains, thin 1
+stanfit3chain2 <- function (dataset) {
+  stanDat <- list(
+    pID = as.integer(factor(dataset$patient)),
+    tInd = dataset$tInd,
+    N = nrow(dataset),
+    P = nlevels(dataset$patient),
+    y = dataset[, 1]
+  )
+  
+  # Using Model 3: add intra-tumoral variances
+  # have to check for model3.rds - crashes Stan
+  if (file.exists(checkFile)) {
+    file.remove(checkFile)
+    print("caught one!") 
+  }
+  stanFit3 <-
+    stan(
+      #file = "model3.stan",
+      fit = emptyFit,
+      warmup = 2000,
+      iter = 10000,
+      chains = 2,
+      thin = 1,
+      data = stanDat,
+      control = list(adapt_delta = 0.999),
+      refresh = 0
+    )
+  
+  return(stanFit3 = stanFit3)
+}
+
+# chain 3 - short warmup; 1000 warmup, 4000 total iter, 4 chains, thin 1
+stanfit3chain3 <- function (dataset) {
+  stanDat <- list(
+    pID = as.integer(factor(dataset$patient)),
+    tInd = dataset$tInd,
+    N = nrow(dataset),
+    P = nlevels(dataset$patient),
+    y = dataset[, 1]
+  )
+  
+  # Using Model 3: add intra-tumoral variances
+  # have to check for model3.rds - crashes Stan
+  if (file.exists(checkFile)) {
+    file.remove(checkFile)
+    print("caught one!") 
+  }
+  stanFit3 <-
+    stan(
+      #file = "model3.stan",
+      fit = emptyFit,
+      warmup = 1000,
+      iter = 4000,
+      chains = 4,
+      thin = 1,
+      data = stanDat,
+      control = list(adapt_delta = 0.999),
+      refresh = 0
+    )
+  
+  return(stanFit3 = stanFit3)
+}
+
+# chain 4 - many chains; 2000 warmup, 4000 total iter, 10 chains, thin 1
+stanfit3chain4 <- function (dataset) {
+  stanDat <- list(
+    pID = as.integer(factor(dataset$patient)),
+    tInd = dataset$tInd,
+    N = nrow(dataset),
+    P = nlevels(dataset$patient),
+    y = dataset[, 1]
+  )
+  
+  # Using Model 3: add intra-tumoral variances
+  # have to check for model3.rds - crashes Stan
+  if (file.exists(checkFile)) {
+    file.remove(checkFile)
+    print("caught one!") 
+  }
+  stanFit3 <-
+    stan(
+      #file = "model3.stan",
+      fit = emptyFit,
+      warmup = 2000,
+      iter = 4000,
+      chains = 10,
+      thin = 1,
+      data = stanDat,
+      control = list(adapt_delta = 0.999),
+      refresh = 0
+    )
+  
+  return(stanFit3 = stanFit3)
+}
 
 ### CODE ###
 
@@ -163,6 +259,12 @@ emptyFit <- stan(file="model3.stan", data = stanDat1, chains = 0)
 # run in serial
 # want to collect data of random effect coefficients (bcd), fixed effects (betaT,mu), and sigmas
 # going to make it run the site and present the data within the same for loop, for data efficiency
+# want plots for each chain (title with chain number):
+# sigmas E,P,PT,T posterior distributions
+# sigmas E,P,PT,T trace plots- examine with warmup once to see if worth (prob not)
+# log-posterior(P/T) posterior distribution and traceplot
+# lp? measure of error?
+# 
 ptm <- proc.time()
 for(i in 1:nsites) {
   sink(log.file, append=TRUE)
@@ -171,7 +273,7 @@ for(i in 1:nsites) {
   
   data <- site(i)
   colnames(data)[1] <- "beta"
-  stanFit <- stanfit3(data)
+  stanFit <- stanfit3chain1(data)
   
   # traceplot for selected parameters
   traceplot(stanFit, pars = c("sigma_e","sigma_p","sigma_pt","sigma_t"), inc_warmup = TRUE )

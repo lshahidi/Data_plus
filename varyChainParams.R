@@ -31,7 +31,7 @@ log.file <- paste("logTask",N,".txt",sep="")
 writeLines(c(""), log.file)
 
 # randomly select 5 sites in 1-866836
-siteInds <- sample(1:866836,5)
+siteInds <- sample(1:866836,1)
 nsites <- length(siteInds)
 
 # select chunk within FullAnnotation, then remove FA
@@ -96,8 +96,8 @@ stanfit3chain1 <- function (dataset) {
       #file = "model3.stan",
       fit = emptyFit,
       warmup = 2000,
-      iter = 10000,
-      chains = 2,
+      iter = 4000,
+      chains = 4,
       thin = 1,
       data = stanDat,
       control = list(adapt_delta = 0.999),
@@ -265,7 +265,7 @@ emptyFit <- stan(file="model3.stan", data = stanDat1, chains = 0)
 # log-posterior(P/T) posterior distribution and traceplot
 # lp? measure of error?
 # 
-ptm <- proc.time()
+ptmAll <- proc.time()
 for(i in 1:nsites) {
   sink(log.file, append=TRUE)
   print(paste("site:", i,"/",nsites))
@@ -273,52 +273,112 @@ for(i in 1:nsites) {
   
   data <- site(i)
   colnames(data)[1] <- "beta"
-  stanFit <- stanfit3chain1(data)
-  
-  # traceplot for selected parameters
-  traceplot(stanFit, pars = c("sigma_e","sigma_p","sigma_pt","sigma_t"), inc_warmup = TRUE )
-  traceplot(stanFit, pars = c("lp__"), inc_warmup = TRUE )
-  
+  print("begin chain 1")
+  ptm <- proc.time()
+  stanFitChain1 <- stanfit3chain1(data)
+  print(proc.time() - ptm)
+  print("end chain 1")
+  print("begin chain 2")
+  ptm <- proc.time()
+  stanFitChain2 <- stanfit3chain2(data)
+  print(proc.time() - ptm)
+  print("end chain 2")
+  print("begin chain 3")
+  ptm <- proc.time()
+  stanFitChain3 <- stanfit3chain3(data)
+  print(proc.time() - ptm)
+  print("end chain 3")
+  print("begin chain 4")
+  ptm <- proc.time()
+  stanFitChain4 <- stanfit3chain4(data)
+  print(proc.time() - ptm)
+  print("end chain 4")
+
   # plot beta and fits at this site for all patients, using mean estimates for b and c coefficients
+  # start with p1 just data points
   p1 <- ggplot() + geom_point(data = data, aes(x=tInd, y=beta, colour=patient)) + ggtitle(paste("Site",siteInds[i],": Beta Fits by Patient"))
   pats <- as.integer(factor(data$patient))
   npats <- max(pats)
-  patcoefs <- data.frame(pat = rep(1:npats), b = summary(stanFit)$summary[1:npats], c = summary(stanFit)$summary[(1:npats)+npats])
-  betaT <- summary(stanFit)$summary[71,1]
-  mu <- summary(stanFit)$summary[72,1]
+  #ch1
+  patcoefs <- data.frame(pat = rep(1:npats), b = summary(stanFitChain1)$summary[1:npats], c = summary(stanFitChain1)$summary[(1:npats)+npats])
+  betaT <- summary(stanFitChain1)$summary[71,1]
+  mu <- summary(stanFitChain1)$summary[72,1]
+  linedf <- data.frame(pat = rep(levels(data$patient)[1:npats],2), tInd = c(rep(0,npats),rep(1,npats)), est = c(patcoefs$b+mu, (patcoefs$b+patcoefs$c+mu+betaT)))
+  p1 <- p1 + geom_line(data=linedf, aes(x=tInd, y=est, colour=pat))
+  #ch2
+  patcoefs <- data.frame(pat = rep(1:npats), b = summary(stanFitChain2)$summary[1:npats], c = summary(stanFitChain2)$summary[(1:npats)+npats])
+  betaT <- summary(stanFitChain2)$summary[71,1]
+  mu <- summary(stanFitChain2)$summary[72,1]
+  linedf <- data.frame(pat = rep(levels(data$patient)[1:npats],2), tInd = c(rep(0,npats),rep(1,npats)), est = c(patcoefs$b+mu, (patcoefs$b+patcoefs$c+mu+betaT)))
+  p1 <- p1 + geom_line(data=linedf, aes(x=tInd, y=est, colour=pat))
+  #ch3
+  patcoefs <- data.frame(pat = rep(1:npats), b = summary(stanFitChain3)$summary[1:npats], c = summary(stanFitChain3)$summary[(1:npats)+npats])
+  betaT <- summary(stanFitChain3)$summary[71,1]
+  mu <- summary(stanFitChain3)$summary[72,1]
+  linedf <- data.frame(pat = rep(levels(data$patient)[1:npats],2), tInd = c(rep(0,npats),rep(1,npats)), est = c(patcoefs$b+mu, (patcoefs$b+patcoefs$c+mu+betaT)))
+  p1 <- p1 + geom_line(data=linedf, aes(x=tInd, y=est, colour=pat))
+  #ch4
+  patcoefs <- data.frame(pat = rep(1:npats), b = summary(stanFitChain4)$summary[1:npats], c = summary(stanFitChain4)$summary[(1:npats)+npats])
+  betaT <- summary(stanFitChain4)$summary[71,1]
+  mu <- summary(stanFitChain4)$summary[72,1]
   linedf <- data.frame(pat = rep(levels(data$patient)[1:npats],2), tInd = c(rep(0,npats),rep(1,npats)), est = c(patcoefs$b+mu, (patcoefs$b+patcoefs$c+mu+betaT)))
   p1 <- p1 + geom_line(data=linedf, aes(x=tInd, y=est, colour=pat))
   
-  # plot posteriors for this site
-  # variables: mu, betaT, sigmaP, sigmaT, sigmaPT, sigmaE
-  posterior <- as.array(stanFit)[,,71:76]
-  p2 <- mcmc_areas(
-    posterior, 
-    pars = c("sigma_e", "sigma_p", "sigma_t","sigma_pt"), #"mu", "betaT", 
-    prob = 0.8, # 80% intervals
-    prob_outer = 0.95, 
-    point_est = "mean"
-  ) + ggtitle(paste("Site",siteInds[i],": Fixed Effect and Sigma Posteriors"))
+  print(p1) # all chains monster plot, not actually that monstrous
+  # print(p1chain1)
+  # print(p1chain2)
+  # print(p1chain3)
+  # print(p1chain4)
   
-  # also plot PTratio?
-  posteriorPT <- as.array(stanFit,pars=c("sigma_p","sigma_t"))
-  PTratio <- log(posteriorPT[,,1, drop=FALSE]/posteriorPT[,,2, drop=FALSE])
-  prob <- sum(PTratio > 0)/length(PTratio)
-  p3 <- mcmc_areas(
-    PTratio,
-    prob = 0.8, # 80% intervals
-    prob_outer = 0.95,
-    point_est = "mean"
-  ) + ggtitle(paste("Site",siteInds[i],": LogPTratio Posterior (PTprob = ",prob,")"))
   
+  # plot trace plots and posteriors for this site for sigma_e, sigma_p, sigma_t, sigma_pt
+  p1 <- traceplot(stanFitChain1, pars = c("sigma_e","sigma_p","sigma_pt","sigma_t"))
   print(p1)
-  print(p2)
-  print(p3)
+  # p1 <- traceplot(stanFitChain1, pars = c("lp__")) #, inc_warmup = TRUE 
+  # print(p1)
+  posteriorChain1 <- as.array(stanFitChain1)[,,71:76]
+  p2chain1 <- mcmc_areas(
+    posteriorChain1, pars = c("sigma_e", "sigma_p", "sigma_t","sigma_pt"),
+    prob = 0.8,prob_outer = 0.95,point_est = "mean"
+  ) + ggtitle(paste("Site",siteInds[i],": Fixed Effect and Sigma Posteriors, Chain1"))
+  #ch2
+  p1 <- traceplot(stanFitChain2, pars = c("sigma_e","sigma_p","sigma_pt","sigma_t"))
+  print(p1)
+  posteriorChain2 <- as.array(stanFitChain2)[,,71:76]
+  p2chain2 <- mcmc_areas(
+    posteriorChain2, pars = c("sigma_e", "sigma_p", "sigma_t","sigma_pt"),
+    prob = 0.8,prob_outer = 0.95,point_est = "mean"
+  ) + ggtitle(paste("Site",siteInds[i],": Fixed Effect and Sigma Posteriors, Chain2"))
+  # ch3
+  p1 <- traceplot(stanFitChain3, pars = c("sigma_e","sigma_p","sigma_pt","sigma_t"))
+  print(p1)
+  posteriorChain3 <- as.array(stanFitChain3)[,,71:76]
+  p2chain3 <- mcmc_areas(
+    posteriorChain3, pars = c("sigma_e", "sigma_p", "sigma_t","sigma_pt"),
+    prob = 0.8,prob_outer = 0.95,point_est = "mean"
+  ) + ggtitle(paste("Site",siteInds[i],": Fixed Effect and Sigma Posteriors, Chain3"))
+  # ch4
+  p1 <- traceplot(stanFitChain4, pars = c("sigma_e","sigma_p","sigma_pt","sigma_t"))
+  print(p1)
+  posteriorChain4 <- as.array(stanFitChain4)[,,71:76]
+  p2chain4 <- mcmc_areas(
+    posteriorChain4, pars = c("sigma_e", "sigma_p", "sigma_t","sigma_pt"),
+    prob = 0.8,prob_outer = 0.95,point_est = "mean"
+  ) + ggtitle(paste("Site",siteInds[i],": Fixed Effect and Sigma Posteriors, Chain4"))
   
-  rm(data,stanFit,posterior)
+  print(p2chain1)
+  print(p2chain2)
+  print(p2chain3)
+  print(p2chain4)
+  
+  rm(data)
+  rm(stanFitChain1,posteriorChain1)
+  rm(stanFitChain2,posteriorChain2)
+  rm(stanFitChain3,posteriorChain3)
+  rm(stanFitChain4,posteriorChain4)
   gc()
 }
-proc.time() - ptm
+proc.time() - ptmAll
 
 print(paste("Completed run on sites:", paste(siteInds, collapse=" ")))
 

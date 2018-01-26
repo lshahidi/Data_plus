@@ -32,11 +32,11 @@ parameters {
 
 
 model {
-  //priors
-  sigma_t ~ uniform(0,100);
-  sigma_e ~ uniform(0,100);
-  sigma_p ~ uniform(0,100);
-  sigma_pt ~ uniform(0,100);
+  //priors uniform(0,100); gamma(10,1);
+  sigma_t ~ gamma(4,8);
+  sigma_e ~ gamma(4,8);
+  sigma_p ~ gamma(4,8);
+  sigma_pt ~ gamma(4,8);
   
   b_pat ~ normal(0,sigma_p);
   c_patT ~ normal(0,sigma_pt);

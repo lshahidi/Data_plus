@@ -32,6 +32,8 @@ writeLines(c(""), log.file)
 
 # randomly select 5 sites in 1-866836
 siteInds <- sample(1:866836,5)
+siteInds <- c(366382, 859368, 109437, 337541, 816575)
+siteInds <- c(816575)
 nsites <- length(siteInds)
 
 # select chunk within FullAnnotation, then remove FA
@@ -94,9 +96,9 @@ stanfit3 <- function (dataset) {
     stan(
       #file = "model3.stan",
       fit = emptyFit,
-      warmup = 2000,
-      iter = 10000,
-      chains = 2,
+      warmup = 1000,
+      iter = 4000,
+      chains = 4,
       thin = 1,
       data = stanDat,
       control = list(adapt_delta = 0.999),
@@ -106,6 +108,41 @@ stanfit3 <- function (dataset) {
   return(stanFit3 = stanFit3)
 }
 
+multiplot <- function(..., plotlist=NULL, file, cols=1, layout=NULL) {
+  library(grid)
+  
+  # Make a list from the ... arguments and plotlist
+  plots <- c(list(...), plotlist)
+  
+  numPlots = length(plots)
+  
+  # If layout is NULL, then use 'cols' to determine layout
+  if (is.null(layout)) {
+    # Make the panel
+    # ncol: Number of columns of plots
+    # nrow: Number of rows needed, calculated from # of cols
+    layout <- matrix(seq(1, cols * ceiling(numPlots/cols)),
+                     ncol = cols, nrow = ceiling(numPlots/cols))
+  }
+  
+  if (numPlots==1) {
+    print(plots[[1]])
+    
+  } else {
+    # Set up the page
+    grid.newpage()
+    pushViewport(viewport(layout = grid.layout(nrow(layout), ncol(layout))))
+    
+    # Make each plot, in the correct location
+    for (i in 1:numPlots) {
+      # Get the i,j matrix positions of the regions that contain this subplot
+      matchidx <- as.data.frame(which(layout == i, arr.ind = TRUE))
+      
+      print(plots[[i]], vp = viewport(layout.pos.row = matchidx$row,
+                                      layout.pos.col = matchidx$col))
+    }
+  }
+}
 
 ### CODE ###
 
@@ -209,9 +246,37 @@ for(i in 1:nsites) {
     point_est = "mean"
   ) + ggtitle(paste("Site",siteInds[i],": LogPTratio Posterior (PTprob = ",prob,")"))
   
+  varPosteriors <- as.array(stanFit,pars=c("sigma_p","sigma_t","sigma_pt","sigma_e"))
+  ppt <- mcmc_scatter(
+    varPosteriors,
+    pars = c("sigma_p", "sigma_t"), size=0.1
+  ) + ggtitle(paste("Site",siteInds[i],": P vs T"))
+  pppt <- mcmc_scatter(
+    varPosteriors,
+    pars = c("sigma_p", "sigma_pt"), size=0.1
+  ) + ggtitle("P vs PT")
+  ptpt <- mcmc_scatter(
+    varPosteriors,
+    pars = c("sigma_t", "sigma_pt"), size=0.1
+  ) + ggtitle("T vs PT")
+  pep <- mcmc_scatter(
+    varPosteriors,
+    pars = c("sigma_e", "sigma_p"), size=0.1
+  ) + ggtitle("E vs P")
+  pet <- mcmc_scatter(
+    varPosteriors,
+    pars = c("sigma_e", "sigma_t"), size=0.1
+  ) + ggtitle("E vs T")
+  pept <- mcmc_scatter(
+    varPosteriors,
+    pars = c("sigma_e", "sigma_pt"), size=0.1
+    ) + ggtitle("E vs PT")
+  p4 <- multiplot(ppt,pep,pppt,pet,ptpt,pept,cols=3)
+
   print(p1)
   print(p2)
   print(p3)
+  print(p4)
   
   rm(data,stanFit,posterior)
   gc()

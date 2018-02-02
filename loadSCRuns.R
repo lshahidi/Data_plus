@@ -54,13 +54,15 @@ save(mu_Cfull3, betaT_Cfull3, sigmaP_Cfull3, sigmaT_Cfull3,
 
 
 ### LOADING FOR GENE SCORING RESULTS
-# now for 3- and 24-space
+# used to be for 3- and 24-space
+# now for 5 score methods on logPTratio only
 
-# Set working directory to normal data wd then folder ResultsC
-setwd("/Users/kevinmurgas/Documents/Data+ project/EPIC data/GeneScores")
+# Set working directory to normal data wd then folder GeneScores2
+setwd("/Users/kevinmurgas/Documents/Data+ project/EPIC data/GeneScores2")
 
-geneScores27 <- as.data.frame(matrix(ncol = 27, nrow = 27383))
-colnames(geneScores27) <- paste(rep(c("P/T","P/PT","PT/T"),8),c(rep("all",3),rep(regionTypes[1],3),rep(regionTypes[2],3),rep(regionTypes[3],3),rep(regionTypes[4],3),rep(regionTypes[5],3),rep(regionTypes[6],3),rep(regionTypes[7],3),rep(regionTypes[8],3)))
+geneScores5 <- as.data.frame(matrix(ncol = 6, nrow = 27383))
+#geneScores27 <- as.data.frame(matrix(ncol = 27, nrow = 27383))
+#colnames(geneScores27) <- paste(rep(c("P/T","P/PT","PT/T"),8),c(rep("all",3),rep(regionTypes[1],3),rep(regionTypes[2],3),rep(regionTypes[3],3),rep(regionTypes[4],3),rep(regionTypes[5],3),rep(regionTypes[6],3),rep(regionTypes[7],3),rep(regionTypes[8],3)))
 #colnames(geneScores3) <- c("logP/T","logP/PT","logPT/T")
 
 nGenes <- 1000
@@ -69,21 +71,28 @@ fileNames <- dir(pattern = "ScoreResults_*")
 allInds <- numeric()
 for (i in filesPresent) {
   print(paste("Chunk:",i))
-  load(fileNames[fileNames == paste("ScoreResults_",i,".Rdata", sep="")])
+  load(fileNames[fileNames == paste0("ScoreResults_",i,".Rdata")])
   inds <- (1:nGenes) + (i - 1) * nGenes
   if (i==28) {
     inds <- inds[1:383]
   }
   allInds <- append(allInds, inds)
-  geneScores27[inds,] <- geneScores
-  rownames(geneScores27)[inds] <- rownames(geneScores)
+  geneScores5[inds,] <- geneScores
+  rownames(geneScores5)[inds] <- rownames(geneScores)
 }
-rownames(geneScores27) <- uniqueGenes
-geneScores3 <- geneScores27[,1:3]
-geneScores24 <- geneScores27[,4:27]
+rownames(geneScores5) <- uniqueGenes # overwrite due to improper geneInfo file
+colnames(geneScores5) <- c("MeanDist 1", "MeanDist/SD 2", "MeanPTProb 3", "FracBinProb 4", "HigherCrit 5", "Site Count")
+# five methods: 
+# 1. mean distance from overall mean, averaged over all sites
+# 2. mean distance from overall mean divided by standard deviation of gene
+# 3. average PTprob of all sites in gene
+# 4. fraction of sites in gene with PTprob > 0.95 (binary)
+# 5. Higher Criticism Statistic
 
-save(geneScores3, geneScores24, file = "ScoresFull27.Rdata")
+# since fixed but the saved results include dates instead of numbers for number-name genes
 
+save(geneScores5, file = "ScoresFull5.Rdata")
+write.csv(geneScores5, file = "GeneScores5Methods.csv")
 
 
 

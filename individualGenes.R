@@ -78,9 +78,9 @@ geneInd <- function (geneStr) {
   work2 <- sapply(work, function(i) { geneStr %in% geneNames[[i]] } )
   return(work[work2])
 }
-geneInd <- function (geneStr) {
-  return(grep(paste("\\b",geneStr,"\\b",sep=""), geneNames))
-}
+# geneInd <- function (geneStr) {
+#   return(grep(paste("\\b",geneStr,"\\b",sep=""), geneNames))
+# }
 
 # plot each site along all three log ratio plots
 plotLogRatios <- function (geneStr) {

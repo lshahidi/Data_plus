@@ -8,6 +8,7 @@ library(gtools)
 library(ggplot2)
 library(bayesplot)
 
+
 ## INITIALIZE
 rstan_options(auto_write = FALSE)
 print(paste("Cores: ", detectCores()))

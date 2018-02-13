@@ -146,6 +146,12 @@ multiplot <- function(..., plotlist=NULL, file, cols=1, layout=NULL) {
 
 ### CODE ###
 
+# check for model3.rds
+if (file.exists(checkFile)) {
+  file.remove(checkFile)
+  print("caught one!") 
+}
+
 # create empty fit to use same model compilation throughout
 data1<-site(1)
 stanDat1 <- list(

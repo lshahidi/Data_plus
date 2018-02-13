@@ -18,7 +18,10 @@ setwd("D:/DataPlus2017/Data")
 # load annotation, Stan results, and gene scores
 load("myFA.Rdata")
 load("StanCfullResults.Rdata")
+<<<<<<< HEAD
+=======
 load("StanCfullResults2.Rdata")
+>>>>>>> aba17589265a74b1d798728024f0b3f91d73f153
 load("StanCfullResults3.Rdata")
 load("ScoresFull.Rdata")
 
@@ -273,14 +276,14 @@ sum(geneScores3$`PT/T all` > 0, na.rm = TRUE)/length(geneScores3$`PT/T all`)
 
 
 
-### Correlation Plots
+### Correlation Plots (Darryl's Suggestion)
 library(gdata)
 # Read in table 3 (containing genes and expressions)
 tcga <- read.xls("2011-11-14592C-Sup Table 3.xls")
 
 work <- data.frame(gene=tcga$gene,exp=tcga$median.RPKM,score=rep(NA,dim(tcga)[1]))
 
-for (i in dim(work)[1]) {
+for (i in 1:dim(work)[1]) {
   indice <- geneInd(work$gene[i])
   work$score[i] <- mean(logRatios$`logP/T`[indice])
 }
@@ -291,6 +294,6 @@ ggplot(work,aes(x=log(work[,2]),y=work[,3])) + geom_point(alpha = 0.5) + labs(x=
 temp <- data.frame(log(work$exp),work$score)
 
 temp <- temp[(temp[,1] != -Inf) & (!is.na(temp[,1])) & (!is.na(temp[,2])),]
-ggplot(temp,aes(x=temp[,1],y=temp[,2])) + geom_point(alpha = 0.5) + labs(x="Average Expression", y="Mean Log Ratio", title="Correlation Plot")
+ggplot(temp,aes(x=temp[,1],y=temp[,2])) + geom_point(alpha = 0.5) + labs(x="Average Expression (log scale)", y="Mean Log Ratio", title="Correlation of Average Expression and Score")
 
 cor(temp[,1],temp[,2])

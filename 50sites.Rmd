@@ -1,0 +1,85 @@
+---
+title: "50sites"
+author: "Yanlin Ma"
+date: "February 11, 2018"
+output: word_document
+---
+
+```{r echo=FALSE, include=FALSE}
+library(rstan)
+library(gtools)
+library(ggplot2)
+library(bayesplot)
+```
+
+```{r echo=FALSE}
+# Kevin's working directory
+# setwd("/Users/kevinmurgas/Documents/Data+ project/EPIC data")
+
+# Yanlin's working directory
+setwd("D:/DataPlus2017/Data")
+
+# load data
+load("myFA.Rdata")
+
+# Extract single site data
+site <- function (site_no) {
+  # extract CpG site xx to start
+  temp <- FullAnnotation[site_no,]
+  
+  # here we use all patient samples, excluding glands
+  indices <- c(9:13, 15:39,46,47,57,58,72:75)
+  patientLabel <- substr(colnames(temp[indices]),1,1)
+  patientLabel[10:12] <- "K*"
+  sideLabel <- substr(colnames(temp[indices]),2,2)
+  tissueLabel <- sideLabel
+  tissueLabel[tissueLabel %in% c("A","B")] <- "T"   #replace A and B with T
+  tumorIndicator <- 1*(tissueLabel=="T")
+  
+  work <- data.frame(beta=logit(t(temp[indices])), patient = patientLabel, tissue=tissueLabel, side=sideLabel, tInd=tumorIndicator)
+  colnames(work)[1] <- "beta"
+  return(work)
+}
+
+# Using Model 3: add intra-tumoral variance
+
+stanfit3 <- function (dataset) {
+  
+  stanDat <- list(pID = as.integer(factor(dataset$patient)),
+                  tInd = dataset$tInd,
+                  N = nrow(dataset),
+                  P = nlevels(dataset$patient),
+                  y = dataset[,1])
+  
+  
+  
+  stanFit3 <- stan(file="model3.stan", data=stanDat, control = list(adapt_delta = 0.999))
+  
+  return(stanFit3=stanFit3)
+}
+
+# Plot posterior distribution
+posterior <- function(dataset) {
+  stan <- stanfit3(dataset)
+  mcmc_areas(
+    as.array(stan), 
+    pars = c("sigma_p", "sigma_pt","sigma_t","sigma_e"),
+    prob = 0.8, # 80% intervals
+    prob_outer = 0.95, 
+    point_est = "median"
+  )
+}
+
+# Randomly choose 50 sites
+set.seed(50)
+siteInds <- sample(1:866836,2)
+nsites <- length(siteInds)
+```
+
+```{r echo=FALSE,include=FALSE,warning=FALSE,fig.align='center'}
+for (i in siteInds) {
+  print(paste("Site ",i,sep=''))
+  posterior(site(i))
+}
+
+```

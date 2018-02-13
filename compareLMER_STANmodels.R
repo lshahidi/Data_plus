@@ -191,8 +191,9 @@ hist(sigmaSTAN_200$sigmaE, main="Distribution of sigmaE (Stan)",
 
 # lmer
 nSites<-200
-sigmaLMER_new <- data.frame(sigmaT=numeric(nSites),sigmaTP=numeric(nSites),sigmaP=numeric(nSites),sigmaE=numeric(nSites),betaT=numeric(nSites),mu=numeric(nSites))
+sigmaLMER_new <- data.frame(sigmaP=numeric(nSites),sigmaPT=numeric(nSites),sigmaT=numeric(nSites),sigmaE=numeric(nSites),betaT=numeric(nSites),mu=numeric(nSites))
 
+count <- 1
 for (i in indice){
   print(paste("site ",i))
   
@@ -201,11 +202,50 @@ for (i in indice){
   
   fit <- lmer(beta ~ tInd + (1|patient) + (tInd|patient), DataI)
   
-  sigmaLMER$sigmaT[i] <- as.data.frame(VarCorr(fit))$sdcor[1]
-  sigmaLMER$sigmaP[i] <- as.data.frame(VarCorr(fit))$sdcor[2]
-  sigmaLMER$sigmaE[i] <- as.data.frame(VarCorr(fit))$sdcor[4]
-  sigmaLMER$betaT[i] <- fixef(fit)[2]
-  sigmaLMER$mu[i] <- fixef(fit)[1]
+  sigmaLMER_new$sigmaP[count] <- as.data.frame(VarCorr(fit))$sdcor[1]
+  sigmaLMER_new$sigmaPT[count] <- as.data.frame(VarCorr(fit))$sdcor[2]
+  sigmaLMER_new$sigmaT[count] <- as.data.frame(VarCorr(fit))$sdcor[3]
+  sigmaLMER_new$sigmaE[count] <- as.data.frame(VarCorr(fit))$sdcor[5]
+  sigmaLMER_new$betaT[count] <- fixef(fit)[2]
+  sigmaLMER_new$mu[count] <- fixef(fit)[1]
+  
+  count <- count+1
 }
 
+# lmer distribution
+hist(sigmaLMER_new$sigmaP,breaks=200)
 
+hist(sigmaLMER_new$sigmaPT,breaks=200)
+
+hist(sigmaLMER_new$sigmaT,breaks=200)
+
+hist(sigmaLMER_new$sigmaE,breaks=200)
+
+
+sigmaSTAN_new <- data.frame(sigma_p2$mean,sigma_pt2$mean,
+                       sigma_t2$mean,sigma_e2$mean,betaT2$mean,mu2$mean)
+
+sigmaDIFF_new <- sigmaLMER_new - sigmaSTAN_new
+
+
+plot(sigmaDIFF_new$sigmaP, main="Differences of sigma_p", 
+     sub="sigmaLMER - sigmaSTAN",
+     ylab="Difference of sigma_p Estimates")
+abline(h=0, col="red")
+
+plot(sigmaDIFF_new$sigmaPT, main="Differences of sigma_pt", 
+     sub="sigmaLMER - sigmaSTAN",
+     ylab="Difference of sigma_pt Estimates")
+abline(h=0, col="red")
+
+plot(sigmaDIFF_new$sigmaT, main="Differences of sigma_t", 
+     sub="sigmaLMER - sigmaSTAN",
+     ylab="Difference of sigma_t Estimates")
+abline(h=0, col="red")
+
+
+
+plot(sigmaDIFF_new$sigmaE, main="Differences of sigma_e", 
+     sub="sigmaLMER - sigmaSTAN",
+     ylab="Difference of sigma_e Estimates")
+abline(h=0, col="red")

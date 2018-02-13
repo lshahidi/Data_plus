@@ -129,7 +129,7 @@ ggplot() + geom_point(data=DataI, aes(x = tInd, y=logitbeta, color=patient, grou
 
 
 
-# New model
+# Old Model
 Data1 <- site(1)
 fit1 <- lmer(X1 ~ tInd + (tInd|patient), Data1)
 summary(fit1)
@@ -140,6 +140,8 @@ getME(fit1,"Z")[1:10,1:8]
 # Fixed effect model matrix
 getME(fit1,"X")
 
+
+# New Model
 # Set missing values on patients without normal tissue
 
 pat <- c("C","D","E","F","H","J","K","K*","M","O","P","S","T","U","W","X")
@@ -152,5 +154,7 @@ for (i in pat) {
 
 Data1$X1 <- as.numeric(Data1$X1)
 
-fit2 <- lmer(X1 ~ tInd + (1|patient) + (tInd|patient), Data1)
-summary(fit2)
+test <- Data1
+test$tInd <- as.numeric(test$tInd)
+
+fit2 <- lmer(X1 ~ tInd + (1|patient) + (tInd|patient), test)

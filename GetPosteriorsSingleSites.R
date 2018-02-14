@@ -95,6 +95,10 @@ stanfit3 <- function (dataset) {
     stan(
       #file = "model3.stan",
       fit = emptyFit,
+      warmup = 1000,
+      iter = 4000,
+      chains = 4,
+      thin = 1,
       data = stanDat,
       control = list(adapt_delta = 0.999),
       refresh = 0

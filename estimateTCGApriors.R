@@ -184,7 +184,7 @@ hist(sigmaP_ests[which(!!sigmaP_ests)],breaks=seq(0,ceiling(max(sigmaP_ests)),0.
 hist(sigmaPT_ests[which(!!sigmaPT_ests)],breaks=seq(0,ceiling(max(sigmaPT_ests)),0.02),xlim=c(0,2),main="sigmaPT, 3 patients")
 hist(sigmaT_ests[which(!!sigmaT_ests)],breaks=seq(0,ceiling(max(sigmaT_ests)),0.02),xlim=c(0,2),main="sigmaT, 3 patients")
 hist(mu_ests[which(!!mu_ests)],breaks=100,xlim=c(-6,6),main="mu, 3 patients")
-hist(betaT_ests[which(!!betaT_ests)],breaks=100,xlim=c(-5,5),main="sigmaP, 3 patients")
+hist(betaT_ests[which(!!betaT_ests)],breaks=100,xlim=c(-5,5),main="betaT, 3 patients")
 
 # qplot(sigmaP_ests[which(!!sigmaP_ests)], geom="histogram", main="SigmaP", xlab="sigmap estimate", xlim=c(0,2))
 # qplot(sigmaPT_ests[which(!!sigmaPT_ests)], geom="histogram", main="SigmaPT", xlab="sigmapt estimate", xlim=c(0,2))

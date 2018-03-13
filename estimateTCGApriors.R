@@ -66,9 +66,12 @@ for(i in dataLabels){
 print(paste("# sites with at least one NA: ",length(NAsites)))
 
  # randomly select 5 sites in 1-485577 (excluding sites with any NA samples)
-nsites <- 100
+nsites <- 10000
 siteInds <- sample(setdiff(1:485577,NAsites),nsites)
 
+# alternatively, use the entire set
+siteInds <- setdiff(1:485577,NAsites)
+nsites <- length(siteInds)
 
 ### FXNS ###
 # Extract single site data
@@ -105,7 +108,6 @@ fitplot <- function(data, line) {
 calcSigmaP <- function (siteBeta) {
   mu <- mean(siteBeta[!tumorLabel])
   b <- siteBeta[!tumorLabel] - mu
-  print(paste("length b: ", length(b)))
   sigmaP <- var(b)
   return(c(mu,sigmaP))
 }
@@ -125,7 +127,6 @@ calcSigmaPT <- function (siteBeta) {
   }
   betaT <- mean(normBeta)
   c <- normBeta - mu
-  print(paste("length c: ", length(c)))
   sigmaPT <- var(c)
   return(c(betaT,sigmaPT))
 }
@@ -136,14 +137,13 @@ calcSigmaPT <- function (siteBeta) {
 calcSigmaT <- function (siteBeta) {
   normBeta <- c()
   for(pat in unique(patLabel)){
-    if(length(intersect(which(pat==patLabel),which(!!tumorLabel)))-1){ # only if pat has multiple tumor
+    if(!!(length(intersect(which(pat==patLabel),which(!!tumorLabel)))-1)){ # only if pat has multiple tumor
       tumIndex <- intersect(which(pat==patLabel),which(!!tumorLabel)) # tumor sample indices
-      mean <- siteBeta[tumIndex]
+      mean <- mean(siteBeta[tumIndex])
       normBeta <- c(normBeta, siteBeta[tumIndex] - mean)
     }
   }
   d <- normBeta
-  print(paste("length d: ", length(d)))
   sigmaT <- var(d)
   return(sigmaT)
 }
@@ -159,7 +159,7 @@ betaT_ests <- sigmaP_ests
 
 ptm<-proc.time()
 for(i in siteInds){
-  print(paste("Analyzing site ",i,"."))
+  print(paste("Analyzing site",i,"."))
   siteData <- site(i)
   
   temp <- calcSigmaP(siteData$beta)
@@ -178,3 +178,22 @@ for(i in siteInds){
   #invisible(readline(prompt="Press [enter] to continue"))
 }
 print(proc.time()-ptm)
+
+# examine histograms of estimates
+hist(sigmaP_ests[which(!!sigmaP_ests)],breaks=seq(0,ceiling(max(sigmaP_ests)),0.02),xlim=c(0,2),main="sigmaP, 3 patients")
+hist(sigmaPT_ests[which(!!sigmaPT_ests)],breaks=seq(0,ceiling(max(sigmaPT_ests)),0.02),xlim=c(0,2),main="sigmaPT, 3 patients")
+hist(sigmaT_ests[which(!!sigmaT_ests)],breaks=seq(0,ceiling(max(sigmaT_ests)),0.02),xlim=c(0,2),main="sigmaT, 3 patients")
+hist(mu_ests[which(!!mu_ests)],breaks=100,xlim=c(-6,6),main="mu, 3 patients")
+hist(betaT_ests[which(!!betaT_ests)],breaks=100,xlim=c(-5,5),main="sigmaP, 3 patients")
+
+# qplot(sigmaP_ests[which(!!sigmaP_ests)], geom="histogram", main="SigmaP", xlab="sigmap estimate", xlim=c(0,2))
+# qplot(sigmaPT_ests[which(!!sigmaPT_ests)], geom="histogram", main="SigmaPT", xlab="sigmapt estimate", xlim=c(0,2))
+# qplot(sigmaT_ests[which(!!sigmaT_ests)], geom="histogram", main="SigmaT", xlab="sigmat estimate", xlim=c(0,2))
+# qplot(mu_ests[which(!!sigmaP_ests)], geom="histogram", main="mu", xlab="mu estimate", xlim=c(-5,5))
+# qplot(betaT_ests[which(!!sigmaP_ests)], geom="histogram", main="betaT", xlab="betaT estimate", xlim=c(-5,5))
+
+plot(density(sigmaP_ests[which(!!sigmaP_ests)]),main="SigmaP", xlab="sigmap estimate", xlim=c(0,2))
+plot(density(sigmaPT_ests[which(!!sigmaPT_ests)]),main="SigmaPT", xlab="sigmapt estimate", xlim=c(0,2))
+plot(density(sigmaT_ests[which(!!sigmaT_ests)]),main="SigmaT", xlab="sigmat estimate", xlim=c(0,2))
+plot(density(mu_ests[which(!!sigmaP_ests)]), main="mu", xlab="mu estimate", xlim=c(-5,5))
+plot(density(betaT_ests[which(!!sigmaP_ests)]),main="betaT", xlab="betaT estimate", xlim=c(-5,5))

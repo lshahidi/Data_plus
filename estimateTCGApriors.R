@@ -21,6 +21,8 @@ setwd("/Users/kevinmurgas/Documents/Data+ project/TCGA data")
 # Load and concatenate all available data
 # need to: search all folders for data, load each one just the beta and label
 fileList <- list.files(pattern = "_hg38.txt$", recursive = TRUE)
+fileList <- fileList[-grep("tion27", fileList)] # filters out 27K files
+# also check that A6-2672 is not utilized (only tumor B in 450K)
 
 # intialize data frame
 ptmTot <- proc.time()
@@ -44,8 +46,8 @@ gc()
 print("Total time to load data:")
 print(proc.time()-ptmTot)
 
-save(concatData, "testdata3pats.Rdata")
-load("testdata3pats.Rdata")
+save(concatData, file="testdata_allpats.Rdata")
+load("testdata_allpats.Rdata")
 
 # create labels
 # start by making vectors for labels of patient and normal vs tumor
@@ -60,14 +62,14 @@ sideLabel[!tumorLabel] <- "N"
 # need to check that all samples are not NA? or skip with any NA? or maybe at least half
 # currently going to remove any site with NA
 NAsites <- c()
-for(i in dataLabels){
+for(i in dataLabel){
   NAsites <- union(NAsites,which(is.na(concatData[,i])))
 }
 print(paste("# sites with at least one NA: ",length(NAsites)))
 
- # randomly select 5 sites in 1-485577 (excluding sites with any NA samples)
-nsites <- 10000
-siteInds <- sample(setdiff(1:485577,NAsites),nsites)
+# randomly select 5 sites in 1-485577 (excluding sites with any NA samples)
+#nsites <- 10000
+#siteInds <- sample(setdiff(1:485577,NAsites),nsites)
 
 # alternatively, use the entire set
 siteInds <- setdiff(1:485577,NAsites)
@@ -157,6 +159,16 @@ sigmaT_ests <- sigmaP_ests
 mu_ests <- sigmaP_ests
 betaT_ests <- sigmaP_ests
 
+# get initial sample counts for b,c,d
+b <- length(which(!tumorLabel))
+c <- length(which(!tumorLabel))
+d <- 0
+for (pat in unique(patLabel)) {
+  if(!!(length(intersect(which(pat==patLabel),which(!!tumorLabel)))-1)) { d <- d+length(intersect(which(pat==patLabel),which(!!tumorLabel))) }
+}
+
+print(c(b,c,d))
+
 ptm<-proc.time()
 for(i in siteInds){
   print(paste("Analyzing site",i,"."))
@@ -179,21 +191,43 @@ for(i in siteInds){
 }
 print(proc.time()-ptm)
 
+save(sigmaP_ests,sigmaPT_ests,sigmaT_ests,mu_ests,betaT_ests, file="estimates_allpats.Rdata")
+
+logtemp <- log(sigmaP_ests[which(!!sigmaP_ests)])
+skewnessLog <- 3*(mean(logtemp) - median(logtemp))/sd(logtemp)
+
+sigmaP_ests <- sigmaP_ests[which(!!sigmaP_ests)]
+sigmaPT_ests <- sigmaPT_ests[which(!!sigmaPT_ests)]
+sigmaT_ests <- sigmaT_ests[which(!!sigmaT_ests)]
+mu_ests <- mu_ests[which(!!mu_ests)]
+betaT_ests <- betaT_ests[which(!!betaT_ests)]
+
 # examine histograms of estimates
-hist(sigmaP_ests[which(!!sigmaP_ests)],breaks=seq(0,ceiling(max(sigmaP_ests)),0.02),xlim=c(0,2),main="sigmaP, 3 patients")
-hist(sigmaPT_ests[which(!!sigmaPT_ests)],breaks=seq(0,ceiling(max(sigmaPT_ests)),0.02),xlim=c(0,2),main="sigmaPT, 3 patients")
-hist(sigmaT_ests[which(!!sigmaT_ests)],breaks=seq(0,ceiling(max(sigmaT_ests)),0.02),xlim=c(0,2),main="sigmaT, 3 patients")
-hist(mu_ests[which(!!mu_ests)],breaks=100,xlim=c(-6,6),main="mu, 3 patients")
-hist(betaT_ests[which(!!betaT_ests)],breaks=100,xlim=c(-5,5),main="betaT, 3 patients")
+hist(sigmaP_ests,breaks=seq(0,ceiling(max(sigmaP_ests)),0.02),xlim=c(0,2),main="sigmaP, all patients")
+hist(sigmaPT_ests,breaks=seq(0,ceiling(max(sigmaPT_ests)),0.02),xlim=c(0,2),main="sigmaPT, all patients")
+hist(sigmaT_ests,breaks=seq(0,ceiling(max(sigmaT_ests)),0.02),xlim=c(0,2),main="sigmaT, all patients")
+hist(mu_ests,breaks=100,xlim=c(-6,6),main="mu, all patients")
+hist(betaT_ests,breaks=100,xlim=c(-5,5),main="betaT, all patients")
 
-# qplot(sigmaP_ests[which(!!sigmaP_ests)], geom="histogram", main="SigmaP", xlab="sigmap estimate", xlim=c(0,2))
-# qplot(sigmaPT_ests[which(!!sigmaPT_ests)], geom="histogram", main="SigmaPT", xlab="sigmapt estimate", xlim=c(0,2))
-# qplot(sigmaT_ests[which(!!sigmaT_ests)], geom="histogram", main="SigmaT", xlab="sigmat estimate", xlim=c(0,2))
-# qplot(mu_ests[which(!!sigmaP_ests)], geom="histogram", main="mu", xlab="mu estimate", xlim=c(-5,5))
-# qplot(betaT_ests[which(!!sigmaP_ests)], geom="histogram", main="betaT", xlab="betaT estimate", xlim=c(-5,5))
+# repeat for log transform of sigmas (examine skew to determine distribution)
+# calculate skew first
+skewP <- 3*(mean(log(sigmaP_ests)) - median(log(sigmaP_ests)))/ sd(log(sigmaP_ests))
+skewPT <- 3*(mean(log(sigmaPT_ests)) - median(log(sigmaPT_ests)))/ sd(log(sigmaPT_ests))
+skewT <- 3*(mean(log(sigmaT_ests)) - median(log(sigmaT_ests)))/ sd(log(sigmaT_ests))
+hist(log(sigmaP_ests),breaks=seq(-10,10,0.2),xlim=c(-10,10),main="log(sigmaP), all patients") + text(x=4,y=20000, paste("Skew =", format(skewP, nsmall=3)))
+hist(log(sigmaPT_ests),breaks=seq(-10,10,0.2),xlim=c(-10,10),main="log(sigmaPT), all patients") + text(x=4,y=20000, paste("Skew =", format(skewPT, nsmall=3)))
+hist(log(sigmaT_ests),breaks=seq(-10,10,0.2),xlim=c(-10,10),main="log(sigmaT), all patients") + text(x=4,y=20000, paste("Skew =", format(skewT, nsmall=3)))
 
-plot(density(sigmaP_ests[which(!!sigmaP_ests)]),main="SigmaP", xlab="sigmap estimate", xlim=c(0,2))
-plot(density(sigmaPT_ests[which(!!sigmaPT_ests)]),main="SigmaPT", xlab="sigmapt estimate", xlim=c(0,2))
-plot(density(sigmaT_ests[which(!!sigmaT_ests)]),main="SigmaT", xlab="sigmat estimate", xlim=c(0,2))
-plot(density(mu_ests[which(!!sigmaP_ests)]), main="mu", xlab="mu estimate", xlim=c(-5,5))
-plot(density(betaT_ests[which(!!sigmaP_ests)]),main="betaT", xlab="betaT estimate", xlim=c(-5,5))
+
+# look at sigmaP/sigmaT
+PTratio <- sigmaP_ests/sigmaT_ests
+hist(PTratio,breaks=seq(0,7000,0.2),xlim=c(0,10),main="PTratio, all patients")
+hist(log(PTratio),breaks=seq(-10,10,0.2),xlim=c(-10,10),main="log(PTratio), all patients")
+skewLPT <- 3*(mean(log(PTratio)) - median(log(PTratio)))/ sd(log(PTratio))
+
+# # test code
+# plot(density(sigmaP_ests[which(!!sigmaP_ests)]),main="SigmaP", xlab="sigmap estimate", xlim=c(0,2))
+# plot(density(sigmaPT_ests[which(!!sigmaPT_ests)]),main="SigmaPT", xlab="sigmapt estimate", xlim=c(0,2))
+# plot(density(sigmaT_ests[which(!!sigmaT_ests)]),main="SigmaT", xlab="sigmat estimate", xlim=c(0,2))
+# plot(density(mu_ests[which(!!sigmaP_ests)]), main="mu", xlab="mu estimate", xlim=c(-5,5))
+# plot(density(betaT_ests[which(!!sigmaP_ests)]),main="betaT", xlab="betaT estimate", xlim=c(-5,5))

@@ -47,7 +47,7 @@ print("Total time to load data:")
 print(proc.time()-ptmTot)
 
 save(concatData, file="testdata_allpats.Rdata")
-load("testdata_allpats.Rdata")
+load("testdata_allpats.Rdata") # start here to load concatenated patient data
 
 # create labels
 # start by making vectors for labels of patient and normal vs tumor
@@ -192,10 +192,12 @@ for(i in siteInds){
 print(proc.time()-ptm)
 
 save(sigmaP_ests,sigmaPT_ests,sigmaT_ests,mu_ests,betaT_ests, file="estimates_allpats.Rdata")
+load(file="estimates_allpats.Rdata")
 
 logtemp <- log(sigmaP_ests[which(!!sigmaP_ests)])
 skewnessLog <- 3*(mean(logtemp) - median(logtemp))/sd(logtemp)
 
+# remove all zeros
 sigmaP_ests <- sigmaP_ests[which(!!sigmaP_ests)]
 sigmaPT_ests <- sigmaPT_ests[which(!!sigmaPT_ests)]
 sigmaT_ests <- sigmaT_ests[which(!!sigmaT_ests)]
@@ -225,9 +227,42 @@ hist(PTratio,breaks=seq(0,7000,0.2),xlim=c(0,10),main="PTratio, all patients")
 hist(log(PTratio),breaks=seq(-10,10,0.2),xlim=c(-10,10),main="log(PTratio), all patients")
 skewLPT <- 3*(mean(log(PTratio)) - median(log(PTratio)))/ sd(log(PTratio))
 
-# # test code
-# plot(density(sigmaP_ests[which(!!sigmaP_ests)]),main="SigmaP", xlab="sigmap estimate", xlim=c(0,2))
-# plot(density(sigmaPT_ests[which(!!sigmaPT_ests)]),main="SigmaPT", xlab="sigmapt estimate", xlim=c(0,2))
-# plot(density(sigmaT_ests[which(!!sigmaT_ests)]),main="SigmaT", xlab="sigmat estimate", xlim=c(0,2))
-# plot(density(mu_ests[which(!!sigmaP_ests)]), main="mu", xlab="mu estimate", xlim=c(-5,5))
-# plot(density(betaT_ests[which(!!sigmaP_ests)]),main="betaT", xlab="betaT estimate", xlim=c(-5,5))
+# now fit the distributions
+library(MASS)
+# fit sigmas with inv-gamma
+f <- function(x, rho, a) 1/(a*gamma(rho)) * (a / (x))^(rho+1) * exp( - a/(x) )
+sigmaP_invgamma <- fitdistr( sigmaP_ests, f, list(rho=1, a=0.1) )
+sigmaPT_invgamma <- fitdistr( sigmaPT_ests, f, list(rho=1, a=0.1) )
+sigmaT_invgamma <- fitdistr( sigmaT_ests, f, list(rho=1, a=0.1) )
+
+# mu will be large normal (K=10^4)
+# instead of fitting, use 1/var = precision for betaT
+tau <- 1/var(betaT_ests)
+
+
+# plot histograms again, with overlay of fits
+hist(sigmaP_ests,breaks=seq(0,ceiling(max(sigmaP_ests)),0.01),xlim=c(0,1),ylim=c(0,11),main=expression(sigma["P"]*","~Gamma^-1*"("*alpha*"=1.7969,"~beta*"=0.10645)"),freq=FALSE)
+curve( f(x,sigmaP_invgamma$estimate[1],sigmaP_invgamma$estimate[2]),n=1001, add=TRUE, col="red")
+
+hist(sigmaPT_ests,breaks=seq(0,ceiling(max(sigmaPT_ests)),0.02),xlim=c(0,2),ylim=c(0,4),main=expression(sigma["PT"]*","~Gamma^-1*"("*alpha*"=0.90825,"~beta*"=0.14678)"),freq=FALSE)
+curve( f(x,sigmaPT_invgamma$estimate[1],sigmaPT_invgamma$estimate[2]),n=1001, add=TRUE, col="red")
+
+hist(sigmaT_ests,breaks=seq(0,ceiling(max(sigmaT_ests)),0.01),xlim=c(0,1),ylim=c(0,14),main=expression(sigma["T"]*","~Gamma^-1*"("*alpha*"=1.7004,"~beta*"=0.07478)"),freq=FALSE)
+curve( f(x,sigmaT_invgamma$estimate[1],sigmaT_invgamma$estimate[2]),n=1001, add=TRUE, col="red")
+
+hist(betaT_ests,breaks=100,xlim=c(-5,5),main="betaT, norm(0,sd=0.62121) tau=2.5914",freq=FALSE)
+curve( dnorm(x,mean=0,sd=1/sqrt(tau)), add=TRUE, col="red")
+
+
+# more test code
+plot(density(sigmaP_ests),col="blue",xlim=c(0,1),ylim=c(0,11),main=expression(sigma["P"]*","~Gamma^-1))
+hist(sigmaP_ests,breaks=seq(0,ceiling(max(sigmaP_ests)),0.01),add=TRUE,freq=FALSE)
+curve( f(x,sigmaP_invgamma$estimate[1],sigmaP_invgamma$estimate[2]),n=1001, add=TRUE, col="red")
+
+plot(density(sigmaPT_ests),col="blue",xlim=c(0,2),ylim=c(0,4),main=expression(sigma["PT"]*","~Gamma^-1))
+hist(sigmaPT_ests,breaks=seq(0,ceiling(max(sigmaPT_ests)),0.02),add=TRUE,freq=FALSE)
+curve( f(x,sigmaPT_invgamma$estimate[1],sigmaPT_invgamma$estimate[2]),n=1001, add=TRUE, col="red")
+
+plot(density(sigmaT_ests),col="blue",xlim=c(0,1),ylim=c(0,14),main=expression(sigma["T"]*","~Gamma^-1))
+hist(sigmaT_ests,breaks=seq(0,ceiling(max(sigmaT_ests)),0.01),add=TRUE,freq=FALSE)
+curve( f(x,sigmaT_invgamma$estimate[1],sigmaT_invgamma$estimate[2]),n=1001, add=TRUE, col="red")

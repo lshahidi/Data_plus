@@ -128,25 +128,39 @@ calcSigmaPT <- function (siteBeta) {
     }
   }
   betaT <- mean(normBeta)
-  c <- normBeta - mu
+  c <- normBeta - betaT
   sigmaPT <- var(c)
   return(c(betaT,sigmaPT))
 }
 
 # function to calculate sigmaT, uses patients with multiple tumor samples
-# normalize by subtracting patient tumor mean
-# then these values are d, sigmaT is sample variance
+# #normalize by subtracting patient tumor mean
+# #then these values are d, sigmaT is sample variance
+# now uses mean of population variance for each patient with 2 samples
 calcSigmaT <- function (siteBeta) {
-  normBeta <- c()
-  for(pat in unique(patLabel)){
-    if(!!(length(intersect(which(pat==patLabel),which(!!tumorLabel)))-1)){ # only if pat has multiple tumor
-      tumIndex <- intersect(which(pat==patLabel),which(!!tumorLabel)) # tumor sample indices
-      mean <- mean(siteBeta[tumIndex])
-      normBeta <- c(normBeta, siteBeta[tumIndex] - mean)
+  # # all samples var method
+  # normBeta <- c()
+  # for(pat in unique(patLabel)){
+  #   if(!!(length(intersect(which(pat==patLabel),which(!!tumorLabel)))-1)){ # only if pat has multiple tumor
+  #     tumIndex <- intersect(which(pat==patLabel),which(!!tumorLabel)) # tumor sample indices
+  #     mean <- mean(siteBeta[tumIndex])
+  #     normBeta <- c(normBeta, siteBeta[tumIndex] - mean)
+  #   }
+  # }
+  # d <- normBeta
+  # sigmaT <- var(d)
+  
+  # mean of pat var method
+  popVars <- c()
+  for (pat in unique(patLabel)) {
+    if (!!(length(intersect( which(pat == patLabel), which(!!tumorLabel))) - 1)) { # only if pat has multiple tumor
+      tumIndex <- intersect(which(pat == patLabel), which(!!tumorLabel)) # tumor sample indices
+      mean <- 0.5*(siteBeta[tumIndex[1]]-siteBeta[tumIndex[2]])^2
+      popVars <- c(popVars, mean)
     }
   }
-  d <- normBeta
-  sigmaT <- var(d)
+  sigmaT <- mean(popVars)
+  
   return(sigmaT)
 }
 
@@ -181,6 +195,7 @@ for(i in siteInds){
   betaT_ests[i] <- temp[1]
   sigmaPT_ests[i] <- temp[2]
   sigmaT_ests[i] <- calcSigmaT(siteData$beta)
+  sigmaPT_ests[i] <- sigmaPT_ests[i] - sigmaT_ests[i]  # subtract out sigmaT from sigmaPT
   print(paste("Site ",i," completed."))
   
   # plot raw data with mu and beta
@@ -206,7 +221,7 @@ betaT_ests <- betaT_ests[which(!!betaT_ests)]
 
 # examine histograms of estimates
 hist(sigmaP_ests,breaks=seq(0,ceiling(max(sigmaP_ests)),0.02),xlim=c(0,2),main="sigmaP, all patients")
-hist(sigmaPT_ests,breaks=seq(0,ceiling(max(sigmaPT_ests)),0.02),xlim=c(0,2),main="sigmaPT, all patients")
+hist(sigmaPT_ests,breaks=seq(-3.2,ceiling(max(sigmaPT_ests)),0.02),xlim=c(-1.5,3),main="sigmaPT, all patients")
 hist(sigmaT_ests,breaks=seq(0,ceiling(max(sigmaT_ests)),0.02),xlim=c(0,2),main="sigmaT, all patients")
 hist(mu_ests,breaks=100,xlim=c(-6,6),main="mu, all patients")
 hist(betaT_ests,breaks=100,xlim=c(-5,5),main="betaT, all patients")

@@ -1,7 +1,7 @@
 ---
-title: "50sites"
+title: "50sites_model5"
 author: "Yanlin Ma + Kevin Murgas"
-date: "February 11, 2018"
+date: "April 4, 2018"
 output: word_document
 ---
 
@@ -41,16 +41,16 @@ site <- function (site_no) {
   return(work)
 }
 
-# Using Model 3: add intra-tumoral variance
-stanfit3 <- function (dataset) {
+# Using Model 5: add intra-tumoral variance
+stanfit5 <- function (dataset) {
   stanDat <- list(pID = as.integer(factor(dataset$patient)),
                   tInd = dataset$tInd,
                   N = nrow(dataset),
                   P = nlevels(dataset$patient),
                   y = dataset[,1])
-  stanFit3 <-
+  stanFit5 <-
     stan(
-      #file = "model3.stan",
+      #file = "model5.stan",
       fit = emptyFit,
       warmup = 1000,
       iter = 4000,
@@ -60,21 +60,21 @@ stanfit3 <- function (dataset) {
       control = list(adapt_delta = 0.999),
       refresh = 0
     )
-  return(stanFit3=stanFit3)
+  return(stanFit5=stanFit5)
 }
 
 # Plot raw data and fits
 fitplot <- function(data,stanFit) {
-  # plot beta and fits at this site for all patients, using mean estimates for b and c coefficients
+  # plot beta and fits at this site for all patients, using mean estimates for b coefficients
   p1 <- ggplot() + geom_point(data = data, aes(x=tInd, y=beta, colour=patient))
   pats <- as.integer(factor(data$patient))
   npats <- max(pats)
   sumTemp <- summary(stanFit)$summary
-  patcoefs <- data.frame(pat = rep(1:npats), b = sumTemp[1:npats], c = summTemp[(1:npats)+npats])
-  betaT <- sumTemp[dim(sumTemp)[1]-6,1]
-  mu <- sumTemp[dim(sumTemp)[1]-5,1]
+  patcoefs <- data.frame(pat = rep(1:npats), b = sumTemp[1:npats])
+  betaT <- sumTemp[dim(sumTemp)[1]-5,1]
+  mu <- sumTemp[dim(sumTemp)[1]-4,1]
   rm(sumTemp)
-  linedf <- data.frame(pat = rep(levels(data$patient)[1:npats],2), tInd = c(rep(0,npats),rep(1,npats)), est = c(patcoefs$b+mu, (patcoefs$b+patcoefs$c+mu+betaT)))
+  linedf <- data.frame(pat = rep(levels(data$patient)[1:npats],2), tInd = c(rep(0,npats),rep(1,npats)), est = c(patcoefs$b+mu, (patcoefs$b+mu+betaT)))
   p1 <- p1 + geom_line(data=linedf, aes(x=tInd, y=est, colour=pat))
   
   return(p1)
@@ -84,7 +84,7 @@ fitplot <- function(data,stanFit) {
 postplot <- function(stanFit) {
   p2 <- mcmc_areas(
     as.array(stanFit), 
-    pars = c("sigma_p", "sigma_pt","sigma_t","sigma_e"),
+    pars = c("sigma_p","sigma_t","sigma_e"),
     prob = 0.8, # 80% intervals
     prob_outer = 0.95, 
     point_est = "median"
@@ -98,8 +98,8 @@ set.seed(50)
 siteInds <- sample(1:866836,50)
 nsites <- length(siteInds)
 
-# check for model3.rds, must add to prevent crash
-checkFile <- "model3.rds"
+# check for model5.rds, must add to prevent crash
+checkFile <- "model5.rds"
 if (file.exists(checkFile)) {
   file.remove(checkFile)
   print("caught one!") 
@@ -114,7 +114,7 @@ stanDat1 <- list(
   P = nlevels(data1$patient),
   y = data1[, 1]
 )
-emptyFit <- stan(file="model3.stan", data = stanDat1, chains = 0)
+emptyFit <- stan(file="model5.stan", data = stanDat1, chains = 0)
 
 ```
 
@@ -124,7 +124,7 @@ ptm <- proc.time()
 for (i in siteInds) {
   #print(paste("Site ",i,sep=''))
   data <- site(i)
-  stanFit <- stanfit3(data)
+  stanFit <- stanfit5(data)
   p1 <- fitplot(data, stanFit) + ggtitle(paste("Site", i, ": Beta Fits by Patient"))
   p2 <- postplot(stanFit) + ggtitle(paste("Site", i, ": Fixed Effect and Sigma Posteriors"))
   print(p1)
